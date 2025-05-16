@@ -23,43 +23,43 @@ const Header = () => {
           <nav className="hidden md:flex items-center ml-5 space-x-4 xl:space-x-8 overflow-x-auto scrollbar-none min-w-0">
             <Link
               href="/jobs"
-              className="text-neutral-500 hover:text-neutral-600 font-medium whitespace-nowrap"
+              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
             >
               Jobs
             </Link>
             <Link
               href="/news"
-              className="text-neutral-500 hover:text-neutral-600 font-medium whitespace-nowrap"
+              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
             >
               News
             </Link>
             <Link
               href="/lifestyle"
-              className="text-neutral-500 hover:text-neutral-600 font-medium whitespace-nowrap"
+              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
             >
               Lifestyle
             </Link>
             <Link
               href="/entertainment"
-              className="text-neutral-500 hover:text-neutral-600 font-medium whitespace-nowrap"
+              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
             >
               Entertainment
             </Link>
             <Link
               href="/cv-optimization"
-              className="text-neutral-500 hover:text-neutral-600 font-medium whitespace-nowrap"
+              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
             >
               CV Optimization
             </Link>
             <Link
               href="/hotels-restaurants"
-              className="text-neutral-500 hover:text-neutral-600 font-medium whitespace-nowrap"
+              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
             >
               Hotels & Restaurants
             </Link>
             <Link
               href="/travel-tourism"
-              className="text-neutral-500 hover:text-neutral-600 font-medium whitespace-nowrap"
+              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
             >
               Travel & Tourism
             </Link>
@@ -70,13 +70,13 @@ const Header = () => {
         <div className="hidden md:flex items-center space-x-4 ml-8">
           <Link
             href="/login"
-            className="h-12 px-6 rounded-lg border border-neutral-200 text-neutral-500 bg-white hover:bg-neutral-50 text-base font-medium whitespace-nowrap flex items-center justify-center transition-colors"
+            className="h-11 px-4 rounded-lg border border-neutral-200 text-neutral-500 bg-white hover:bg-neutral-50 text-base font-medium whitespace-nowrap flex items-center justify-center transition-colors shadow-sm"
           >
             Log in
           </Link>
           <Link
             href="/signup"
-            className="h-12 px-6 rounded-lg bg-peach-200 hover:bg-peach-300 text-white text-base font-medium whitespace-nowrap flex items-center justify-center transition-colors"
+            className="h-11 px-4 rounded-lg bg-peach-200 hover:bg-peach-300 text-white text-base font-medium whitespace-nowrap flex items-center justify-center transition-colors shadow-sm"
           >
             Sign up
           </Link>
