@@ -30,21 +30,15 @@ const Newsletter = ({
   return (
     <div className={className}>
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-        <div className="max-w-xl">
-          <h2
-            className={`text-2xl font-bold mb-2 ${
-              darkMode ? "text-white" : "text-neutral-800"
-            }`}
-          >
-            {title}
-          </h2>
-          <p className={darkMode ? "text-neutral-400" : "text-neutral-500"}>
+        <div className="max-w-2xl">
+          <h2 className={`text-xl font-semibold mb-2 text-white`}>{title}</h2>
+          <p className={darkMode ? "text-warm-50" : "text-warm-50"}>
             {description}
           </p>
         </div>
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto"
+          className="flex flex-col items-center sm:flex-row gap-4 w-full lg:w-auto"
         >
           <Input
             type="email"
@@ -52,15 +46,11 @@ const Newsletter = ({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className={
-              darkMode
-                ? "flex-grow bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500"
-                : "flex-grow"
-            }
+            className="placeholder:text-neutral-50"
           />
           <Button
             type="submit"
-            className="bg-peach-200 hover:bg-peach-300 text-white"
+            className="bg-warm-200 hover:bg-warm-300 text-white"
           >
             Subscribe
           </Button>
@@ -71,3 +61,7 @@ const Newsletter = ({
 };
 
 export default Newsletter;
+//             ? "flex-grow bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500"
+// : "flex-grow"
+
+// #371800
