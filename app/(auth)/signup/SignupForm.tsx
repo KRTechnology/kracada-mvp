@@ -8,6 +8,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  Form,
 } from "@/components/common/form";
 import { Input } from "@/components/common/input";
 import {
@@ -17,12 +18,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/common/select";
+import { Spinner } from "@/components/common/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
+import { signupAction, type SignupFormData } from "../actions";
 
 const accountTypes = [
   "Job Seeker",
@@ -52,10 +57,11 @@ const signupSchema = z.object({
   }),
 });
 
-type SignupFormData = z.infer<typeof signupSchema>;
-
 export default function SignupForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -68,8 +74,24 @@ export default function SignupForm() {
   });
 
   const onSubmit = async (data: SignupFormData) => {
-    // Handle sign up logic here (API call)
-    alert(JSON.stringify(data, null, 2));
+    setIsSubmitting(true);
+
+    try {
+      const result = await signupAction(data);
+
+      if (result.success) {
+        toast.success(result.message);
+        // Redirect to login page or verification page
+        router.push("/login");
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -80,7 +102,8 @@ export default function SignupForm() {
           Sign up for free and become a member.
         </p>
       </div>
-      <FormProvider {...form}>
+
+      <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
@@ -94,6 +117,7 @@ export default function SignupForm() {
                     {...field}
                     autoComplete="name"
                     className="focus-visible:ring-warm-200"
+                    disabled={isSubmitting}
                   />
                 </FormControl>
                 <FormMessage />
@@ -114,6 +138,7 @@ export default function SignupForm() {
                     {...field}
                     autoComplete="email"
                     className="focus-visible:ring-warm-200"
+                    disabled={isSubmitting}
                   />
                 </FormControl>
                 <FormMessage />
@@ -130,6 +155,7 @@ export default function SignupForm() {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  disabled={isSubmitting}
                 >
                   <FormControl>
                     <SelectTrigger className="focus:ring-warm-200">
@@ -163,6 +189,7 @@ export default function SignupForm() {
                       {...field}
                       autoComplete="new-password"
                       className="focus-visible:ring-warm-200"
+                      disabled={isSubmitting}
                     />
                     <button
                       type="button"
@@ -172,15 +199,12 @@ export default function SignupForm() {
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
+                      disabled={isSubmitting}
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 </FormControl>
-                {/* <FormDescription>
-                  Min. 8 characters, at least 1 uppercase, 1 number, 1 special
-                  character
-                </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
@@ -195,6 +219,7 @@ export default function SignupForm() {
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    disabled={isSubmitting}
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
@@ -225,12 +250,21 @@ export default function SignupForm() {
 
           <Button
             type="submit"
-            className="w-full h-12 mt-2 bg-warm-200 hover:bg-warm-300"
+            className="w-full h-12 mt-2 bg-warm-200 hover:bg-warm-300 flex justify-center items-center"
+            disabled={isSubmitting}
           >
-            Submit
+            {isSubmitting ? (
+              <>
+                <Spinner size="sm" className="mr-2 border-white" />
+                <span>Signing up...</span>
+              </>
+            ) : (
+              "Submit"
+            )}
           </Button>
         </form>
-      </FormProvider>
+      </Form>
+
       <p className="mt-6 text-center text-neutral-500 text-sm">
         Already have an account?{" "}
         <Link

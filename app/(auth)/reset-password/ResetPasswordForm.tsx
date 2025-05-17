@@ -16,6 +16,9 @@ import {
   FormMessage,
 } from "@/components/common/form";
 import { Button } from "@/components/common/button";
+import { Spinner } from "@/components/common/spinner";
+import { toast } from "sonner";
+import { resetPasswordAction, type ResetPasswordFormData } from "../actions";
 
 interface ResetPasswordFormProps {
   token: string;
@@ -39,8 +42,6 @@ const formSchema = z
     path: ["confirmPassword"],
   });
 
-type FormValues = z.infer<typeof formSchema>;
-
 export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const router = useRouter();
 
@@ -48,7 +49,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<FormValues>({
+  const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       password: "",
@@ -57,20 +58,20 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     mode: "onChange",
   });
 
-  async function onSubmit(values: FormValues) {
+  async function onSubmit(values: ResetPasswordFormData) {
     setIsSubmitting(true);
 
     try {
-      // Here you would connect to your API to reset the password
-      console.log("Password reset with token:", token);
-      console.log("New password:", values.password);
+      const result = await resetPasswordAction(token, values);
 
-      // For now, we'll simulate an API call with a timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Redirect to login page after successful password reset
-      router.push("/login");
+      if (result.success) {
+        toast.success("Password reset successfully");
+        router.push("/login");
+      } else {
+        toast.error(result.message);
+      }
     } catch (error) {
+      toast.error("An unexpected error occurred");
       console.error("Error resetting password:", error);
     } finally {
       setIsSubmitting(false);
@@ -102,12 +103,14 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                       type={showPassword ? "text" : "password"}
                       placeholder=""
                       className="focus-visible:ring-warm-200"
+                      disabled={isSubmitting}
                       {...field}
                     />
                     <button
                       type="button"
                       className="absolute right-3 top-1/2 transform -translate-y-1/2"
                       onClick={() => setShowPassword(!showPassword)}
+                      disabled={isSubmitting}
                     >
                       {showPassword ? (
                         <EyeOff size={18} className="text-gray-500" />
@@ -137,6 +140,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder=""
                       className="focus-visible:ring-warm-200"
+                      disabled={isSubmitting}
                       {...field}
                     />
                     <button
@@ -145,6 +149,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
+                      disabled={isSubmitting}
                     >
                       {showConfirmPassword ? (
                         <EyeOff size={18} className="text-gray-500" />
@@ -161,14 +166,21 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
           <Button
             type="submit"
-            className={`w-full ${
+            className={`w-full flex justify-center items-center ${
               isFormValid
                 ? "bg-warm-200 hover:bg-warm-300"
                 : "bg-[#E2E8F0] text-[#64748B] cursor-not-allowed"
             }`}
             disabled={isSubmitting || !isFormValid}
           >
-            {isSubmitting ? "Resetting..." : "Reset password"}
+            {isSubmitting ? (
+              <>
+                <Spinner size="sm" className="mr-2 border-white" />
+                <span>Resetting...</span>
+              </>
+            ) : (
+              "Reset password"
+            )}
           </Button>
         </form>
       </Form>

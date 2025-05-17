@@ -18,17 +18,20 @@ import {
 import { Button } from "@/components/common/button";
 import { Spinner } from "@/components/common/spinner";
 import { toast } from "sonner";
-import { forgotPasswordAction, type ForgotPasswordFormData } from "../actions";
+import {
+  requestVerificationEmailAction,
+  type VerificationEmailFormData,
+} from "../(auth)/actions";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
 });
 
-export default function ForgotPasswordForm() {
+export default function RequestVerificationForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<ForgotPasswordFormData>({
+  const form = useForm<VerificationEmailFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
@@ -36,21 +39,22 @@ export default function ForgotPasswordForm() {
     mode: "onChange",
   });
 
-  async function onSubmit(values: ForgotPasswordFormData) {
+  async function onSubmit(values: VerificationEmailFormData) {
     setIsSubmitting(true);
 
     try {
-      const result = await forgotPasswordAction(values);
+      const result = await requestVerificationEmailAction(values);
 
       if (result.success) {
-        toast.success("Reset link sent to your email");
-        router.push("/forgot-password/confirmation");
+        toast.success(result.message);
+        // Redirect to login page
+        router.push("/login");
       } else {
         toast.error(result.message);
       }
     } catch (error) {
       toast.error("An unexpected error occurred");
-      console.error("Error requesting password reset:", error);
+      console.error("Error requesting verification email:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -61,10 +65,9 @@ export default function ForgotPasswordForm() {
   return (
     <div className="w-full space-y-6">
       <div className="text-left">
-        <h1 className="text-3xl font-bold">Forgot password</h1>
+        <h1 className="text-3xl font-bold">Verify your email</h1>
         <p className="text-gray-500 mt-2">
-          Enter the email on your account and we will send you a password reset
-          link.
+          Enter your email address and we'll send you a verification link.
         </p>
       </div>
 
@@ -104,7 +107,7 @@ export default function ForgotPasswordForm() {
                 <span>Sending link...</span>
               </>
             ) : (
-              "Reset password"
+              "Send verification link"
             )}
           </Button>
         </form>
