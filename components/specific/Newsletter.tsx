@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/common/Button";
-import { Input } from "@/components/common/Input";
+import { Input } from "../common/input";
+import { Button } from "../common/button";
 
 interface NewsletterProps {
   title?: string;
@@ -61,7 +61,3 @@ const Newsletter = ({
 };
 
 export default Newsletter;
-//             ? "flex-grow bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500"
-// : "flex-grow"
-
-// #371800
