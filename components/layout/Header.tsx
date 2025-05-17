@@ -5,9 +5,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  const isLoginPage = pathname === "/login";
+  const isSignupPage = pathname === "/signup";
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -70,13 +75,21 @@ const Header = () => {
         <div className="hidden md:flex items-center space-x-4 ml-8">
           <Link
             href="/login"
-            className="h-11 px-4 rounded-lg border border-neutral-200 text-neutral-500 bg-white hover:bg-neutral-50 text-base font-medium whitespace-nowrap flex items-center justify-center transition-colors shadow-sm"
+            className={`h-11 px-4 rounded-lg ${
+              isLoginPage
+                ? "bg-white text-[#A4A7AE] border border-[#E9EAEB] cursor-default pointer-events-none"
+                : "border border-[#D5D7DA] text-neutral-500 bg-white hover:bg-neutral-50"
+            } text-base font-medium whitespace-nowrap flex items-center justify-center transition-colors shadow-sm`}
           >
             Log in
           </Link>
           <Link
             href="/signup"
-            className="h-11 px-4 rounded-lg bg-peach-200 hover:bg-peach-300 text-white text-base font-medium whitespace-nowrap flex items-center justify-center transition-colors shadow-sm"
+            className={`h-11 px-4 rounded-lg ${
+              isSignupPage
+                ? "bg-[#F5F5F5] text-[#A4A7AE] cursor-default pointer-events-none"
+                : "bg-peach-200 hover:bg-peach-300 text-white"
+            } text-base font-medium whitespace-nowrap flex items-center justify-center transition-colors shadow-sm`}
           >
             Sign up
           </Link>
@@ -176,13 +189,21 @@ const Header = () => {
               <div className="flex flex-col gap-4">
                 <Link
                   href="/signup"
-                  className="h-14 rounded-xl bg-peach-200 hover:bg-peach-300 text-white text-lg font-medium flex items-center justify-center transition-colors"
+                  className={`h-14 rounded-xl ${
+                    isSignupPage
+                      ? "bg-[#F5F5F5] text-[#A4A7AE] cursor-default pointer-events-none"
+                      : "bg-peach-200 hover:bg-peach-300 text-white"
+                  } text-lg font-medium flex items-center justify-center transition-colors`}
                 >
                   Sign up
                 </Link>
                 <Link
                   href="/login"
-                  className="h-14 rounded-xl border border-neutral-200 text-neutral-700 bg-white hover:bg-neutral-50 text-lg font-medium flex items-center justify-center transition-colors"
+                  className={`h-14 rounded-xl ${
+                    isLoginPage
+                      ? "bg-white text-[#A4A7AE] border border-[#E9EAEB] cursor-default pointer-events-none"
+                      : "border border-[#D5D7DA] text-neutral-700 bg-white hover:bg-neutral-50"
+                  } text-lg font-medium flex items-center justify-center transition-colors`}
                 >
                   Log in
                 </Link>

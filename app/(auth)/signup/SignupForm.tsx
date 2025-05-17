@@ -41,6 +41,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import * as z from "zod";
+import { Eye, EyeOff } from "lucide-react";
 
 const accountTypes = [
   "Job Seeker",
@@ -92,10 +93,12 @@ export default function SignupForm() {
 
   return (
     <>
-      <h2 className="text-2xl font-bold mb-2 text-neutral-900">Sign up</h2>
-      <p className="mb-6 text-neutral-500">
-        Sign up for free and become a member.
-      </p>
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-2 text-neutral-900">Sign up</h2>
+        <p className="mb-6 text-neutral-500">
+          Sign up for free and become a member.
+        </p>
+      </div>
       <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -109,7 +112,7 @@ export default function SignupForm() {
                     placeholder="Input your first & last name"
                     {...field}
                     autoComplete="name"
-                    className="focus-visible:ring-warm-200 focus-visible:border-warm-200"
+                    className="focus-visible:ring-warm-200"
                   />
                 </FormControl>
                 {/* <FormDescription>Input your first last name</FormDescription> */}
@@ -130,7 +133,7 @@ export default function SignupForm() {
                     placeholder="example@domain.com"
                     {...field}
                     autoComplete="email"
-                    className="focus-visible:ring-warm-200 focus-visible:border-warm-200"
+                    className="focus-visible:ring-warm-200"
                   />
                 </FormControl>
                 <FormMessage />
@@ -149,7 +152,7 @@ export default function SignupForm() {
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger className="focus:ring-warm-200 focus:border-warm-200">
+                    <SelectTrigger className="focus:ring-warm-200">
                       <SelectValue placeholder="Select account type" />
                     </SelectTrigger>
                   </FormControl>
@@ -179,26 +182,18 @@ export default function SignupForm() {
                       placeholder="Password"
                       {...field}
                       autoComplete="new-password"
-                      className="focus-visible:ring-warm-200 focus-visible:border-warm-200"
+                      className="focus-visible:ring-warm-200"
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400"
-                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                      onClick={() => setShowPassword(!showPassword)}
                       tabIndex={-1}
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
                     >
-                      {showPassword ? (
-                        <span role="img" aria-label="Hide">
-                          🙈
-                        </span>
-                      ) : (
-                        <span role="img" aria-label="Show">
-                          👁️
-                        </span>
-                      )}
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 </FormControl>
