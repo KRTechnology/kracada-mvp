@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/common/input";
 import {
@@ -16,6 +16,10 @@ import {
   FormMessage,
 } from "@/components/common/form";
 import { Button } from "@/components/common/button";
+
+interface ResetPasswordFormProps {
+  token: string;
+}
 
 const formSchema = z
   .object({
@@ -37,10 +41,8 @@ const formSchema = z
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function ResetPasswordForm() {
+export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
