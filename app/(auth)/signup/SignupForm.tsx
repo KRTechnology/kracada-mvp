@@ -3,45 +3,26 @@
 import { Button } from "@/components/common/button";
 import { Checkbox } from "@/components/common/checkbox";
 import {
-  FormField,
-  FormMessage,
-  FormLabel,
-  FormItem,
   FormControl,
-  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/common/form";
 import { Input } from "@/components/common/input";
 import {
   Select,
-  SelectItem,
-  SelectValue,
-  SelectTrigger,
   SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/common/select";
-// import { Checkbox } from "@/components/common/Checkbox";
-// import {
-//   Form,
-//   FormControl,
-//   FormDescription,
-//   FormField,
-//   FormItem,
-//   FormLabel,
-//   FormMessage,
-// } from "@/components/common/Form";
-// import { Input } from "@/components/common/Input";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/common/Select";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import * as z from "zod";
-import { Eye, EyeOff } from "lucide-react";
 
 const accountTypes = [
   "Job Seeker",
@@ -115,7 +96,6 @@ export default function SignupForm() {
                     className="focus-visible:ring-warm-200"
                   />
                 </FormControl>
-                {/* <FormDescription>Input your first last name</FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
