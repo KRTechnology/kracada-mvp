@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import {
   requestVerificationEmailAction,
   type VerificationEmailFormData,
-} from "../(auth)/actions";
+} from "../actions";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -103,7 +103,7 @@ export default function RequestVerificationForm() {
           >
             {isSubmitting ? (
               <>
-                <Spinner size="sm" className="mr-2 border-white" />
+                <Spinner size="sm" className="mr-2" />
                 <span>Sending link...</span>
               </>
             ) : (

@@ -1,6 +1,5 @@
 import { AuthSidebar } from "@/components/layout/AuthSidebar";
 import RequestVerificationForm from "./RequestVerificationForm";
-// import RequestVerificationForm from "./RequestVerificationForm";
 
 export default function RequestVerificationPage() {
   return (

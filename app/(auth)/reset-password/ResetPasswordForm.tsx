@@ -175,7 +175,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           >
             {isSubmitting ? (
               <>
-                <Spinner size="sm" className="mr-2 border-white" />
+                <Spinner size="sm" className="mr-2" />
                 <span>Resetting...</span>
               </>
             ) : (

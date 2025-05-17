@@ -114,7 +114,7 @@ const paragraph = {
 };
 
 const button = {
-  backgroundColor: "#F5A99E", // A warm color in your theme
+  backgroundColor: "#FF6F00", // warm-200 from tailwind config
   borderRadius: "4px",
   color: "#fff",
   display: "block",
@@ -151,6 +151,6 @@ const footer = {
 };
 
 const textLink = {
-  color: "#F5A99E",
+  color: "#FF6F00", // warm-200 from tailwind config
   textDecoration: "underline",
 };

@@ -255,7 +255,7 @@ export default function SignupForm() {
           >
             {isSubmitting ? (
               <>
-                <Spinner size="sm" className="mr-2 border-white" />
+                <Spinner size="sm" className="mr-2" />
                 <span>Signing up...</span>
               </>
             ) : (
