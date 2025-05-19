@@ -1,9 +1,12 @@
 import type { NextAuthConfig } from "next-auth";
 
+// Define session strategy
 export const authConfig = {
-  //   providers: [],
   pages: {
     signIn: "/login",
+  },
+  session: {
+    strategy: "jwt",
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {

@@ -7,17 +7,13 @@ import {
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
-import { randomBytes, scrypt, timingSafeEqual } from "crypto";
-import { promisify } from "util";
-
-// Promisify scrypt
-const scryptAsync = promisify(scrypt);
+import { randomBytes } from "crypto";
+import bcrypt from "bcryptjs";
 
 // Generate a salt and hash the password
 export async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
 }
 
 // Verify a password against a hash
@@ -25,10 +21,7 @@ export async function verifyPassword(
   password: string,
   hashedPassword: string
 ): Promise<boolean> {
-  const [hash, salt] = hashedPassword.split(".");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  const hashBuffer = Buffer.from(hash, "hex");
-  return timingSafeEqual(buf, hashBuffer);
+  return bcrypt.compare(password, hashedPassword);
 }
 
 // Generate a random token
@@ -90,7 +83,13 @@ export const authService = {
 
     if (!passwordValid) return null;
 
-    return { id: user.id, email: user.email, fullName: user.fullName };
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      accountType: user.accountType,
+      emailVerified: user.emailVerified,
+    };
   },
 
   // Create a password reset token
