@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/common/button";
+import Link from "next/link";
 
 export default function ResetLinkSent() {
   return (

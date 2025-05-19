@@ -1,12 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
-import { Input } from "@/components/common/input";
+import { Button } from "@/components/common/button";
 import {
   Form,
   FormControl,
@@ -15,9 +9,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/common/form";
-import { Button } from "@/components/common/button";
+import { Input } from "@/components/common/input";
 import { Spinner } from "@/components/common/spinner";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 import { resetPasswordAction, type ResetPasswordFormData } from "../actions";
 
 interface ResetPasswordFormProps {

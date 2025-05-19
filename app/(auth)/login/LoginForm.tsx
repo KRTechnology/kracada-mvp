@@ -1,23 +1,23 @@
 "use client";
 
+import { Input } from "@/components/common/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
-import { Input } from "@/components/common/input";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/common/form";
 import { Button } from "@/components/common/button";
 import { Checkbox } from "@/components/common/checkbox";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/common/form";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),

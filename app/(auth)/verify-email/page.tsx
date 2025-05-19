@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { authService } from "@/lib/auth/auth-service";
 import { Button } from "@/components/common/button";
 import { AuthSidebar } from "@/components/layout/AuthSidebar";
+import { authService } from "@/lib/auth/auth-service";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default async function VerifyEmailPage({
   searchParams,

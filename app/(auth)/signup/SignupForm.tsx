@@ -3,12 +3,12 @@
 import { Button } from "@/components/common/button";
 import { Checkbox } from "@/components/common/checkbox";
 import {
+  Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Form,
 } from "@/components/common/form";
 import { Input } from "@/components/common/input";
 import {

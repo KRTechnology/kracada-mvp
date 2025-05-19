@@ -2,8 +2,6 @@
 
 import { authService } from "@/lib/auth/auth-service";
 import { emailService } from "@/lib/email/email.service";
-import { NewUser } from "@/lib/db/schema";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 
 // Schema for signup validation

@@ -1,13 +1,13 @@
 import { AuthSidebar } from "@/components/layout/AuthSidebar";
-import ResetPasswordForm from "./ResetPasswordForm";
 import { redirect } from "next/navigation";
+import ResetPasswordForm from "./ResetPasswordForm";
 
 export default async function ResetPasswordPage({
   searchParams,
 }: {
   searchParams: Promise<{ token?: string }>;
 }) {
-  const pageParams = await searchParams;
+  const pageParams = await searchParams
 
   if (!pageParams.token) {
     redirect("/login");
