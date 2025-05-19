@@ -3,7 +3,7 @@
 import { authService } from "@/lib/auth/auth-service";
 import { emailService } from "@/lib/email/email.service";
 import { z } from "zod";
-import { signIn } from "@/auth";
+import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
 
 // Schema for login validation
@@ -331,4 +331,15 @@ export async function requestVerificationEmailAction(
     console.error("Verification email request error:", error);
     return { success: false, message: "An unexpected error occurred" };
   }
+}
+
+// Sign out action
+export async function signOutAction() {
+  // try {
+  await signOut();
+  return { success: true };
+  // } catch (error) {
+  // console.error("Sign out error:", error);
+  // return { success: false, message: "Failed to sign out" };
+  // }
 }
