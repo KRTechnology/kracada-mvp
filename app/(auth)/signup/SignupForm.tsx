@@ -81,8 +81,8 @@ export default function SignupForm() {
 
       if (result.success) {
         toast.success(result.message);
-        // Redirect to login page or verification page
-        router.push("/login");
+        // Redirect to the signup confirmation page
+        router.push("/signup-confirmation");
       } else {
         toast.error(result.message);
       }

@@ -60,7 +60,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased font-sans`}
       >
         <SessionProvider>
-          <Toaster />
+          <Toaster richColors />
           {children}
         </SessionProvider>
       </body>
