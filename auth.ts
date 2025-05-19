@@ -1,14 +1,7 @@
 import { authConfig } from "@/auth.config";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { z } from "zod";
 import { authService } from "@/lib/auth/auth-service";
-
-// Create a login validation schema
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1, "Password is required"),
-});
 
 // Extend session with additional properties
 type ExtendedUser = {
@@ -25,15 +18,13 @@ export const { auth, signIn, signOut } = NextAuth({
     Credentials({
       async authorize(credentials) {
         try {
-          // Validate the credentials
-          const parsedCredentials = loginSchema.safeParse(credentials);
-
-          if (!parsedCredentials.success) {
-            console.log("Invalid credentials format");
+          // Basic validation for credentials
+          if (!credentials?.email || !credentials?.password) {
             return null;
           }
 
-          const { email, password } = parsedCredentials.data;
+          const email = credentials.email as string;
+          const password = credentials.password as string;
 
           // Authenticate user with email and password
           const user = await authService.authenticateUser(email, password);

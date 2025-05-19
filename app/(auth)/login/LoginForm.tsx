@@ -7,31 +7,35 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button } from "@/components/common/button";
 import { Checkbox } from "@/components/common/checkbox";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/common/form";
-
-const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z.string(),
-  rememberMe: z.boolean().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { Spinner } from "@/components/common/spinner";
+import { loginAction, type LoginFormData } from "../actions";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(
+      z.object({
+        email: z.string().email({ message: "Invalid email address" }),
+        password: z.string().min(1, "Password is required"),
+        rememberMe: z.boolean().optional(),
+      })
+    ),
     defaultValues: {
       email: "",
       password: "",
@@ -39,9 +43,26 @@ export default function LoginForm() {
     },
   });
 
-  function onSubmit(values: FormValues) {
-    console.log(values);
-    // Handle login logic here
+  async function onSubmit(values: LoginFormData) {
+    setIsSubmitting(true);
+
+    try {
+      const result = await loginAction(values);
+
+      if (result.success) {
+        toast.success(result.message);
+        // Redirect to dashboard on successful login
+        router.push("/dashboard");
+        router.refresh();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred during login");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -63,6 +84,8 @@ export default function LoginForm() {
                   <Input
                     placeholder="example@domain.com"
                     className="focus-visible:ring-warm-200"
+                    autoComplete="email"
+                    disabled={isSubmitting}
                     {...field}
                   />
                 </FormControl>
@@ -83,12 +106,19 @@ export default function LoginForm() {
                       type={showPassword ? "text" : "password"}
                       placeholder=""
                       className="focus-visible:ring-warm-200"
+                      autoComplete="current-password"
+                      disabled={isSubmitting}
                       {...field}
                     />
                     <button
                       type="button"
                       className="absolute right-3 top-1/2 transform -translate-y-1/2"
                       onClick={() => setShowPassword(!showPassword)}
+                      disabled={isSubmitting}
+                      tabIndex={-1}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? (
                         <EyeOff size={18} className="text-gray-500" />
@@ -112,6 +142,7 @@ export default function LoginForm() {
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    disabled={isSubmitting}
                   />
                 </FormControl>
                 <FormLabel className="text-sm font-normal">
@@ -124,8 +155,16 @@ export default function LoginForm() {
           <Button
             type="submit"
             className="w-full bg-warm-200 hover:bg-warm-300"
+            disabled={isSubmitting}
           >
-            Log in
+            {isSubmitting ? (
+              <>
+                <Spinner size="sm" className="mr-2" />
+                <span>Logging in...</span>
+              </>
+            ) : (
+              "Log in"
+            )}
           </Button>
         </form>
       </Form>

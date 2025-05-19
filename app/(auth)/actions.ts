@@ -3,6 +3,15 @@
 import { authService } from "@/lib/auth/auth-service";
 import { emailService } from "@/lib/email/email.service";
 import { z } from "zod";
+import { signIn } from "@/auth";
+import { AuthError } from "next-auth";
+
+// Schema for login validation
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean().optional(),
+});
 
 // Schema for signup validation
 const signupSchema = z.object({
@@ -57,12 +66,48 @@ const verificationEmailSchema = z.object({
 });
 
 export type SignupFormData = z.infer<typeof signupSchema>;
+export type LoginFormData = z.infer<typeof loginSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordFormData = Omit<
   z.infer<typeof resetPasswordSchema>,
   "token"
 >;
 export type VerificationEmailFormData = z.infer<typeof verificationEmailSchema>;
+
+// Login action
+export async function loginAction(data: LoginFormData) {
+  try {
+    // Validate the data
+    const validatedData = loginSchema.parse(data);
+
+    // Attempt to sign in the user
+    await signIn("credentials", {
+      email: validatedData.email,
+      password: validatedData.password,
+      redirect: false,
+    });
+
+    return { success: true, message: "Login successful" };
+  } catch (error) {
+    console.error("Login error:", error);
+
+    if (error instanceof AuthError) {
+      // Handle known auth errors
+      switch (error.type) {
+        case "CredentialsSignin":
+          return { success: false, message: "Invalid email or password" };
+        case "CallbackRouteError":
+          return { success: false, message: "Invalid credentials" };
+        default:
+          return { success: false, message: "Authentication failed" };
+      }
+    } else if (error instanceof z.ZodError) {
+      return { success: false, message: error.errors[0].message };
+    }
+
+    return { success: false, message: "An unexpected error occurred" };
+  }
+}
 
 // Get the base URL for links
 const getBaseUrl = () => {
