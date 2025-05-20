@@ -34,7 +34,7 @@ export default function WelcomeEmail({
       <Body style={main}>
         <Container style={container}>
           <Img
-            src={`${baseUrl}/images/logo.png`}
+            src={`${baseUrl}/images/kracada_logo.png`}
             width="140"
             height="40"
             alt="Kracada"

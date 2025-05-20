@@ -1,14 +1,13 @@
 "use client";
 
+import { signOutAction } from "@/app/(auth)/actions";
 import { Logo } from "@/components/common/Logo";
+import { Spinner } from "@/components/common/spinner";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, Menu, Settings, User, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { signOutAction } from "@/app/(auth)/actions";
-import { Spinner } from "@/components/common/spinner";
-import { toast } from "sonner";
+import { useState } from "react";
 
 type User = {
   name?: string | null;
