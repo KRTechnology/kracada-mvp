@@ -15,9 +15,11 @@ export default function Home() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-8"
           >
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-warm-300 via-peach-300 to-coral-300 bg-clip-text text-transparent">
-              Kracada
-            </h1>
+            <img
+              src="/images/kracada_logo_large.png"
+              alt="Kracada"
+              className="mx-auto h-20 w-auto"
+            />
           </motion.div>
 
           {/* Main Message */}
