@@ -33,9 +33,10 @@ export default function Home() {
               We're Building Something Amazing
             </h2>
             <p className="text-lg text-neutral-500 leading-relaxed">
-              Our team is working hard to bring you an exceptional experience.
-              We'll be launching soon with exciting features that will transform
-              how you explore opportunities and optimize your career.
+              Our team is working hard to bring you an exceptional experience. A
+              one-stop for jobs, news, lifestyle, and entertainment, all in one
+              place. Stay tuned. A new way to explore and thrive is just around
+              the corner!
             </p>
           </motion.div>
 
