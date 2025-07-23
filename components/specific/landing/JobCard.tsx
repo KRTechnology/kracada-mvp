@@ -40,22 +40,23 @@ const JobCard = ({ job, index }: JobCardProps) => {
       viewport={{ once: true }}
       className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative"
     >
+      {/* Three Dots Menu - positioned outside the hover scale container */}
+      <div className="absolute top-6 right-6 z-10">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="p-1 hover:bg-neutral-100 rounded-full transition-colors flex items-center justify-center"
+          style={{ width: "24px", height: "24px" }}
+        >
+          <MoreVertical className="w-4 h-4 text-neutral-500" />
+        </motion.button>
+      </div>
+
       <motion.div
         whileHover={{ scale: 1.02 }}
         transition={{ duration: 0.3 }}
         className="h-full"
       >
-        {/* Three Dots Menu */}
-        <div className="absolute top-6 right-6">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="p-1 hover:bg-neutral-100 rounded-full transition-colors"
-          >
-            <MoreVertical className="w-4 h-4 text-neutral-500" />
-          </motion.button>
-        </div>
-
         {/* Company Logo Placeholder */}
         <div className="w-12 h-12 mb-4 bg-neutral-200 rounded-lg flex items-center justify-center">
           <div
