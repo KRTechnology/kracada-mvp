@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import ConditionalLayout from "@/components/layout/ConditionalLayout";
 
 // Geist Sans (already correctly configured in your code)
 const geistSans = Geist({
@@ -60,8 +61,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased font-sans`}
       >
         <SessionProvider>
-          <Toaster richColors />
-          {children}
+          <ConditionalLayout>
+            <Toaster richColors />
+            {children}
+          </ConditionalLayout>
         </SessionProvider>
       </body>
     </html>
