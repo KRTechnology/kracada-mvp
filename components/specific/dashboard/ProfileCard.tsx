@@ -52,7 +52,7 @@ export function ProfileCard({ userData }: ProfileCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
-      className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-6"
+      className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm p-6"
     >
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2">

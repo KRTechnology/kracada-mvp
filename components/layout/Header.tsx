@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 
@@ -32,12 +32,39 @@ const Header = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const pathname = usePathname();
 
+  // Refs for click outside detection
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const darkModeMenuRef = useRef<HTMLDivElement>(null);
+
   const user = session?.user;
   const isLoading = status === "loading";
 
   const isLoginPage = pathname === "/login";
   const isSignupPage = pathname === "/signup";
   const isDashboardPage = pathname.startsWith("/dashboard");
+
+  // Click outside effect
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+      if (
+        darkModeMenuRef.current &&
+        !darkModeMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsDarkModeMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -164,7 +191,7 @@ const Header = () => {
               {/* Settings Icon */}
               <button
                 onClick={() => router.push("/dashboard")}
-                className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[#A4A7AE] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-[#A4A7AE] hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
               >
                 <Settings className="w-5 h-5" />
               </button>
@@ -174,7 +201,7 @@ const Header = () => {
                 onClick={() => {
                   /* Handle notifications */
                 }}
-                className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[#A4A7AE] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors relative"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-[#A4A7AE] hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors relative"
               >
                 <Bell className="w-5 h-5" />
                 {/* Optional notification dot */}
@@ -182,10 +209,10 @@ const Header = () => {
               </button>
 
               {/* Dark Mode Toggle */}
-              <div className="relative">
+              <div className="relative" ref={darkModeMenuRef}>
                 <button
                   onClick={toggleDarkModeMenu}
-                  className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[#A4A7AE] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-[#A4A7AE] hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
                 >
                   {theme === "dark" ? (
                     <Moon className="w-5 h-5" />
@@ -235,7 +262,7 @@ const Header = () => {
               </div>
 
               {/* Profile Icon with Dropdown */}
-              <div className="relative">
+              <div className="relative" ref={profileMenuRef}>
                 <button
                   onClick={toggleProfileMenu}
                   className="flex items-center space-x-2 px-2 py-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -309,7 +336,11 @@ const Header = () => {
 
                           <div className="flex items-center justify-between px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors">
                             <div className="flex items-center space-x-3">
-                              <div className="w-5 h-5 rounded bg-neutral-300 dark:bg-neutral-600"></div>
+                              {theme === "dark" ? (
+                                <Moon className="w-5 h-5" />
+                              ) : (
+                                <Sun className="w-5 h-5" />
+                              )}
                               <span>Dark Mode</span>
                             </div>
                             <div

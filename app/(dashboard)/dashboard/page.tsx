@@ -86,7 +86,8 @@ export default function DashboardPage() {
                     {activeTab === tab.id && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-warm-200"
+                        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-warm-200 rounded-full"
+                        style={{ width: "80%" }}
                         initial={false}
                         transition={{
                           type: "spring",
