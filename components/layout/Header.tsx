@@ -4,40 +4,57 @@ import { signOutAction } from "@/app/(auth)/actions";
 import { Logo } from "@/components/common/Logo";
 import { Spinner } from "@/components/common/spinner";
 import { AnimatePresence, motion } from "framer-motion";
-import { LogOut, Menu, Settings, User, X } from "lucide-react";
+import {
+  LogOut,
+  Menu,
+  Settings,
+  User,
+  X,
+  Bell,
+  Moon,
+  Sun,
+  Monitor,
+  CircleUserRound,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
 
-type User = {
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-} | null;
-
-interface HeaderProps {
-  user?: User;
-}
-
-const Header = ({ user }: HeaderProps = {}) => {
+const Header = () => {
+  const { data: session, status } = useSession();
+  const { theme, setTheme } = useTheme();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isDarkModeMenuOpen, setIsDarkModeMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const pathname = usePathname();
 
+  const user = session?.user;
+  const isLoading = status === "loading";
+
   const isLoginPage = pathname === "/login";
   const isSignupPage = pathname === "/signup";
-  const isDashboardPage = pathname === "/dashboard";
+  const isDashboardPage = pathname.startsWith("/dashboard");
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
     if (isProfileMenuOpen) setIsProfileMenuOpen(false);
+    if (isDarkModeMenuOpen) setIsDarkModeMenuOpen(false);
   };
 
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
     if (isMenuOpen) setIsMenuOpen(false);
+    if (isDarkModeMenuOpen) setIsDarkModeMenuOpen(false);
+  };
+
+  const toggleDarkModeMenu = () => {
+    setIsDarkModeMenuOpen(!isDarkModeMenuOpen);
+    if (isMenuOpen) setIsMenuOpen(false);
+    if (isProfileMenuOpen) setIsProfileMenuOpen(false);
   };
 
   const handleSignOut = async () => {
@@ -46,26 +63,24 @@ const Header = ({ user }: HeaderProps = {}) => {
       const result = await signOutAction();
 
       if (result.success) {
-        // Close any open menus
         setIsProfileMenuOpen(false);
         setIsMenuOpen(false);
-
-        // Redirect to home page
         router.push("/");
-        // router.refresh();
-      } else {
-        // toast.error(result.message || "Failed to sign out");
       }
     } catch (error) {
-      // console.error("Sign out error:", error);
-      // toast.error("An error occurred during sign out");
+      console.error("Sign out error:", error);
     } finally {
       setIsSigningOut(false);
     }
   };
 
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    setIsDarkModeMenuOpen(false);
+  };
+
   return (
-    <header className="fixed top-0 left-0 w-full z-40 border-b border-neutral-100 bg-white">
+    <header className="fixed top-0 left-0 w-full z-40 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 transition-colors">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center min-w-0">
@@ -74,43 +89,43 @@ const Header = ({ user }: HeaderProps = {}) => {
           <nav className="hidden md:flex items-center ml-5 space-x-4 xl:space-x-8 overflow-x-auto scrollbar-none min-w-0">
             <Link
               href="/jobs"
-              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
+              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
             >
               Jobs
             </Link>
             <Link
               href="/news"
-              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
+              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
             >
               News
             </Link>
             <Link
               href="/lifestyle"
-              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
+              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
             >
               Lifestyle
             </Link>
             <Link
               href="/entertainment"
-              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
+              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
             >
               Entertainment
             </Link>
             <Link
               href="/cv-optimization"
-              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
+              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
             >
               CV Optimization
             </Link>
             <Link
               href="/hotels-restaurants"
-              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
+              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
             >
               Hotels & Restaurants
             </Link>
             <Link
               href="/travel-tourism"
-              className="text-[#414651] hover:text-neutral-600 font-semibold whitespace-nowrap"
+              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
             >
               Travel & Tourism
             </Link>
@@ -119,15 +134,15 @@ const Header = ({ user }: HeaderProps = {}) => {
 
         {/* Auth Buttons or User Profile */}
         <div className="hidden md:flex items-center space-x-4 ml-8">
-          {!user ? (
+          {!user && !isLoading ? (
             // Unauthenticated state - show login/signup buttons
             <>
               <Link
                 href="/login"
                 className={`h-11 px-4 rounded-lg ${
                   isLoginPage
-                    ? "bg-white text-[#A4A7AE] border border-[#E9EAEB] cursor-default pointer-events-none"
-                    : "border border-[#D5D7DA] text-neutral-500 bg-white hover:bg-neutral-50"
+                    ? "bg-white dark:bg-neutral-800 text-[#A4A7AE] border border-[#E9EAEB] dark:border-neutral-700 cursor-default pointer-events-none"
+                    : "border border-[#D5D7DA] dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700"
                 } text-base font-medium whitespace-nowrap flex items-center justify-center transition-colors shadow-sm`}
               >
                 Log in
@@ -136,26 +151,94 @@ const Header = ({ user }: HeaderProps = {}) => {
                 href="/signup"
                 className={`h-11 px-4 rounded-lg ${
                   isSignupPage
-                    ? "bg-[#F5F5F5] text-[#A4A7AE] cursor-default pointer-events-none"
+                    ? "bg-[#F5F5F5] dark:bg-neutral-700 text-[#A4A7AE] cursor-default pointer-events-none"
                     : "bg-peach-200 hover:bg-peach-300 text-white"
                 } text-base font-medium whitespace-nowrap flex items-center justify-center transition-colors shadow-sm`}
               >
                 Sign up
               </Link>
             </>
-          ) : (
-            // Authenticated state - show user profile and settings buttons
-            <div className="relative flex items-center">
-              <div className="flex items-center space-x-3 pr-3">
+          ) : user ? (
+            // Authenticated state - show settings, notification, and profile icons
+            <div className="flex items-center space-x-3">
+              {/* Settings Icon */}
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[#A4A7AE] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+
+              {/* Notifications Icon */}
+              <button
+                onClick={() => {
+                  /* Handle notifications */
+                }}
+                className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[#A4A7AE] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors relative"
+              >
+                <Bell className="w-5 h-5" />
+                {/* Optional notification dot */}
+                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+
+              {/* Dark Mode Toggle */}
+              <div className="relative">
                 <button
-                  onClick={() => {}}
-                  className={`w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center ${isDashboardPage ? "text-warm-200" : "text-neutral-500 hover:bg-neutral-200"}`}
+                  onClick={toggleDarkModeMenu}
+                  className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[#A4A7AE] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                 >
-                  <Settings className="w-5 h-5" />
+                  {theme === "dark" ? (
+                    <Moon className="w-5 h-5" />
+                  ) : theme === "light" ? (
+                    <Sun className="w-5 h-5" />
+                  ) : (
+                    <Monitor className="w-5 h-5" />
+                  )}
                 </button>
+
+                {/* Dark Mode Menu */}
+                <AnimatePresence>
+                  {isDarkModeMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full mt-2 w-40 rounded-lg shadow-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 z-50"
+                    >
+                      <div className="p-2">
+                        <button
+                          onClick={() => handleThemeChange("light")}
+                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-md"
+                        >
+                          <Sun className="w-4 h-4" />
+                          <span>Light</span>
+                        </button>
+                        <button
+                          onClick={() => handleThemeChange("dark")}
+                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-md"
+                        >
+                          <Moon className="w-4 h-4" />
+                          <span>Dark</span>
+                        </button>
+                        <button
+                          onClick={() => handleThemeChange("system")}
+                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-md"
+                        >
+                          <Monitor className="w-4 h-4" />
+                          <span>System</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Profile Icon with Dropdown */}
+              <div className="relative">
                 <button
                   onClick={toggleProfileMenu}
-                  className="flex items-center space-x-2 px-2 py-1 rounded-full hover:bg-neutral-100"
+                  className="flex items-center space-x-2 px-2 py-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <div className="w-10 h-10 rounded-full bg-warm-200 flex items-center justify-center text-white">
                     {user.name ? (
@@ -164,67 +247,131 @@ const Header = ({ user }: HeaderProps = {}) => {
                       <User className="w-5 h-5" />
                     )}
                   </div>
-                  <span className="font-medium text-neutral-800">
-                    {user.name || "User"}
-                  </span>
+                  <div className="hidden lg:block">
+                    <p className="font-medium text-neutral-800 dark:text-neutral-200 text-sm">
+                      {user.name || "User"}
+                    </p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      {user.email || "user@example.com"}
+                    </p>
+                  </div>
                 </button>
-              </div>
 
-              {/* Profile Dropdown */}
-              <AnimatePresence>
-                {isProfileMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-full mt-2 w-56 rounded-lg shadow-lg bg-white border border-neutral-200 z-50"
-                  >
-                    <div className="p-2">
-                      <div className="border-b border-neutral-100 pb-2 mb-2">
-                        <p className="px-3 py-2 text-sm font-medium text-neutral-900">
-                          {user.name || "User"}
-                        </p>
-                        <p className="px-3 py-1 text-xs text-neutral-500">
-                          {user.email || "user@example.com"}
-                        </p>
+                {/* Profile Dropdown */}
+                <AnimatePresence>
+                  {isProfileMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full mt-2 w-80 rounded-2xl shadow-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 z-50"
+                    >
+                      <div className="p-4">
+                        {/* Header with Menu text */}
+                        <div className="mb-4">
+                          <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">
+                            Menu
+                          </h3>
+                        </div>
+
+                        {/* User Info */}
+                        <div className="flex items-center space-x-3 mb-6 p-3 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
+                          <div className="w-12 h-12 rounded-full bg-warm-200 flex items-center justify-center text-white relative">
+                            {user.name ? (
+                              user.name.charAt(0).toUpperCase()
+                            ) : (
+                              <User className="w-6 h-6" />
+                            )}
+                            {/* Online indicator */}
+                            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-neutral-700"></div>
+                          </div>
+                          <div>
+                            <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                              {user.name || "[User's Name]"}
+                            </p>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                              {user.email || "usersmail@mail.com"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Menu Items */}
+                        <div className="space-y-1">
+                          <Link
+                            href="/dashboard"
+                            className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                          >
+                            <CircleUserRound className="w-5 h-5" />
+                            <span>View profile</span>
+                          </Link>
+
+                          <div className="flex items-center justify-between px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-5 h-5 rounded bg-neutral-300 dark:bg-neutral-600"></div>
+                              <span>Dark Mode</span>
+                            </div>
+                            <div
+                              className="w-10 h-5 bg-neutral-200 dark:bg-neutral-600 rounded-full relative cursor-pointer"
+                              onClick={() =>
+                                setTheme(theme === "dark" ? "light" : "dark")
+                              }
+                            >
+                              <div
+                                className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${
+                                  theme === "dark"
+                                    ? "translate-x-5"
+                                    : "translate-x-0.5"
+                                }`}
+                              ></div>
+                            </div>
+                          </div>
+
+                          <Link
+                            href="/settings"
+                            className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                          >
+                            <Settings className="w-5 h-5" />
+                            <span>Settings</span>
+                          </Link>
+
+                          <div className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors">
+                            <div className="w-5 h-5 rounded-full border-2 border-neutral-400 flex items-center justify-center">
+                              <span className="text-xs">?</span>
+                            </div>
+                            <span>Support</span>
+                          </div>
+
+                          <button
+                            onClick={handleSignOut}
+                            disabled={isSigningOut}
+                            className="w-full flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors"
+                          >
+                            {isSigningOut ? (
+                              <Spinner size="sm" className="w-5 h-5" />
+                            ) : (
+                              <LogOut className="w-5 h-5" />
+                            )}
+                            <span>
+                              {isSigningOut ? "Signing out..." : "Sign out"}
+                            </span>
+                          </button>
+                        </div>
                       </div>
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center space-x-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded-md"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                      >
-                        <User className="w-4 h-4" />
-                        <span>Profile</span>
-                      </Link>
-                      <Link
-                        href="/settings"
-                        className="flex items-center space-x-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded-md"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                      >
-                        <Settings className="w-4 h-4" />
-                        <span>Settings</span>
-                      </Link>
-                      <button
-                        onClick={handleSignOut}
-                        disabled={isSigningOut}
-                        className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md"
-                      >
-                        {isSigningOut ? (
-                          <Spinner size="sm" className="mr-2" />
-                        ) : (
-                          <LogOut className="w-4 h-4" />
-                        )}
-                        <span>
-                          {isSigningOut ? "Signing out..." : "Sign out"}
-                        </span>
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-          )}
+          ) : isLoading ? (
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 animate-pulse"></div>
+              <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 animate-pulse"></div>
+              <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 animate-pulse"></div>
+            </div>
+          ) : null}
         </div>
 
         {/* Mobile Menu Button */}
@@ -244,7 +391,10 @@ const Header = ({ user }: HeaderProps = {}) => {
                 transition={{ duration: 0.2 }}
                 className="flex"
               >
-                <Menu size={28} className="text-neutral-700" />
+                <Menu
+                  size={28}
+                  className="text-neutral-700 dark:text-neutral-300"
+                />
               </motion.span>
             ) : (
               <motion.span
@@ -255,7 +405,10 @@ const Header = ({ user }: HeaderProps = {}) => {
                 transition={{ duration: 0.2 }}
                 className="flex"
               >
-                <X size={32} className="text-neutral-700" />
+                <X
+                  size={32}
+                  className="text-neutral-700 dark:text-neutral-300"
+                />
               </motion.span>
             )}
           </AnimatePresence>
@@ -266,7 +419,7 @@ const Header = ({ user }: HeaderProps = {}) => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            className="md:hidden fixed top-[72px] left-0 w-full z-50 bg-white shadow-lg"
+            className="md:hidden fixed top-[72px] left-0 w-full z-50 bg-white dark:bg-neutral-900 shadow-lg"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -275,60 +428,68 @@ const Header = ({ user }: HeaderProps = {}) => {
               <nav className="flex flex-col gap-6 mb-8">
                 <Link
                   href="/jobs"
-                  className="text-neutral-900 text-base font-bold"
+                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   Jobs
                 </Link>
                 <Link
                   href="/news"
-                  className="text-neutral-900 text-base font-bold"
+                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   News
                 </Link>
                 <Link
                   href="/lifestyle"
-                  className="text-neutral-900 text-base font-bold"
+                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   Lifestyle
                 </Link>
                 <Link
                   href="/entertainment"
-                  className="text-neutral-900 text-base font-bold"
+                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   Entertainment
                 </Link>
                 <Link
                   href="/cv-optimization"
-                  className="text-neutral-900 text-base font-bold"
+                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   CV Optimization
                 </Link>
                 <Link
                   href="/hotels-restaurants"
-                  className="text-neutral-900 text-base font-bold"
+                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   Hotels & Restaurants
                 </Link>
                 <Link
                   href="/travel-tourism"
-                  className="text-neutral-900 text-base font-bold"
+                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   Travel & Tourism
                 </Link>
               </nav>
-              <div className="border-b border-neutral-100 mb-4" />
+              <div className="border-b border-neutral-100 dark:border-neutral-800 mb-4" />
 
               {/* Auth buttons or profile */}
-              {!user ? (
+              {!user && !isLoading ? (
                 // Unauthenticated mobile view
                 <div className="flex flex-col gap-4">
                   <Link
                     href="/signup"
                     className={`h-14 rounded-xl ${
                       isSignupPage
-                        ? "bg-[#F5F5F5] text-[#A4A7AE] cursor-default pointer-events-none"
+                        ? "bg-[#F5F5F5] dark:bg-neutral-700 text-[#A4A7AE] cursor-default pointer-events-none"
                         : "bg-peach-200 hover:bg-peach-300 text-white"
                     } text-lg font-medium flex items-center justify-center transition-colors`}
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     Sign up
                   </Link>
@@ -336,14 +497,15 @@ const Header = ({ user }: HeaderProps = {}) => {
                     href="/login"
                     className={`h-14 rounded-xl ${
                       isLoginPage
-                        ? "bg-white text-[#A4A7AE] border border-[#E9EAEB] cursor-default pointer-events-none"
-                        : "border border-[#D5D7DA] text-neutral-700 bg-white hover:bg-neutral-50"
+                        ? "bg-white dark:bg-neutral-800 text-[#A4A7AE] border border-[#E9EAEB] dark:border-neutral-700 cursor-default pointer-events-none"
+                        : "border border-[#D5D7DA] dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700"
                     } text-lg font-medium flex items-center justify-center transition-colors`}
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     Log in
                   </Link>
                 </div>
-              ) : (
+              ) : user ? (
                 // Authenticated mobile view
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center space-x-3 mb-4">
@@ -355,32 +517,47 @@ const Header = ({ user }: HeaderProps = {}) => {
                       )}
                     </div>
                     <div>
-                      <p className="font-medium text-neutral-900">
+                      <p className="font-medium text-neutral-900 dark:text-neutral-100">
                         {user.name || "User"}
                       </p>
-                      <p className="text-sm text-neutral-500">
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
                         {user.email || "user@example.com"}
                       </p>
                     </div>
                   </div>
                   <Link
                     href="/dashboard"
-                    className="flex items-center space-x-2 px-4 py-3 text-neutral-800 hover:bg-neutral-100 rounded-lg"
+                    className="flex items-center space-x-2 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     <User className="w-5 h-5" />
                     <span>Profile</span>
                   </Link>
                   <Link
                     href="/settings"
-                    className="flex items-center space-x-2 px-4 py-3 text-neutral-800 hover:bg-neutral-100 rounded-lg"
+                    className="flex items-center space-x-2 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     <Settings className="w-5 h-5" />
                     <span>Settings</span>
                   </Link>
                   <button
+                    onClick={() => {
+                      setTheme(theme === "dark" ? "light" : "dark");
+                    }}
+                    className="flex items-center space-x-2 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors text-left"
+                  >
+                    {theme === "dark" ? (
+                      <Sun className="w-5 h-5" />
+                    ) : (
+                      <Moon className="w-5 h-5" />
+                    )}
+                    <span>Dark Mode</span>
+                  </button>
+                  <button
                     onClick={handleSignOut}
                     disabled={isSigningOut}
-                    className="flex items-center space-x-2 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg text-left"
+                    className="flex items-center space-x-2 px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-left transition-colors"
                   >
                     {isSigningOut ? (
                       <Spinner size="sm" className="mr-2" />
@@ -390,7 +567,7 @@ const Header = ({ user }: HeaderProps = {}) => {
                     <span>{isSigningOut ? "Signing out..." : "Sign out"}</span>
                   </button>
                 </div>
-              )}
+              ) : null}
             </div>
           </motion.div>
         )}

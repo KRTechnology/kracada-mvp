@@ -2,7 +2,6 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import Header from "./Header";
 import Footer from "./Footer";
 
@@ -12,7 +11,6 @@ interface ConditionalLayoutProps {
 
 const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();
-  const { data: session } = useSession();
 
   // Determine if we're in auth or dashboard routes
   const isAuthRoute =
@@ -31,9 +29,9 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen ${isAuthRoute ? "bg-white" : ""}`}
+      className={`flex flex-col min-h-screen ${isAuthRoute ? "bg-white dark:bg-neutral-900" : ""}`}
     >
-      <Header user={session?.user} />
+      <Header />
       <main
         className={`${isDashboardRoute ? "flex-1 pt-[72px]" : isAuthRoute ? "flex-grow flex" : "flex-grow pt-[72px]"}`}
       >
