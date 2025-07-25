@@ -15,6 +15,7 @@ export default function DashboardPage() {
 
   // Mock user data - will be replaced with actual API calls
   const userData = {
+    id: "mock-user-123", // Add user ID for uploads
     firstName: "Rudra",
     lastName: "Devi",
     email: "rudra.devi@gmail.com",
