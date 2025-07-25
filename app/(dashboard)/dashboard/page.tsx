@@ -62,44 +62,41 @@ export default function DashboardPage() {
           <div className="max-w-[1010px] mx-auto">
             {/* Page Header */}
             <div className="mb-8">
-              <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+              <h1 className="text-2xl font-semibold text-[#334155] dark:text-neutral-100 mb-2">
                 Complete your profile
               </h1>
-              <p className="text-neutral-600 dark:text-neutral-400">
+              <p className="text-[#64748B] dark:text-neutral-100">
                 Manage your personal and organization settings.
               </p>
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex space-x-6">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`pb-3 font-medium relative transition-colors ${
-                      activeTab === tab.id
-                        ? "text-neutral-900 dark:text-neutral-100"
-                        : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    {tab.label}
-                    {activeTab === tab.id && (
-                      <motion.div
-                        layoutId="activeTab"
-                        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-warm-200 rounded-full"
-                        style={{ width: "80%" }}
-                        initial={false}
-                        transition={{
-                          type: "spring",
-                          stiffness: 500,
-                          damping: 30,
-                        }}
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
+            <div className="flex space-x-6">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`pb-3 font-medium relative transition-colors ${
+                    activeTab === tab.id
+                      ? "text-warm-200 dark:text-[#FF7D1A]"
+                      : "text-[#64748B] dark:text-neutral-100 hover:text-warm-200  dark:hover:text-[#FF7D1A]"
+                  }`}
+                >
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-warm-200 rounded-full"
+                      initial={false}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </div>

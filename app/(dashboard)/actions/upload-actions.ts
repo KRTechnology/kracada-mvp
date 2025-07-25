@@ -22,12 +22,14 @@ export type ProfilePictureUploadResult = {
   success: boolean;
   url?: string;
   error?: string;
+  key?: string;
 };
 
 export type CVUploadResult = {
   success: boolean;
   url?: string;
   error?: string;
+  key?: string;
 };
 
 /**
@@ -41,12 +43,9 @@ export async function uploadProfilePicture(
     const file = formData.get("file") as File;
     const userId = formData.get("userId") as string;
 
-    console.log("Upload attempt:", { fileName: file?.name, userId });
-
     // Validate input
     const validation = profilePictureSchema.safeParse({ file, userId });
     if (!validation.success) {
-      console.error("Validation failed:", validation.error);
       return {
         success: false,
         error: "Invalid input data",
@@ -70,24 +69,21 @@ export async function uploadProfilePicture(
       };
     }
 
-    // Validate file size (5MB limit for images)
-    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    // Validate file size (1MB limit for images)
+    const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
     if (file.size > MAX_IMAGE_SIZE) {
       return {
         success: false,
-        error: "Image size exceeds 5MB limit.",
+        error: "Image size exceeds 1MB limit.",
       };
     }
 
     // Upload file
-    console.log("Starting file upload...");
     const result: UploadResult = await cloudflareUploadService.uploadFile({
       file,
       folder: `profile-pictures/${userId}`,
       filename: `profile-picture-${Date.now()}`,
     });
-
-    console.log("Upload result:", result);
 
     if (!result.success) {
       return {
@@ -102,6 +98,7 @@ export async function uploadProfilePicture(
     return {
       success: true,
       url: result.url,
+      key: result.key,
     };
   } catch (error) {
     console.error("Profile picture upload error:", error);
@@ -134,12 +131,9 @@ export async function uploadCV(formData: FormData): Promise<CVUploadResult> {
     const file = formData.get("file") as File;
     const userId = formData.get("userId") as string;
 
-    console.log("CV upload attempt:", { fileName: file?.name, userId });
-
     // Validate input
     const validation = cvUploadSchema.safeParse({ file, userId });
     if (!validation.success) {
-      console.error("CV validation failed:", validation.error);
       return {
         success: false,
         error: "Invalid input data",
@@ -164,14 +158,11 @@ export async function uploadCV(formData: FormData): Promise<CVUploadResult> {
     }
 
     // Upload file
-    console.log("Starting CV upload...");
     const result: UploadResult = await cloudflareUploadService.uploadFile({
       file,
       folder: `cvs/${userId}`,
       filename: `cv-${Date.now()}.pdf`,
     });
-
-    console.log("CV upload result:", result);
 
     if (!result.success) {
       return {
@@ -186,6 +177,7 @@ export async function uploadCV(formData: FormData): Promise<CVUploadResult> {
     return {
       success: true,
       url: result.url,
+      key: result.key,
     };
   } catch (error) {
     console.error("CV upload error:", error);

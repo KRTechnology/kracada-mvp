@@ -3,10 +3,11 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/common/button";
 import { motion } from "framer-motion";
-import { Upload, FileText, Camera, X, CheckCircle } from "lucide-react";
+import { Upload, Folder, X, CheckCircle } from "lucide-react";
 import {
   uploadProfilePicture,
   uploadCV,
+  deleteUploadedFile,
 } from "@/app/(dashboard)/actions/upload-actions";
 import { toast } from "sonner";
 
@@ -22,7 +23,11 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
   const [profilePictureUrl, setProfilePictureUrl] = useState(
     userData.profilePicture
   );
+  const [profilePictureKey, setProfilePictureKey] = useState<string | null>(
+    null
+  );
   const [cvUrl, setCvUrl] = useState(userData.cv);
+  const [cvKey, setCvKey] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [uploadType, setUploadType] = useState<"profile" | "cv" | null>(null);
 
@@ -30,24 +35,21 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
-    console.log("File selected for profile picture:", file?.name);
     if (!file) return;
 
     setUploadType("profile");
 
     startTransition(async () => {
       try {
-        console.log("Creating FormData for profile picture upload...");
         const formData = new FormData();
         formData.append("file", file);
         formData.append("userId", userData.id);
 
-        console.log("Calling uploadProfilePicture server action...");
         const result = await uploadProfilePicture(formData);
-        console.log("Server action result:", result);
 
         if (result.success && result.url) {
           setProfilePictureUrl(result.url);
+          setProfilePictureKey(result.key || null);
           toast.success("Profile picture uploaded successfully!");
         } else {
           toast.error(result.error || "Failed to upload profile picture");
@@ -66,24 +68,21 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
 
   const handleCVUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    console.log("File selected for CV:", file?.name);
     if (!file) return;
 
     setUploadType("cv");
 
     startTransition(async () => {
       try {
-        console.log("Creating FormData for CV upload...");
         const formData = new FormData();
         formData.append("file", file);
         formData.append("userId", userData.id);
 
-        console.log("Calling uploadCV server action...");
         const result = await uploadCV(formData);
-        console.log("CV server action result:", result);
 
         if (result.success && result.url) {
           setCvUrl(result.url);
+          setCvKey(result.key || null);
           toast.success("CV uploaded successfully!");
         } else {
           toast.error(result.error || "Failed to upload CV");
@@ -100,16 +99,48 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
     event.target.value = "";
   };
 
-  const handleRemoveProfilePicture = () => {
-    setProfilePictureUrl(null);
-    toast.success("Profile picture removed");
-    // TODO: Implement actual deletion from server
+  const handleRemoveProfilePicture = async () => {
+    if (profilePictureKey) {
+      try {
+        const result = await deleteUploadedFile(profilePictureKey);
+        if (result.success) {
+          setProfilePictureUrl(null);
+          setProfilePictureKey(null);
+          toast.success("Profile picture removed successfully");
+        } else {
+          toast.error("Failed to remove profile picture from storage");
+        }
+      } catch (error) {
+        console.error("Delete error:", error);
+        toast.error("An error occurred while removing the file");
+      }
+    } else {
+      setProfilePictureUrl(null);
+      setProfilePictureKey(null);
+      toast.success("Profile picture removed");
+    }
   };
 
-  const handleRemoveCV = () => {
-    setCvUrl(null);
-    toast.success("CV removed");
-    // TODO: Implement actual deletion from server
+  const handleRemoveCV = async () => {
+    if (cvKey) {
+      try {
+        const result = await deleteUploadedFile(cvKey);
+        if (result.success) {
+          setCvUrl(null);
+          setCvKey(null);
+          toast.success("CV removed successfully");
+        } else {
+          toast.error("Failed to remove CV from storage");
+        }
+      } catch (error) {
+        console.error("Delete error:", error);
+        toast.error("An error occurred while removing the file");
+      }
+    } else {
+      setCvUrl(null);
+      setCvKey(null);
+      toast.success("CV removed");
+    }
   };
 
   const isProfilePictureUploading = isPending && uploadType === "profile";
@@ -123,10 +154,10 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
       className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm p-6"
     >
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+        <h2 className="text-xl font-semibold text-slate-600 dark:text-neutral-200 mb-2">
           Profile Picture & CV
         </h2>
-        <p className="text-neutral-600 dark:text-neutral-400">
+        <p className="text-slate-500 dark:text-neutral-100">
           Your profile picture is a quick way for other users to identify you.
         </p>
       </div>
@@ -134,104 +165,117 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Profile Picture Section */}
         <div>
-          <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">
+          <h3 className="text-lg font-medium text-slate-500 dark:text-neutral-100 mb-4">
             Upload your profile picture
           </h3>
 
-          <div className="flex flex-col items-center space-y-4">
-            <div className="relative w-32 h-32 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center border-2 border-dashed border-neutral-300 dark:border-neutral-600 overflow-hidden">
-              {profilePictureUrl ? (
-                <>
-                  <img
-                    src={profilePictureUrl}
-                    alt="Profile"
-                    className="w-full h-full rounded-full object-cover"
+          {/* Profile Picture Upload Container */}
+          <div className="bg-gray-50 rounded-sm p-6 mb-4">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative w-[72px] h-[72px] rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                {profilePictureUrl ? (
+                  <>
+                    <img
+                      src={profilePictureUrl}
+                      alt="Profile"
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                    {/* Remove button overlay */}
+                    <button
+                      onClick={handleRemoveProfilePicture}
+                      className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
+                      disabled={isPending}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </>
+                ) : (
+                  <svg
+                    width="36"
+                    height="29"
+                    viewBox="0 0 72 57"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-9 h-7"
+                  >
+                    <path
+                      d="M72 47.982V57.003H0V48.015C4.18785 42.4184 9.62372 37.876 15.8754 34.7492C22.127 31.6223 29.022 29.9972 36.012 30.003C50.724 30.003 63.792 37.065 72 47.982ZM48.006 12C48.006 15.1826 46.7417 18.2348 44.4913 20.4853C42.2408 22.7357 39.1886 24 36.006 24C32.8234 24 29.7712 22.7357 27.5207 20.4853C25.2703 18.2348 24.006 15.1826 24.006 12C24.006 8.8174 25.2703 5.76515 27.5207 3.51472C29.7712 1.26428 32.8234 0 36.006 0C39.1886 0 42.2408 1.26428 44.4913 3.51472C46.7417 5.76515 48.006 8.8174 48.006 12Z"
+                      fill="#CBD5E1"
+                    />
+                  </svg>
+                )}
+
+                {isProfilePictureUploading && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <label htmlFor="profile-picture-upload">
+                  <Button
+                    variant="default"
+                    className="bg-warm-200 hover:bg-warm-300 text-white cursor-pointer"
+                    disabled={isPending}
+                    onClick={() => {
+                      document
+                        .getElementById("profile-picture-upload")
+                        ?.click();
+                    }}
+                  >
+                    {isProfilePictureUploading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Upload
+                      </>
+                    )}
+                  </Button>
+                  <input
+                    id="profile-picture-upload"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                    onChange={handleProfilePictureUpload}
+                    className="hidden"
+                    disabled={isPending}
                   />
-                  {/* Remove button overlay */}
-                  <button
+                </label>
+
+                {profilePictureUrl && (
+                  <Button
+                    variant="outline"
+                    className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
                     onClick={handleRemoveProfilePicture}
-                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
                     disabled={isPending}
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </>
-              ) : (
-                <Camera className="w-8 h-8 text-neutral-400" />
-              )}
-
-              {isProfilePictureUploading && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                </div>
-              )}
+                    <X className="w-4 h-4 mr-2" />
+                    Remove
+                  </Button>
+                )}
+              </div>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <label htmlFor="profile-picture-upload">
-                <Button
-                  variant="default"
-                  className="bg-warm-200 hover:bg-warm-300 text-white cursor-pointer"
-                  disabled={isPending}
-                  onClick={() => {
-                    console.log("Profile picture upload button clicked");
-                    // Trigger the hidden file input
-                    document.getElementById("profile-picture-upload")?.click();
-                  }}
-                >
-                  {isProfilePictureUploading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload
-                    </>
-                  )}
-                </Button>
-                <input
-                  id="profile-picture-upload"
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-                  onChange={(e) => {
-                    console.log("Profile picture input onChange triggered");
-                    handleProfilePictureUpload(e);
-                  }}
-                  className="hidden"
-                  disabled={isPending}
-                />
-              </label>
-
-              {profilePictureUrl && (
-                <Button
-                  variant="outline"
-                  className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
-                  onClick={handleRemoveProfilePicture}
-                  disabled={isPending}
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Remove
-                </Button>
-              )}
-            </div>
-
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center">
-              Images should be at least 200px x 200px (Max: 5MB)
-              <br />
-              Supported formats: JPEG, PNG, WebP, GIF
-            </p>
           </div>
+
+          {/* Image requirements text - outside the container */}
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            Images should be at least 200px x 200px (Max: 1MB)
+            <br />
+            Supported formats: JPEG, PNG, WebP, GIF
+          </p>
         </div>
 
         {/* CV Upload Section */}
         <div>
-          <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">
+          <h3 className="text-lg font-medium text-slate-500 dark:text-neutral-100 mb-4">
             Upload your CV
           </h3>
 
-          <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-xl p-8 text-center bg-neutral-50 dark:bg-neutral-800/50 relative">
+          <div className="border-2 border-dashed border-slate-300 rounded-sm p-8 text-center bg-white dark:bg-neutral-800/50 relative">
             {cvUrl ? (
               /* CV Uploaded State */
               <div className="flex flex-col items-center space-y-4">
@@ -254,7 +298,7 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
                     className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
                     onClick={() => window.open(cvUrl, "_blank")}
                   >
-                    <FileText className="w-4 h-4 mr-2" />
+                    <Folder className="w-4 h-4 mr-2" />
                     View CV
                   </Button>
 
@@ -272,9 +316,7 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
             ) : (
               /* CV Upload State */
               <div className="flex flex-col items-center space-y-4">
-                <div className="w-16 h-16 rounded-xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center">
-                  <FileText className="w-8 h-8 text-neutral-400" />
-                </div>
+                <Folder className="w-8 h-8 text-neutral-400" />
 
                 <div>
                   <p className="text-neutral-900 dark:text-neutral-100 font-medium mb-1">
@@ -291,8 +333,6 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
                     className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 cursor-pointer"
                     disabled={isPending}
                     onClick={() => {
-                      console.log("CV browse button clicked");
-                      // Trigger the hidden file input
                       document.getElementById("cv-upload")?.click();
                     }}
                   >
@@ -312,10 +352,7 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
                     id="cv-upload"
                     type="file"
                     accept=".pdf,application/pdf"
-                    onChange={(e) => {
-                      console.log("CV input onChange triggered");
-                      handleCVUpload(e);
-                    }}
+                    onChange={handleCVUpload}
                     className="hidden"
                     disabled={isPending}
                   />

@@ -37,30 +37,12 @@ class CloudflareR2UploadService {
 
     // Validate account ID format (should be 32 characters)
     if (!config.accountId || config.accountId.length !== 32) {
-      console.error(
+      throw new Error(
         "Invalid account ID format. Account ID should be 32 characters long."
       );
-      console.log("Current account ID length:", config.accountId?.length);
     }
 
-    // Try different endpoint formats for better compatibility
-    const possibleEndpoints = [
-      `https://${config.accountId}.r2.cloudflarestorage.com`,
-      `https://r2.cloudflarestorage.com`,
-    ];
-
-    const endpoint = possibleEndpoints[0]; // Start with the standard format
-
-    // Log configuration for debugging (without sensitive data)
-    console.log("Initializing R2 client with config:", {
-      accountId: config.accountId,
-      accountIdLength: config.accountId?.length,
-      bucketName: config.bucketName,
-      publicUrl: config.publicUrl,
-      endpoint: endpoint,
-      accessKeyIdLength: config.accessKeyId?.length,
-      secretKeyLength: config.secretAccessKey?.length,
-    });
+    const endpoint = `https://${config.accountId}.r2.cloudflarestorage.com`;
 
     this.s3Client = new S3Client({
       region: "auto",
@@ -216,17 +198,14 @@ function createCloudflareR2UploadService(): CloudflareR2UploadService {
     if (!value) {
       const envVarName = `CLOUDFLARE_R2_${key.toUpperCase()}`;
       missingVars.push(envVarName);
-      console.error(`Missing required environment variable: ${envVarName}`);
     }
   }
 
   if (missingVars.length > 0) {
     const errorMessage = `Missing required environment variables for Cloudflare R2: ${missingVars.join(", ")}. Please add these to your .env.local file.`;
-    console.error(errorMessage);
     throw new Error(errorMessage);
   }
 
-  console.log("Cloudflare R2 service initialized successfully");
   return new CloudflareR2UploadService(requiredEnvVars as CloudflareR2Config);
 }
 
