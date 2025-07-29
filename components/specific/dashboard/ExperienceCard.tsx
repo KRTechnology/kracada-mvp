@@ -266,7 +266,7 @@ export function ExperienceCard({ userData }: ExperienceCardProps) {
         <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <Button
             variant="outline"
-            className="border-warm-200 text-warm-600 hover:bg-warm-50 dark:hover:bg-warm-900/20"
+            className="border-warm-200 dark:border-warm-300 text-warm-600 dark:text-warm-300 hover:bg-warm-50 dark:hover:bg-warm-900/20"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Experience
@@ -285,7 +285,7 @@ export function ExperienceCard({ userData }: ExperienceCardProps) {
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="bg-warm-200 hover:bg-warm-300 text-white"
+            className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>

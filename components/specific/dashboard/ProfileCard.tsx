@@ -219,7 +219,7 @@ export function ProfileCard({ userData }: ProfileCardProps) {
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="bg-warm-200 hover:bg-warm-300 text-white"
+            className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>
