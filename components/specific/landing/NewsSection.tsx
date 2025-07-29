@@ -72,7 +72,7 @@ const NewsSection = () => {
   ];
 
   return (
-    <section className="py-16 lg:py-24" style={{ backgroundColor: "#301000" }}>
+    <section className="py-16 lg:py-24 bg-[#301000] dark:bg-neutral-900">
       <div className="container mx-auto px-4">
         <motion.div
           variants={containerVariants}
@@ -83,22 +83,13 @@ const NewsSection = () => {
           {/* Header Section */}
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-12">
             <motion.div variants={itemVariants} className="mb-8 lg:mb-0">
-              <p
-                className="text-sm font-medium mb-3"
-                style={{ color: "#FFECE8" }}
-              >
+              <p className="text-sm font-medium mb-3 text-[#FFECE8] dark:text-neutral-200">
                 News
               </p>
-              <h2
-                className="text-3xl lg:text-4xl font-bold mb-4"
-                style={{ color: "#FFECE8" }}
-              >
+              <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-[#FFECE8] dark:text-neutral-200">
                 Latest News
               </h2>
-              <p
-                className="text-lg lg:text-xl max-w-md"
-                style={{ color: "#FFE3DE" }}
-              >
+              <p className="text-lg lg:text-xl max-w-md text-[#FFE3DE] dark:text-neutral-100">
                 Catch up with the latest news around you
               </p>
             </motion.div>

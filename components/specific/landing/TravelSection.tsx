@@ -89,7 +89,7 @@ const TravelSection = () => {
   ];
 
   return (
-    <section className="py-16 lg:py-24" style={{ backgroundColor: "#EBE9E9" }}>
+    <section className="py-16 lg:py-24 bg-[#EBE9E9] dark:bg-neutral-800">
       <div className="container mx-auto px-4">
         <motion.div
           variants={containerVariants}
@@ -100,16 +100,10 @@ const TravelSection = () => {
           {/* Header Section */}
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-12">
             <motion.div variants={itemVariants} className="mb-8 lg:mb-0">
-              <p
-                className="text-sm font-medium mb-3"
-                style={{ color: "#7C7573" }}
-              >
+              <p className="text-sm font-medium mb-3 text-[#7C7573] dark:text-neutral-200">
                 Travel & Tourism
               </p>
-              <h2
-                className="text-3xl lg:text-4xl font-bold mb-4"
-                style={{ color: "#7C7573" }}
-              >
+              <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-[#7C7573] dark:text-neutral-200">
                 Travel & Tourism
               </h2>
             </motion.div>

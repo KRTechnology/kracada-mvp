@@ -38,7 +38,7 @@ const HeroContent = () => {
       {/* Main Heading */}
       <motion.h1
         variants={itemVariants}
-        className="text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-800 leading-tight"
+        className="text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-800 dark:text-neutral-200 leading-tight"
       >
         Welcome to{" "}
         <span className="relative inline-flex items-center">
@@ -62,7 +62,7 @@ const HeroContent = () => {
       {/* Subtitle */}
       <motion.p
         variants={itemVariants}
-        className="text-lg md:text-xl text-neutral-500 mt-6 lg:mt-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+        className="text-lg md:text-xl text-neutral-500 dark:text-neutral-100 mt-6 lg:mt-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
       >
         Your one-stop shop for everything that is important to you.
       </motion.p>

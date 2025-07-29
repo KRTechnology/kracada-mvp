@@ -43,16 +43,16 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative"
+      className="bg-white dark:bg-[#121212] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative"
     >
       {/* Heart Icon - positioned on card */}
       <div className="absolute top-4 right-4 z-10">
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          className="bg-white bg-opacity-90 rounded-full p-2 shadow-sm hover:bg-opacity-100 transition-all"
+          className="bg-white dark:bg-neutral-800 bg-opacity-90 dark:bg-opacity-90 rounded-full p-2 shadow-sm hover:bg-opacity-100 dark:hover:bg-opacity-100 transition-all"
         >
-          <Heart className="w-4 h-4 text-neutral-600" />
+          <Heart className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
         </motion.button>
       </div>
 
@@ -75,7 +75,7 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
             {/* Badge */}
             {travel.badge && (
               <div className="absolute bottom-3 left-3">
-                <span className="bg-white px-2 py-1 rounded-full text-xs font-medium text-neutral-800 shadow-sm">
+                <span className="bg-white dark:bg-neutral-800 px-2 py-1 rounded-full text-xs font-medium text-neutral-800 dark:text-neutral-200 shadow-sm">
                   {travel.badge}
                 </span>
               </div>
@@ -87,9 +87,9 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
             <div className="h-full flex flex-col">
               {/* Price */}
               <div className="mb-2">
-                <span className="text-lg font-bold text-neutral-800">
+                <span className="text-lg font-bold text-neutral-800 dark:text-neutral-200">
                   ${travel.price}{" "}
-                  <span className="text-sm font-normal text-neutral-600">
+                  <span className="text-sm font-normal text-neutral-600 dark:text-neutral-400">
                     {travel.currency} total
                   </span>
                 </span>
@@ -101,7 +101,7 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
               </p>
 
               {/* Title */}
-              <h3 className="text-lg font-semibold text-neutral-800 mb-3 leading-tight">
+              <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200 mb-3 leading-tight">
                 {travel.title}
               </h3>
 
@@ -114,21 +114,21 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
                       className={`w-4 h-4 ${
                         star <= Math.floor(travel.rating)
                           ? "text-yellow-400 fill-current"
-                          : "text-gray-300"
+                          : "text-gray-300 dark:text-gray-600"
                       }`}
                     />
                   ))}
                 </div>
-                <span className="text-sm font-medium text-neutral-800 mr-1">
+                <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200 mr-1">
                   {travel.rating}
                 </span>
-                <span className="text-sm text-neutral-600">
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">
                   {travel.reviewCount} reviews
                 </span>
               </div>
 
               {/* Location */}
-              <div className="flex items-center text-neutral-600 mt-auto">
+              <div className="flex items-center text-neutral-600 dark:text-neutral-400 mt-auto">
                 <MapPin className="w-4 h-4 mr-1" />
                 <span className="text-sm">{travel.location}</span>
               </div>
@@ -150,7 +150,7 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
             {/* Badge */}
             {travel.badge && (
               <div className="absolute bottom-3 left-3">
-                <span className="bg-white px-2 py-1 rounded-full text-xs font-medium text-neutral-800 shadow-sm">
+                <span className="bg-white dark:bg-neutral-800 px-2 py-1 rounded-full text-xs font-medium text-neutral-800 dark:text-neutral-200 shadow-sm">
                   {travel.badge}
                 </span>
               </div>
@@ -161,9 +161,9 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
           <div className="p-6 pr-12">
             {/* Price */}
             <div className="mb-2">
-              <span className="text-lg font-bold text-neutral-800">
+              <span className="text-lg font-bold text-neutral-800 dark:text-neutral-200">
                 ${travel.price}{" "}
-                <span className="text-sm font-normal text-neutral-600">
+                <span className="text-sm font-normal text-neutral-600 dark:text-neutral-400">
                   {travel.currency} total
                 </span>
               </span>
@@ -175,7 +175,7 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
             </p>
 
             {/* Title */}
-            <h3 className="text-lg font-semibold text-neutral-800 mb-3 leading-tight">
+            <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200 mb-3 leading-tight">
               {travel.title}
             </h3>
 
@@ -188,21 +188,21 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
                     className={`w-4 h-4 ${
                       star <= Math.floor(travel.rating)
                         ? "text-yellow-400 fill-current"
-                        : "text-gray-300"
+                        : "text-gray-300 dark:text-gray-600"
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-sm font-medium text-neutral-800 mr-1">
+              <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200 mr-1">
                 {travel.rating}
               </span>
-              <span className="text-sm text-neutral-600">
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">
                 {travel.reviewCount} reviews
               </span>
             </div>
 
             {/* Location */}
-            <div className="flex items-center text-neutral-600">
+            <div className="flex items-center text-neutral-600 dark:text-neutral-400">
               <MapPin className="w-4 h-4 mr-1" />
               <span className="text-sm">{travel.location}</span>
             </div>
