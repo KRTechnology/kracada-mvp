@@ -215,8 +215,8 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
 
           {/* Profile Picture Upload Container */}
           <div className="bg-gray-50 dark:bg-[#171717] rounded-sm p-6 mb-4">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative w-[72px] h-[72px] rounded-full bg-gray-100 dark:bg-[#171717] border-2 border-transparent dark:border-[#18212E] flex items-center justify-center overflow-hidden">
+            <div className="flex items-center gap-4">
+              <div className="relative w-[72px] h-[72px] rounded-full bg-gray-100 dark:bg-[#171717] border-2 border-transparent dark:border-[#18212E] flex items-center justify-center overflow-hidden flex-shrink-0">
                 {profilePictureUrl ? (
                   <img
                     src={profilePictureUrl}
@@ -246,11 +246,11 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col gap-3">
                 <label htmlFor="profile-picture-upload">
                   <Button
                     variant="default"
-                    className="bg-warm-200 hover:bg-warm-300 text-white cursor-pointer"
+                    className="bg-warm-200 hover:bg-warm-300 text-white cursor-pointer w-28"
                     disabled={isPending}
                     onClick={() => {
                       document
@@ -283,7 +283,7 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
                 {profilePictureUrl && (
                   <Button
                     variant="outline"
-                    className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+                    className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 w-28"
                     onClick={handleRemoveProfilePicture}
                     disabled={isPending}
                   >
