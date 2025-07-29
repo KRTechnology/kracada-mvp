@@ -218,21 +218,11 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
             <div className="flex flex-col items-center space-y-4">
               <div className="relative w-[72px] h-[72px] rounded-full bg-gray-100 dark:bg-[#171717] border-2 border-transparent dark:border-[#18212E] flex items-center justify-center overflow-hidden">
                 {profilePictureUrl ? (
-                  <>
-                    <img
-                      src={profilePictureUrl}
-                      alt="Profile"
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                    {/* Remove button overlay */}
-                    <button
-                      onClick={handleRemoveProfilePicture}
-                      className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
-                      disabled={isPending}
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </>
+                  <img
+                    src={profilePictureUrl}
+                    alt="Profile"
+                    className="w-full h-full rounded-full object-cover"
+                  />
                 ) : (
                   <svg
                     width="36"
