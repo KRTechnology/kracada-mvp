@@ -195,7 +195,7 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm p-6"
+      className="bg-white dark:bg-[#121212] rounded-2xl shadow-sm p-6"
     >
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-slate-600 dark:text-neutral-200 mb-2">
@@ -214,9 +214,9 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
           </h3>
 
           {/* Profile Picture Upload Container */}
-          <div className="bg-gray-50 rounded-sm p-6 mb-4">
+          <div className="bg-gray-50 dark:bg-[#171717] rounded-sm p-6 mb-4">
             <div className="flex flex-col items-center space-y-4">
-              <div className="relative w-[72px] h-[72px] rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+              <div className="relative w-[72px] h-[72px] rounded-full bg-gray-100 dark:bg-[#171717] border-2 border-transparent dark:border-[#18212E] flex items-center justify-center overflow-hidden">
                 {profilePictureUrl ? (
                   <>
                     <img
@@ -306,7 +306,7 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
           </div>
 
           {/* Image requirements text - outside the container */}
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-neutral-500 dark:text-neutral-100">
             Images should be at least 200px x 200px (Max: 1MB)
             <br />
             Supported formats: JPEG, PNG, WebP, GIF
@@ -319,7 +319,7 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
             Upload your CV
           </h3>
 
-          <div className="border-2 border-dashed border-slate-300 rounded-sm p-8 text-center bg-white dark:bg-neutral-800/50 relative">
+          <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-sm p-8 text-center bg-white dark:bg-[#171717] relative">
             {cvUrl ? (
               /* CV Uploaded State */
               <div className="flex flex-col items-center space-y-4">
