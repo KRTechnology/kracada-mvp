@@ -236,21 +236,33 @@ const Header = () => {
                       <div className="p-2">
                         <button
                           onClick={() => handleThemeChange("light")}
-                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-md"
+                          className={`w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-md transition-colors ${
+                            theme === "light"
+                              ? "text-warm-200 dark:text-warm-200"
+                              : "text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200"
+                          }`}
                         >
                           <Sun className="w-4 h-4" />
                           <span>Light</span>
                         </button>
                         <button
                           onClick={() => handleThemeChange("dark")}
-                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-md"
+                          className={`w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-md transition-colors ${
+                            theme === "dark"
+                              ? "text-warm-200 dark:text-warm-200"
+                              : "text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200"
+                          }`}
                         >
                           <Moon className="w-4 h-4" />
                           <span>Dark</span>
                         </button>
                         <button
                           onClick={() => handleThemeChange("system")}
-                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-md"
+                          className={`w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-md transition-colors ${
+                            theme === "system"
+                              ? "text-warm-200 dark:text-warm-200"
+                              : "text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200"
+                          }`}
                         >
                           <Monitor className="w-4 h-4" />
                           <span>System</span>
@@ -327,14 +339,14 @@ const Header = () => {
                         <div className="space-y-1">
                           <Link
                             href="/dashboard"
-                            className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors"
+                            className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors"
                             onClick={() => setIsProfileMenuOpen(false)}
                           >
                             <CircleUserRound className="w-5 h-5" />
                             <span>View profile</span>
                           </Link>
 
-                          <div className="flex items-center justify-between px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors">
+                          <div className="flex items-center justify-between px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors">
                             <div className="flex items-center space-x-3">
                               {theme === "dark" ? (
                                 <Moon className="w-5 h-5" />
@@ -361,14 +373,14 @@ const Header = () => {
 
                           <Link
                             href="/settings"
-                            className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors"
+                            className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors"
                             onClick={() => setIsProfileMenuOpen(false)}
                           >
                             <Settings className="w-5 h-5" />
                             <span>Settings</span>
                           </Link>
 
-                          <div className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors">
+                          <div className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors">
                             <div className="w-5 h-5 rounded-full border-2 border-neutral-400 flex items-center justify-center">
                               <span className="text-xs">?</span>
                             </div>
@@ -378,7 +390,7 @@ const Header = () => {
                           <button
                             onClick={handleSignOut}
                             disabled={isSigningOut}
-                            className="w-full flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-colors"
+                            className="w-full flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors"
                           >
                             {isSigningOut ? (
                               <Spinner size="sm" className="w-5 h-5" />
