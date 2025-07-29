@@ -37,6 +37,33 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Client-side validation
+    const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast.error(
+        "Image size exceeds 1MB limit. Please choose a smaller image."
+      );
+      event.target.value = "";
+      return;
+    }
+
+    // Validate file type
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      toast.error(
+        "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF)."
+      );
+      event.target.value = "";
+      return;
+    }
+
     setUploadType("profile");
 
     startTransition(async () => {
@@ -69,6 +96,23 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
   const handleCVUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    // Client-side validation
+    const MAX_CV_SIZE = 1 * 1024 * 1024; // 10MB
+    if (file.size > MAX_CV_SIZE) {
+      toast.error(
+        "CV file size exceeds 1MB limit. Please choose a smaller file."
+      );
+      event.target.value = "";
+      return;
+    }
+
+    // Validate file type (PDF only)
+    if (file.type !== "application/pdf") {
+      toast.error("Invalid file type. Please upload a PDF file.");
+      event.target.value = "";
+      return;
+    }
 
     setUploadType("cv");
 
@@ -323,7 +367,7 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
                     Drop your CV or click to upload
                   </p>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                    Supported file type: PDF (Max: 10MB)
+                    Supported file type: PDF (Max: 1MB)
                   </p>
                 </div>
 
