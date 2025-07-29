@@ -65,6 +65,9 @@ module.exports = {
           800: "#1F2937",
           900: "#111827",
         },
+        dark: {
+          DEFAULT: "#0D0D0D",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

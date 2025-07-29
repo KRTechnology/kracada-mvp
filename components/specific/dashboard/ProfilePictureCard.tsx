@@ -250,7 +250,7 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
                 <label htmlFor="profile-picture-upload">
                   <Button
                     variant="default"
-                    className="bg-warm-200 hover:bg-warm-300 text-white cursor-pointer w-28"
+                    className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark cursor-pointer w-28"
                     disabled={isPending}
                     onClick={() => {
                       document

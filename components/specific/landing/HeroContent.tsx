@@ -76,7 +76,7 @@ const HeroContent = () => {
               boxShadow: "0 10px 30px rgba(255, 111, 0, 0.3)",
             }}
             whileTap={{ scale: 0.95 }}
-            className="bg-warm-200 hover:bg-warm-300 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center"
+            className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center"
             style={{
               width: "130px",
               height: "48px",

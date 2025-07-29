@@ -113,7 +113,7 @@ const TravelSection = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-warm-200 hover:bg-warm-300 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300"
+                className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark px-6 py-3 rounded-xl font-semibold transition-all duration-300"
               >
                 Go to travel & tourism
               </motion.button>
@@ -135,7 +135,7 @@ const TravelSection = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full bg-warm-200 hover:bg-warm-300 text-white py-4 rounded-xl font-semibold transition-all duration-300"
+              className="w-full bg-warm-200 hover:bg-warm-300 text-white dark:text-dark py-4 rounded-xl font-semibold transition-all duration-300"
             >
               Go to travel & tourism
             </motion.button>
