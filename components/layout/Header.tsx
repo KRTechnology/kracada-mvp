@@ -1,6 +1,5 @@
 "use client";
 
-import { signOutAction } from "@/app/(auth)/actions";
 import { Logo } from "@/components/common/Logo";
 import { Spinner } from "@/components/common/spinner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -19,7 +18,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 
 const Header = () => {
@@ -42,6 +41,15 @@ const Header = () => {
   const isLoginPage = pathname === "/login";
   const isSignupPage = pathname === "/signup";
   const isDashboardPage = pathname.startsWith("/dashboard");
+
+  // Monitor session changes and close menus when unauthenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      setIsProfileMenuOpen(false);
+      setIsMenuOpen(false);
+      setIsDarkModeMenuOpen(false);
+    }
+  }, [status]);
 
   // Click outside effect
   useEffect(() => {
@@ -87,13 +95,11 @@ const Header = () => {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
-      const result = await signOutAction();
+      await signOut({ callbackUrl: "/" });
 
-      if (result.success) {
-        setIsProfileMenuOpen(false);
-        setIsMenuOpen(false);
-        router.push("/");
-      }
+      // Close menus
+      setIsProfileMenuOpen(false);
+      setIsMenuOpen(false);
     } catch (error) {
       console.error("Sign out error:", error);
     } finally {

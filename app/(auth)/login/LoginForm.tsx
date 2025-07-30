@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { signIn } from "next-auth/react";
 
 import { Button } from "@/components/common/button";
 import { Checkbox } from "@/components/common/checkbox";
@@ -21,7 +22,12 @@ import {
   FormMessage,
 } from "@/components/common/form";
 import { Spinner } from "@/components/common/spinner";
-import { loginAction, type LoginFormData } from "../actions";
+
+type LoginFormData = {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+};
 
 export default function LoginForm() {
   const router = useRouter();
@@ -47,15 +53,18 @@ export default function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      const result = await loginAction(values);
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+      });
 
-      if (result.success) {
-        toast.success(result.message);
-        // Redirect to dashboard on successful login
+      if (result?.error) {
+        toast.error("Invalid email or password");
+      } else {
+        toast.success("Login successful");
         router.push("/dashboard");
         router.refresh();
-      } else {
-        toast.error(result.message);
       }
     } catch (error) {
       toast.error("An unexpected error occurred during login");

@@ -335,11 +335,13 @@ export async function requestVerificationEmailAction(
 
 // Sign out action
 export async function signOutAction() {
-  // try {
-  await signOut();
-  return { success: true };
-  // } catch (error) {
-  // console.error("Sign out error:", error);
-  // return { success: false, message: "Failed to sign out" };
-  // }
+  try {
+    await signOut({
+      redirect: false,
+    });
+    return { success: true, message: "Signed out successfully" };
+  } catch (error) {
+    console.error("Sign out error:", error);
+    return { success: false, message: "Failed to sign out" };
+  }
 }
