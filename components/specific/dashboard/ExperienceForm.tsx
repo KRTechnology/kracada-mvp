@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { usePreventFormSubmit } from "@/lib/hooks/usePreventFormSubmit";
 
 // Form validation schema
 const experienceFormSchema = z
@@ -86,6 +87,8 @@ export function ExperienceForm({
 }: ExperienceFormProps) {
   const [newSkill, setNewSkill] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  const { preventSubmit } = usePreventFormSubmit();
 
   const {
     register,
@@ -476,11 +479,7 @@ export function ExperienceForm({
                     {skill}
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        removeSkill(skill);
-                      }}
+                      onClick={preventSubmit(() => removeSkill(skill))}
                       className="ml-1 hover:text-warm-900 dark:hover:text-warm-100"
                     >
                       <X className="w-3 h-3" />
@@ -516,11 +515,7 @@ export function ExperienceForm({
               />
               <Button
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  addSkill();
-                }}
+                onClick={preventSubmit(addSkill)}
                 variant="outline"
                 size="sm"
                 className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"

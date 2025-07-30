@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { usePreventFormSubmit } from "@/lib/hooks/usePreventFormSubmit";
 
 // Form validation schema
 const skillsPreferencesSchema = z.object({
@@ -83,6 +84,8 @@ export function ExperienceCard({
 
   const [newSkill, setNewSkill] = useState("");
   const [newJobPreference, setNewJobPreference] = useState("");
+
+  const { preventSubmit } = usePreventFormSubmit();
 
   const addSkill = () => {
     if (newSkill.trim() && !watchedSkills.includes(newSkill.trim())) {
@@ -316,11 +319,7 @@ export function ExperienceCard({
                         {skill}
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            removeSkill(skill);
-                          }}
+                          onClick={preventSubmit(() => removeSkill(skill))}
                           className="ml-1 hover:text-warm-900 dark:hover:text-warm-100"
                         >
                           <X className="w-3 h-3" />
@@ -356,11 +355,7 @@ export function ExperienceCard({
                   />
                   <Button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      addSkill();
-                    }}
+                    onClick={preventSubmit(addSkill)}
                     variant="outline"
                     size="sm"
                     className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
@@ -396,11 +391,9 @@ export function ExperienceCard({
                         {preference}
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            removeJobPreference(preference);
-                          }}
+                          onClick={preventSubmit(() =>
+                            removeJobPreference(preference)
+                          )}
                           className="ml-1 hover:text-blue-900 dark:hover:text-blue-100"
                         >
                           <X className="w-3 h-3" />
@@ -439,11 +432,7 @@ export function ExperienceCard({
                   />
                   <Button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      addJobPreference();
-                    }}
+                    onClick={preventSubmit(addJobPreference)}
                     variant="outline"
                     size="sm"
                     className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
@@ -462,11 +451,7 @@ export function ExperienceCard({
                 </Label>
                 <Button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleAddExperience();
-                  }}
+                  onClick={preventSubmit(handleAddExperience)}
                   variant="outline"
                   className="border-warm-200 dark:border-warm-300 text-warm-600 dark:text-warm-300 hover:bg-warm-50 dark:hover:bg-warm-900/20"
                 >
@@ -521,11 +506,9 @@ export function ExperienceCard({
                         <div className="flex gap-2 ml-4">
                           <Button
                             type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleEditExperience(experience);
-                            }}
+                            onClick={preventSubmit(() =>
+                              handleEditExperience(experience)
+                            )}
                             variant="outline"
                             size="sm"
                             className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
@@ -534,11 +517,9 @@ export function ExperienceCard({
                           </Button>
                           <Button
                             type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleDeleteExperience(experience.id);
-                            }}
+                            onClick={preventSubmit(() =>
+                              handleDeleteExperience(experience.id)
+                            )}
                             variant="outline"
                             size="sm"
                             className="border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
