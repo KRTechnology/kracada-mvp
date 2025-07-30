@@ -7,7 +7,7 @@ export default async function ResetPasswordPage({
 }: {
   searchParams: Promise<{ token?: string }>;
 }) {
-  const pageParams = await searchParams
+  const pageParams = await searchParams;
 
   if (!pageParams.token) {
     redirect("/login");
@@ -19,7 +19,7 @@ export default async function ResetPasswordPage({
       <AuthSidebar heading="Your one stop shop for everything that is important to you" />
 
       {/* Right side: reset password form */}
-      <div className="w-full md:w-2/5 flex flex-col justify-center items-center px-8 py-16 bg-white">
+      <div className="w-full md:w-2/5 flex flex-col justify-center items-center px-8 py-16 bg-white dark:bg-neutral-900">
         <div className="w-full md:w-[68%]">
           <ResetPasswordForm token={pageParams.token} />
         </div>

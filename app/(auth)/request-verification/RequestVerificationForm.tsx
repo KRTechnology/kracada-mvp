@@ -65,8 +65,10 @@ export default function RequestVerificationForm() {
   return (
     <div className="w-full space-y-6">
       <div className="text-left">
-        <h1 className="text-3xl font-bold">Verify your email</h1>
-        <p className="text-gray-500 mt-2">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-200">
+          Verify your email
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">
           Enter your email address and we'll send you a verification link.
         </p>
       </div>
@@ -78,11 +80,13 @@ export default function RequestVerificationForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                  Email
+                </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="example@domain.com"
-                    className="focus-visible:ring-warm-200"
+                    className="focus-visible:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
                     disabled={isSubmitting}
                     {...field}
                   />
@@ -96,8 +100,8 @@ export default function RequestVerificationForm() {
             type="submit"
             className={`w-full flex justify-center items-center ${
               isFormValid
-                ? "bg-warm-200 hover:bg-warm-300"
-                : "bg-[#E2E8F0] text-[#64748B] cursor-not-allowed"
+                ? "bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
+                : "bg-[#E2E8F0] dark:bg-neutral-700 text-[#64748B] dark:text-neutral-400 cursor-not-allowed"
             }`}
             disabled={isSubmitting || !isFormValid}
           >
