@@ -492,36 +492,58 @@ export function ExperienceForm({
 
           {/* Skills Input */}
           <div className="space-y-3">
-            <Select value={newSkill} onValueChange={setNewSkill}>
-              <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
-                <SelectValue placeholder="Input your skills" />
-              </SelectTrigger>
-              <SelectContent>
-                {predefinedSkills.map((skill) => (
-                  <SelectItem key={skill} value={skill}>
-                    {skill}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex gap-2">
-              <Input
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                placeholder="Or type a custom skill"
-                className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
-                onKeyPress={(e) => e.key === "Enter" && addSkill()}
-              />
-              <Button
-                type="button"
-                onClick={preventSubmit(addSkill)}
-                variant="outline"
-                size="sm"
-                className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+            <div>
+              <Label className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 block">
+                Select from common skills:
+              </Label>
+              <Select
+                value=""
+                onValueChange={(value) => {
+                  if (value && !watchedSkills.includes(value)) {
+                    setValue("skills", [...watchedSkills, value], {
+                      shouldDirty: true,
+                    });
+                  }
+                }}
               >
-                <Plus className="w-4 h-4" />
-              </Button>
+                <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
+                  <SelectValue placeholder="Choose a skill to add" />
+                </SelectTrigger>
+                <SelectContent>
+                  {predefinedSkills
+                    .filter((skill) => !watchedSkills.includes(skill))
+                    .map((skill) => (
+                      <SelectItem key={skill} value={skill}>
+                        {skill}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 block">
+                Or add a custom skill:
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  placeholder="Type your custom skill"
+                  className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
+                  onKeyPress={(e) => e.key === "Enter" && addSkill()}
+                />
+                <Button
+                  type="button"
+                  onClick={preventSubmit(addSkill)}
+                  variant="outline"
+                  size="sm"
+                  className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+                  disabled={!newSkill.trim()}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

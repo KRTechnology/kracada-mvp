@@ -23,6 +23,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { usePreventFormSubmit } from "@/lib/hooks/usePreventFormSubmit";
+import { SkillTag } from "@/components/common/SkillTag";
 
 // Form validation schema
 const skillsPreferencesSchema = z.object({
@@ -332,36 +333,58 @@ export function ExperienceCard({
 
               {/* Skills Input */}
               <div className="space-y-3">
-                <Select value={newSkill} onValueChange={setNewSkill}>
-                  <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
-                    <SelectValue placeholder="Input your skills" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {predefinedSkills.map((skill) => (
-                      <SelectItem key={skill} value={skill}>
-                        {skill}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <div className="flex gap-2">
-                  <Input
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    placeholder="Or type a custom skill"
-                    className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
-                    onKeyPress={(e) => e.key === "Enter" && addSkill()}
-                  />
-                  <Button
-                    type="button"
-                    onClick={preventSubmit(addSkill)}
-                    variant="outline"
-                    size="sm"
-                    className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+                <div>
+                  <Label className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 block">
+                    Select from common skills:
+                  </Label>
+                  <Select
+                    value=""
+                    onValueChange={(value) => {
+                      if (value && !watchedSkills.includes(value)) {
+                        setValue("skills", [...watchedSkills, value], {
+                          shouldDirty: true,
+                        });
+                      }
+                    }}
                   >
-                    <Plus className="w-4 h-4" />
-                  </Button>
+                    <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
+                      <SelectValue placeholder="Choose a skill to add" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {predefinedSkills
+                        .filter((skill) => !watchedSkills.includes(skill))
+                        .map((skill) => (
+                          <SelectItem key={skill} value={skill}>
+                            {skill}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 block">
+                    Or add a custom skill:
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      placeholder="Type your custom skill"
+                      className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
+                      onKeyPress={(e) => e.key === "Enter" && addSkill()}
+                    />
+                    <Button
+                      type="button"
+                      onClick={preventSubmit(addSkill)}
+                      variant="outline"
+                      size="sm"
+                      className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+                      disabled={!newSkill.trim()}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
@@ -406,39 +429,65 @@ export function ExperienceCard({
 
               {/* Job Preferences Input */}
               <div className="space-y-3">
-                <Select
-                  value={newJobPreference}
-                  onValueChange={setNewJobPreference}
-                >
-                  <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
-                    <SelectValue placeholder="Input your job preferences" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {predefinedJobPreferences.map((preference) => (
-                      <SelectItem key={preference} value={preference}>
-                        {preference}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <div className="flex gap-2">
-                  <Input
-                    value={newJobPreference}
-                    onChange={(e) => setNewJobPreference(e.target.value)}
-                    placeholder="Or type a custom preference"
-                    className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
-                    onKeyPress={(e) => e.key === "Enter" && addJobPreference()}
-                  />
-                  <Button
-                    type="button"
-                    onClick={preventSubmit(addJobPreference)}
-                    variant="outline"
-                    size="sm"
-                    className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+                <div>
+                  <Label className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 block">
+                    Select from common preferences:
+                  </Label>
+                  <Select
+                    value=""
+                    onValueChange={(value) => {
+                      if (value && !watchedJobPreferences.includes(value)) {
+                        setValue(
+                          "jobPreferences",
+                          [...watchedJobPreferences, value],
+                          { shouldDirty: true }
+                        );
+                      }
+                    }}
                   >
-                    <Plus className="w-4 h-4" />
-                  </Button>
+                    <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
+                      <SelectValue placeholder="Choose a preference to add" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {predefinedJobPreferences
+                        .filter(
+                          (preference) =>
+                            !watchedJobPreferences.includes(preference)
+                        )
+                        .map((preference) => (
+                          <SelectItem key={preference} value={preference}>
+                            {preference}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 block">
+                    Or add a custom preference:
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newJobPreference}
+                      onChange={(e) => setNewJobPreference(e.target.value)}
+                      placeholder="Type your custom preference"
+                      className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && addJobPreference()
+                      }
+                    />
+                    <Button
+                      type="button"
+                      onClick={preventSubmit(addJobPreference)}
+                      variant="outline"
+                      size="sm"
+                      className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+                      disabled={!newJobPreference.trim()}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -476,29 +525,24 @@ export function ExperienceCard({
                           <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
                             {experience.jobTitle}
                           </h4>
-                          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                          <p className="text-sm text-neutral-600 dark:text-neutral-200">
                             {experience.company} • {experience.employmentType}
                           </p>
-                          <p className="text-sm text-neutral-500 dark:text-neutral-500">
+                          <p className="text-sm text-neutral-500 dark:text-neutral-200">
                             {experience.startMonth} {experience.startYear} -{" "}
                             {experience.currentlyWorking
                               ? "Present"
                               : `${experience.endMonth} ${experience.endYear}`}
                           </p>
                           {experience.description && (
-                            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
+                            <p className="text-sm text-neutral-600 dark:text-neutral-200 mt-2">
                               {experience.description}
                             </p>
                           )}
                           {experience.skills.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                               {experience.skills.map((skill) => (
-                                <span
-                                  key={skill}
-                                  className="px-2 py-1 bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded text-xs"
-                                >
-                                  {skill}
-                                </span>
+                                <SkillTag key={skill}>{skill}</SkillTag>
                               ))}
                             </div>
                           )}
