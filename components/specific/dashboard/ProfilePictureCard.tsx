@@ -9,6 +9,7 @@ import {
   uploadCV,
   deleteUploadedFile,
 } from "@/app/(dashboard)/actions/upload-actions";
+import { updateFileUploadsAction } from "@/app/(dashboard)/actions/profile-actions";
 import { toast } from "sonner";
 
 interface ProfilePictureCardProps {
@@ -77,6 +78,10 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
         if (result.success && result.url) {
           setProfilePictureUrl(result.url);
           setProfilePictureKey(result.key || null);
+
+          // Update database with new profile picture URL
+          await updateFileUploadsAction({ profilePicture: result.url });
+
           toast.success("Profile picture uploaded successfully!");
         } else {
           toast.error(result.error || "Failed to upload profile picture");
@@ -98,7 +103,7 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
     if (!file) return;
 
     // Client-side validation
-    const MAX_CV_SIZE = 1 * 1024 * 1024; // 10MB
+    const MAX_CV_SIZE = 1 * 1024 * 1024; // 1MB
     if (file.size > MAX_CV_SIZE) {
       toast.error(
         "CV file size exceeds 1MB limit. Please choose a smaller file."
@@ -127,6 +132,10 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
         if (result.success && result.url) {
           setCvUrl(result.url);
           setCvKey(result.key || null);
+
+          // Update database with new CV URL
+          await updateFileUploadsAction({ cv: result.url });
+
           toast.success("CV uploaded successfully!");
         } else {
           toast.error(result.error || "Failed to upload CV");
@@ -150,6 +159,10 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
         if (result.success) {
           setProfilePictureUrl(null);
           setProfilePictureKey(null);
+
+          // Update database to remove profile picture URL
+          await updateFileUploadsAction({ profilePicture: null });
+
           toast.success("Profile picture removed successfully");
         } else {
           toast.error("Failed to remove profile picture from storage");
@@ -161,6 +174,10 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
     } else {
       setProfilePictureUrl(null);
       setProfilePictureKey(null);
+
+      // Update database to remove profile picture URL
+      await updateFileUploadsAction({ profilePicture: null });
+
       toast.success("Profile picture removed");
     }
   };
@@ -172,6 +189,10 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
         if (result.success) {
           setCvUrl(null);
           setCvKey(null);
+
+          // Update database to remove CV URL
+          await updateFileUploadsAction({ cv: null });
+
           toast.success("CV removed successfully");
         } else {
           toast.error("Failed to remove CV from storage");
@@ -183,6 +204,10 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
     } else {
       setCvUrl(null);
       setCvKey(null);
+
+      // Update database to remove CV URL
+      await updateFileUploadsAction({ cv: null });
+
       toast.success("CV removed");
     }
   };

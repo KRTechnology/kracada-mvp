@@ -11,17 +11,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/common/select";
-import { motion } from "framer-motion";
-import { Plus, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, X, Edit, Trash2 } from "lucide-react";
+import {
+  updateSkillsPreferencesAction,
+  deleteExperienceAction,
+} from "@/app/(dashboard)/actions/profile-actions";
+import { ExperienceForm } from "./ExperienceForm";
+import { toast } from "sonner";
 
 interface ExperienceCardProps {
   userData: {
-    skills?: string[];
-    jobPreferences?: string[];
+    id: string;
+    skills: string[];
+    jobPreferences: string[];
   };
+  experiences: Array<{
+    id: string;
+    jobTitle: string;
+    employmentType: string;
+    company: string;
+    currentlyWorking: boolean;
+    startMonth: string | null;
+    startYear: string | null;
+    endMonth: string | null;
+    endYear: string | null;
+    description: string | null;
+    skills: string[];
+  }>;
+  onExperiencesUpdate: (experiences: any[]) => void;
 }
 
-export function ExperienceCard({ userData }: ExperienceCardProps) {
+export function ExperienceCard({
+  userData,
+  experiences,
+  onExperiencesUpdate,
+}: ExperienceCardProps) {
   const [skills, setSkills] = useState<string[]>(userData.skills || []);
   const [jobPreferences, setJobPreferences] = useState<string[]>(
     userData.jobPreferences || []
@@ -29,6 +54,8 @@ export function ExperienceCard({ userData }: ExperienceCardProps) {
   const [newSkill, setNewSkill] = useState("");
   const [newJobPreference, setNewJobPreference] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [showExperienceForm, setShowExperienceForm] = useState(false);
+  const [editingExperience, setEditingExperience] = useState<any>(null);
 
   const addSkill = () => {
     if (newSkill.trim() && !skills.includes(newSkill.trim())) {
@@ -57,12 +84,25 @@ export function ExperienceCard({ userData }: ExperienceCardProps) {
     );
   };
 
-  const handleSave = async () => {
+  const handleSaveSkillsPreferences = async () => {
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const result = await updateSkillsPreferencesAction({
+        skills,
+        jobPreferences,
+      });
+
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
       setIsSaving(false);
-    }, 1500);
+    }
   };
 
   const handleCancel = () => {
@@ -70,6 +110,46 @@ export function ExperienceCard({ userData }: ExperienceCardProps) {
     setJobPreferences(userData.jobPreferences || []);
     setNewSkill("");
     setNewJobPreference("");
+  };
+
+  const handleAddExperience = () => {
+    setEditingExperience(null);
+    setShowExperienceForm(true);
+  };
+
+  const handleEditExperience = (experience: any) => {
+    setEditingExperience(experience);
+    setShowExperienceForm(true);
+  };
+
+  const handleDeleteExperience = async (experienceId: string) => {
+    try {
+      const result = await deleteExperienceAction(experienceId);
+      if (result.success) {
+        const updatedExperiences = experiences.filter(
+          (exp) => exp.id !== experienceId
+        );
+        onExperiencesUpdate(updatedExperiences);
+        toast.success("Experience deleted successfully");
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("An unexpected error occurred");
+    }
+  };
+
+  const handleExperienceFormSave = () => {
+    setShowExperienceForm(false);
+    setEditingExperience(null);
+    // Refresh experiences from server
+    // This will be handled by the parent component
+  };
+
+  const handleExperienceFormCancel = () => {
+    setShowExperienceForm(false);
+    setEditingExperience(null);
   };
 
   const predefinedSkills = [
@@ -262,15 +342,97 @@ export function ExperienceCard({ userData }: ExperienceCardProps) {
           </div>
         </div>
 
-        {/* Add Experience Section */}
-        <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
-          <Button
-            variant="outline"
-            className="border-warm-200 dark:border-warm-300 text-warm-600 dark:text-warm-300 hover:bg-warm-50 dark:hover:bg-warm-900/20"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Experience
-          </Button>
+        {/* Experiences Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label className="text-neutral-700 dark:text-neutral-300 text-base">
+              Work Experience
+            </Label>
+            <Button
+              onClick={handleAddExperience}
+              variant="outline"
+              className="border-warm-200 dark:border-warm-300 text-warm-600 dark:text-warm-300 hover:bg-warm-50 dark:hover:bg-warm-900/20"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Experience
+            </Button>
+          </div>
+
+          {/* Experience List */}
+          {experiences.length > 0 && (
+            <div className="space-y-4">
+              {experiences.map((experience) => (
+                <motion.div
+                  key={experience.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
+                        {experience.jobTitle}
+                      </h4>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                        {experience.company} • {experience.employmentType}
+                      </p>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-500">
+                        {experience.startMonth} {experience.startYear} -{" "}
+                        {experience.currentlyWorking
+                          ? "Present"
+                          : `${experience.endMonth} ${experience.endYear}`}
+                      </p>
+                      {experience.description && (
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
+                          {experience.description}
+                        </p>
+                      )}
+                      {experience.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {experience.skills.map((skill) => (
+                            <span
+                              key={skill}
+                              className="px-2 py-1 bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded text-xs"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <Button
+                        onClick={() => handleEditExperience(experience)}
+                        variant="outline"
+                        size="sm"
+                        className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteExperience(experience.id)}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {experiences.length === 0 && (
+            <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
+              <p>No work experience added yet.</p>
+              <p className="text-sm mt-1">
+                Click "Add Experience" to get started.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -283,7 +445,7 @@ export function ExperienceCard({ userData }: ExperienceCardProps) {
             Cancel
           </Button>
           <Button
-            onClick={handleSave}
+            onClick={handleSaveSkillsPreferences}
             disabled={isSaving}
             className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
           >
@@ -291,6 +453,29 @@ export function ExperienceCard({ userData }: ExperienceCardProps) {
           </Button>
         </div>
       </div>
+
+      {/* Experience Form Modal */}
+      <AnimatePresence>
+        {showExperienceForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={(e) =>
+              e.target === e.currentTarget && handleExperienceFormCancel()
+            }
+          >
+            <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <ExperienceForm
+                experience={editingExperience}
+                onSave={handleExperienceFormSave}
+                onCancel={handleExperienceFormCancel}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

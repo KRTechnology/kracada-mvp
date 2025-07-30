@@ -1,0 +1,360 @@
+"use server";
+
+import { db } from "@/lib/db/drizzle";
+import { users, experiences } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { auth } from "@/auth";
+import { revalidatePath } from "next/cache";
+
+// Schema for profile update validation
+const profileUpdateSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().optional(),
+  location: z.string().optional(),
+  bio: z.string().optional(),
+  yearsOfExperience: z.string().optional(),
+});
+
+// Schema for skills and job preferences update
+const skillsPreferencesSchema = z.object({
+  skills: z.array(z.string()).optional(),
+  jobPreferences: z.array(z.string()).optional(),
+});
+
+// Schema for experience validation
+const experienceSchema = z.object({
+  jobTitle: z.string().min(1, "Job title is required"),
+  employmentType: z.enum([
+    "Full-time",
+    "Part-time",
+    "Contract",
+    "Freelance",
+    "Internship",
+    "Temporary",
+  ]),
+  company: z.string().min(1, "Company is required"),
+  currentlyWorking: z.boolean().default(false),
+  startMonth: z.string().optional(),
+  startYear: z.string().optional(),
+  endMonth: z.string().optional(),
+  endYear: z.string().optional(),
+  description: z.string().optional(),
+  skills: z.array(z.string()).optional(),
+});
+
+// Schema for experience update (includes id)
+const experienceUpdateSchema = experienceSchema.extend({
+  id: z.string().optional(),
+});
+
+export type ProfileUpdateData = z.infer<typeof profileUpdateSchema>;
+export type SkillsPreferencesData = z.infer<typeof skillsPreferencesSchema>;
+export type ExperienceData = z.infer<typeof experienceSchema>;
+export type ExperienceUpdateData = z.infer<typeof experienceUpdateSchema>;
+
+// Get current user
+async function getCurrentUser() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Not authenticated");
+  }
+  return session.user.id;
+}
+
+// Update user profile
+export async function updateProfileAction(data: ProfileUpdateData) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Validate the data
+    const validatedData = profileUpdateSchema.parse(data);
+
+    // Update the user profile
+    await db
+      .update(users)
+      .set({
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email,
+        phone: validatedData.phone || null,
+        location: validatedData.location || null,
+        bio: validatedData.bio || null,
+        yearsOfExperience: validatedData.yearsOfExperience
+          ? parseInt(validatedData.yearsOfExperience)
+          : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Profile updated successfully" };
+  } catch (error) {
+    console.error("Profile update error:", error);
+
+    if (error instanceof z.ZodError) {
+      return { success: false, message: error.errors[0].message };
+    }
+
+    return { success: false, message: "Failed to update profile" };
+  }
+}
+
+// Update skills and job preferences
+export async function updateSkillsPreferencesAction(
+  data: SkillsPreferencesData
+) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Validate the data
+    const validatedData = skillsPreferencesSchema.parse(data);
+
+    // Update the user skills and preferences
+    await db
+      .update(users)
+      .set({
+        skills: validatedData.skills
+          ? JSON.stringify(validatedData.skills)
+          : null,
+        jobPreferences: validatedData.jobPreferences
+          ? JSON.stringify(validatedData.jobPreferences)
+          : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/dashboard");
+    return {
+      success: true,
+      message: "Skills and preferences updated successfully",
+    };
+  } catch (error) {
+    console.error("Skills preferences update error:", error);
+
+    if (error instanceof z.ZodError) {
+      return { success: false, message: error.errors[0].message };
+    }
+
+    return {
+      success: false,
+      message: "Failed to update skills and preferences",
+    };
+  }
+}
+
+// Update profile picture and CV
+export async function updateFileUploadsAction(data: {
+  profilePicture?: string | null;
+  cv?: string | null;
+}) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Update the user file uploads
+    await db
+      .update(users)
+      .set({
+        profilePicture: data.profilePicture || null,
+        cv: data.cv || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Files updated successfully" };
+  } catch (error) {
+    console.error("File uploads update error:", error);
+    return { success: false, message: "Failed to update files" };
+  }
+}
+
+// Create new experience
+export async function createExperienceAction(data: ExperienceData) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Validate the data
+    const validatedData = experienceSchema.parse(data);
+
+    // Create the experience
+    await db.insert(experiences).values({
+      userId,
+      jobTitle: validatedData.jobTitle,
+      employmentType: validatedData.employmentType,
+      company: validatedData.company,
+      currentlyWorking: validatedData.currentlyWorking,
+      startMonth: validatedData.startMonth || null,
+      startYear: validatedData.startYear || null,
+      endMonth: validatedData.endMonth || null,
+      endYear: validatedData.endYear || null,
+      description: validatedData.description || null,
+      skills: validatedData.skills
+        ? JSON.stringify(validatedData.skills)
+        : null,
+    });
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Experience added successfully" };
+  } catch (error) {
+    console.error("Experience creation error:", error);
+
+    if (error instanceof z.ZodError) {
+      return { success: false, message: error.errors[0].message };
+    }
+
+    return { success: false, message: "Failed to add experience" };
+  }
+}
+
+// Update existing experience
+export async function updateExperienceAction(data: ExperienceUpdateData) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Validate the data
+    const validatedData = experienceUpdateSchema.parse(data);
+
+    if (!validatedData.id) {
+      return { success: false, message: "Experience ID is required" };
+    }
+
+    // Update the experience
+    await db
+      .update(experiences)
+      .set({
+        jobTitle: validatedData.jobTitle,
+        employmentType: validatedData.employmentType,
+        company: validatedData.company,
+        currentlyWorking: validatedData.currentlyWorking,
+        startMonth: validatedData.startMonth || null,
+        startYear: validatedData.startYear || null,
+        endMonth: validatedData.endMonth || null,
+        endYear: validatedData.endYear || null,
+        description: validatedData.description || null,
+        skills: validatedData.skills
+          ? JSON.stringify(validatedData.skills)
+          : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(experiences.id, validatedData.id))
+      .where(eq(experiences.userId, userId));
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Experience updated successfully" };
+  } catch (error) {
+    console.error("Experience update error:", error);
+
+    if (error instanceof z.ZodError) {
+      return { success: false, message: error.errors[0].message };
+    }
+
+    return { success: false, message: "Failed to update experience" };
+  }
+}
+
+// Delete experience
+export async function deleteExperienceAction(experienceId: string) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Delete the experience
+    await db
+      .delete(experiences)
+      .where(eq(experiences.id, experienceId))
+      .where(eq(experiences.userId, userId));
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Experience deleted successfully" };
+  } catch (error) {
+    console.error("Experience deletion error:", error);
+    return { success: false, message: "Failed to delete experience" };
+  }
+}
+
+// Get user profile data
+export async function getUserProfileAction() {
+  try {
+    const userId = await getCurrentUser();
+
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user.length) {
+      return { success: false, message: "User not found" };
+    }
+
+    const userData = user[0];
+
+    // Parse JSON fields
+    const skills = userData.skills ? JSON.parse(userData.skills) : [];
+    const jobPreferences = userData.jobPreferences
+      ? JSON.parse(userData.jobPreferences)
+      : [];
+
+    return {
+      success: true,
+      data: {
+        ...userData,
+        skills,
+        jobPreferences,
+      },
+    };
+  } catch (error) {
+    console.error("Get user profile error:", error);
+    return { success: false, message: "Failed to get user profile" };
+  }
+}
+
+// Get user experiences
+export async function getUserExperiencesAction() {
+  try {
+    const userId = await getCurrentUser();
+
+    const userExperiences = await db
+      .select()
+      .from(experiences)
+      .where(eq(experiences.userId, userId))
+      .orderBy(experiences.createdAt);
+
+    // Parse JSON fields
+    const experiencesWithParsedSkills = userExperiences.map((exp) => ({
+      ...exp,
+      skills: exp.skills ? JSON.parse(exp.skills) : [],
+    }));
+
+    return {
+      success: true,
+      data: experiencesWithParsedSkills,
+    };
+  } catch (error) {
+    console.error("Get user experiences error:", error);
+    return { success: false, message: "Failed to get user experiences" };
+  }
+}
+
+// Mark profile as completed
+export async function markProfileCompletedAction() {
+  try {
+    const userId = await getCurrentUser();
+
+    await db
+      .update(users)
+      .set({
+        hasCompletedProfile: true,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Profile marked as completed" };
+  } catch (error) {
+    console.error("Mark profile completed error:", error);
+    return { success: false, message: "Failed to mark profile as completed" };
+  }
+}

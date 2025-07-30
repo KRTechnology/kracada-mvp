@@ -6,6 +6,8 @@ import {
   serial,
   timestamp,
   varchar,
+  text,
+  integer,
 } from "drizzle-orm/pg-core";
 
 // Define account type enum
@@ -25,6 +27,29 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   accountType: accountTypeEnum("account_type").notNull(),
+
+  // Profile fields
+  firstName: varchar("first_name", { length: 255 }),
+  lastName: varchar("last_name", { length: 255 }),
+  phone: varchar("phone", { length: 50 }),
+  location: varchar("location", { length: 255 }),
+  bio: text("bio"),
+  yearsOfExperience: integer("years_of_experience"),
+
+  // Skills and preferences (stored as JSON arrays)
+  skills: text("skills"), // JSON array of strings
+  jobPreferences: text("job_preferences"), // JSON array of strings
+
+  // File uploads
+  profilePicture: varchar("profile_picture", { length: 500 }),
+  cv: varchar("cv", { length: 500 }),
+
+  // Profile completion flag
+  hasCompletedProfile: boolean("has_completed_profile")
+    .default(false)
+    .notNull(),
+
+  // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   emailVerified: boolean("email_verified").default(false).notNull(),

@@ -14,16 +14,19 @@ import {
 } from "@/components/common/select";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin } from "lucide-react";
+import { updateProfileAction } from "@/app/(dashboard)/actions/profile-actions";
+import { toast } from "sonner";
 
 interface ProfileCardProps {
   userData: {
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
     phone: string;
     location: string;
     bio: string;
-    yearsOfExperience?: string;
+    yearsOfExperience: string;
   };
 }
 
@@ -37,10 +40,20 @@ export function ProfileCard({ userData }: ProfileCardProps) {
 
   const handleSave = async () => {
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const result = await updateProfileAction(formData);
+
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
       setIsSaving(false);
-    }, 1500);
+    }
   };
 
   const handleCancel = () => {
@@ -198,7 +211,7 @@ export function ProfileCard({ userData }: ProfileCardProps) {
           </Label>
           <Input
             id="experience"
-            value={formData.yearsOfExperience || ""}
+            value={formData.yearsOfExperience}
             onChange={(e) =>
               handleInputChange("yearsOfExperience", e.target.value)
             }
