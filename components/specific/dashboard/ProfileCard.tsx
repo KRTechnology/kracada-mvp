@@ -58,6 +58,7 @@ export function ProfileCard({ userData }: ProfileCardProps) {
     formState: { errors, isDirty, isValid },
     reset,
     watch,
+    setValue,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -258,11 +259,9 @@ export function ProfileCard({ userData }: ProfileCardProps) {
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <Select
-                  value={watch("location")}
+                  value={watch("location") || ""}
                   onValueChange={(value) => {
-                    // Manually set the value for the select field
-                    const event = { target: { value } };
-                    register("location").onChange(event);
+                    setValue("location", value);
                   }}
                 >
                   <SelectTrigger className="pl-10 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">

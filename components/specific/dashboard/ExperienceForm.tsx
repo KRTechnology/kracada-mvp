@@ -20,6 +20,46 @@ import {
   updateExperienceAction,
 } from "@/app/(dashboard)/actions/profile-actions";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Form validation schema
+const experienceFormSchema = z
+  .object({
+    jobTitle: z.string().min(1, "Job title is required"),
+    employmentType: z.enum([
+      "Full-time",
+      "Part-time",
+      "Contract",
+      "Freelance",
+      "Internship",
+      "Temporary",
+    ]),
+    company: z.string().min(1, "Company is required"),
+    currentlyWorking: z.boolean(),
+    startMonth: z.string().min(1, "Start month is required"),
+    startYear: z.string().min(1, "Start year is required"),
+    endMonth: z.string().optional(),
+    endYear: z.string().optional(),
+    description: z.string().optional(),
+    skills: z.array(z.string()).optional(),
+  })
+  .refine(
+    (data) => {
+      // If not currently working, end date is required
+      if (!data.currentlyWorking) {
+        return data.endMonth && data.endYear;
+      }
+      return true;
+    },
+    {
+      message: "End date is required when not currently working",
+      path: ["endMonth"], // This will show the error on the end month field
+    }
+  );
+
+type ExperienceFormData = z.infer<typeof experienceFormSchema>;
 
 interface ExperienceFormProps {
   experience?: {
@@ -35,7 +75,7 @@ interface ExperienceFormProps {
     description: string | null;
     skills: string[];
   } | null;
-  onSave: () => void;
+  onSave: (data?: any) => void;
   onCancel: () => void;
 }
 
@@ -44,27 +84,34 @@ export function ExperienceForm({
   onSave,
   onCancel,
 }: ExperienceFormProps) {
-  const [formData, setFormData] = useState({
-    jobTitle: experience?.jobTitle || "",
-    employmentType:
-      (experience?.employmentType as
-        | "Full-time"
-        | "Part-time"
-        | "Contract"
-        | "Freelance"
-        | "Internship"
-        | "Temporary") || "Full-time",
-    company: experience?.company || "",
-    currentlyWorking: experience?.currentlyWorking || false,
-    startMonth: experience?.startMonth || "",
-    startYear: experience?.startYear || "",
-    endMonth: experience?.endMonth || "",
-    endYear: experience?.endYear || "",
-    description: experience?.description || "",
-    skills: experience?.skills || [],
-  });
   const [newSkill, setNewSkill] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    setValue,
+  } = useForm<ExperienceFormData>({
+    resolver: zodResolver(experienceFormSchema),
+    defaultValues: {
+      jobTitle: experience?.jobTitle || "",
+      employmentType: (experience?.employmentType as any) || "Full-time",
+      company: experience?.company || "",
+      currentlyWorking: experience?.currentlyWorking || false,
+      startMonth: experience?.startMonth || "",
+      startYear: experience?.startYear || "",
+      endMonth: experience?.endMonth || "",
+      endYear: experience?.endYear || "",
+      description: experience?.description || "",
+      skills: experience?.skills || [],
+    },
+  });
+
+  const watchedSkills = watch("skills") || [];
+  const watchedCurrentlyWorking = watch("currentlyWorking");
 
   const months = [
     "January",
@@ -117,54 +164,33 @@ export function ExperienceForm({
     "Communication",
   ];
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]:
-        field === "employmentType"
-          ? (value as
-              | "Full-time"
-              | "Part-time"
-              | "Contract"
-              | "Freelance"
-              | "Internship"
-              | "Temporary")
-          : value,
-    }));
-  };
-
   const addSkill = () => {
-    if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        skills: [...prev.skills, newSkill.trim()],
-      }));
+    if (newSkill.trim() && !watchedSkills.includes(newSkill.trim())) {
+      setValue("skills", [...watchedSkills, newSkill.trim()], {
+        shouldDirty: true,
+      });
       setNewSkill("");
     }
   };
 
   const removeSkill = (skillToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      skills: prev.skills.filter((skill) => skill !== skillToRemove),
-    }));
+    setValue(
+      "skills",
+      watchedSkills.filter((skill) => skill !== skillToRemove),
+      { shouldDirty: true }
+    );
   };
 
-  const handleSave = async () => {
-    if (!formData.jobTitle.trim() || !formData.company.trim()) {
-      toast.error("Job title and company are required");
-      return;
-    }
-
+  const onSubmit = async (data: ExperienceFormData) => {
     setIsSaving(true);
     try {
       const result = experience
-        ? await updateExperienceAction({ ...formData, id: experience.id })
-        : await createExperienceAction(formData);
+        ? await updateExperienceAction({ ...data, id: experience.id })
+        : await createExperienceAction(data);
 
       if (result.success) {
         toast.success(result.message);
-        onSave();
+        onSave(result.data);
       } else {
         toast.error(result.message);
       }
@@ -193,18 +219,22 @@ export function ExperienceForm({
         </p>
       </div>
 
-      <div className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Job Title */}
         <div className="space-y-2">
           <Label className="text-neutral-700 dark:text-neutral-300">
             Job Title
           </Label>
           <Input
-            value={formData.jobTitle}
-            onChange={(e) => handleInputChange("jobTitle", e.target.value)}
+            {...register("jobTitle")}
             placeholder="Input your job title"
-            className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
+            className={`bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 ${
+              errors.jobTitle ? "border-red-500" : ""
+            }`}
           />
+          {errors.jobTitle && (
+            <p className="text-sm text-red-500">{errors.jobTitle.message}</p>
+          )}
         </div>
 
         {/* Employment Type */}
@@ -213,12 +243,16 @@ export function ExperienceForm({
             Employment Type
           </Label>
           <Select
-            value={formData.employmentType}
-            onValueChange={(value) =>
-              handleInputChange("employmentType", value)
-            }
+            value={watch("employmentType") || ""}
+            onValueChange={(value) => {
+              setValue("employmentType", value as any);
+            }}
           >
-            <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
+            <SelectTrigger
+              className={`bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 ${
+                errors.employmentType ? "border-red-500" : ""
+              }`}
+            >
               <SelectValue placeholder="Select employment type" />
             </SelectTrigger>
             <SelectContent>
@@ -229,6 +263,11 @@ export function ExperienceForm({
               ))}
             </SelectContent>
           </Select>
+          {errors.employmentType && (
+            <p className="text-sm text-red-500">
+              {errors.employmentType.message}
+            </p>
+          )}
         </div>
 
         {/* Company */}
@@ -237,21 +276,25 @@ export function ExperienceForm({
             Company/Organization
           </Label>
           <Input
-            value={formData.company}
-            onChange={(e) => handleInputChange("company", e.target.value)}
+            {...register("company")}
             placeholder="Input company name"
-            className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
+            className={`bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 ${
+              errors.company ? "border-red-500" : ""
+            }`}
           />
+          {errors.company && (
+            <p className="text-sm text-red-500">{errors.company.message}</p>
+          )}
         </div>
 
         {/* Currently Working */}
         <div className="flex items-center space-x-2">
           <Checkbox
             id="currentlyWorking"
-            checked={formData.currentlyWorking}
-            onCheckedChange={(checked) =>
-              handleInputChange("currentlyWorking", checked as boolean)
-            }
+            checked={watchedCurrentlyWorking}
+            onCheckedChange={(checked) => {
+              setValue("currentlyWorking", checked as boolean);
+            }}
           />
           <Label
             htmlFor="currentlyWorking"
@@ -269,38 +312,62 @@ export function ExperienceForm({
               Start Date
             </Label>
             <div className="grid grid-cols-2 gap-2">
-              <Select
-                value={formData.startMonth}
-                onValueChange={(value) =>
-                  handleInputChange("startMonth", value)
-                }
-              >
-                <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map((month) => (
-                    <SelectItem key={month} value={month}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={formData.startYear}
-                onValueChange={(value) => handleInputChange("startYear", value)}
-              >
-                <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
-                  <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-1">
+                <Select
+                  value={watch("startMonth") || ""}
+                  onValueChange={(value) => {
+                    setValue("startMonth", value);
+                  }}
+                >
+                  <SelectTrigger
+                    className={`bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 ${
+                      errors.startMonth ? "border-red-500" : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month} value={month}>
+                        {month}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.startMonth && (
+                  <p className="text-sm text-red-500">
+                    {errors.startMonth.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Select
+                  value={watch("startYear") || ""}
+                  onValueChange={(value) => {
+                    setValue("startYear", value);
+                  }}
+                >
+                  <SelectTrigger
+                    className={`bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 ${
+                      errors.startYear ? "border-red-500" : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.startYear && (
+                  <p className="text-sm text-red-500">
+                    {errors.startYear.message}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -310,38 +377,68 @@ export function ExperienceForm({
               End Date
             </Label>
             <div className="grid grid-cols-2 gap-2">
-              <Select
-                value={formData.endMonth}
-                onValueChange={(value) => handleInputChange("endMonth", value)}
-                disabled={formData.currentlyWorking}
-              >
-                <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map((month) => (
-                    <SelectItem key={month} value={month}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={formData.endYear}
-                onValueChange={(value) => handleInputChange("endYear", value)}
-                disabled={formData.currentlyWorking}
-              >
-                <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
-                  <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-1">
+                <Select
+                  value={watch("endMonth") || ""}
+                  onValueChange={(value) => {
+                    setValue("endMonth", value);
+                  }}
+                  disabled={watchedCurrentlyWorking}
+                >
+                  <SelectTrigger
+                    className={`bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 ${
+                      !watchedCurrentlyWorking && errors.endMonth
+                        ? "border-red-500"
+                        : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month} value={month}>
+                        {month}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {!watchedCurrentlyWorking && errors.endMonth && (
+                  <p className="text-sm text-red-500">
+                    {errors.endMonth.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Select
+                  value={watch("endYear") || ""}
+                  onValueChange={(value) => {
+                    setValue("endYear", value);
+                  }}
+                  disabled={watchedCurrentlyWorking}
+                >
+                  <SelectTrigger
+                    className={`bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 ${
+                      !watchedCurrentlyWorking && errors.endYear
+                        ? "border-red-500"
+                        : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {!watchedCurrentlyWorking && errors.endYear && (
+                  <p className="text-sm text-red-500">
+                    {errors.endYear.message}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -352,8 +449,7 @@ export function ExperienceForm({
             Description
           </Label>
           <Textarea
-            value={formData.description}
-            onChange={(e) => handleInputChange("description", e.target.value)}
+            {...register("description")}
             placeholder="Describe your role and responsibilities..."
             className="min-h-[100px] bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 resize-none"
           />
@@ -366,10 +462,10 @@ export function ExperienceForm({
           </Label>
 
           {/* Skills Display */}
-          {formData.skills.length > 0 && (
+          {watchedSkills.length > 0 && (
             <div className="flex flex-wrap gap-2">
               <AnimatePresence>
-                {formData.skills.map((skill) => (
+                {watchedSkills.map((skill) => (
                   <motion.span
                     key={skill}
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -379,7 +475,12 @@ export function ExperienceForm({
                   >
                     {skill}
                     <button
-                      onClick={() => removeSkill(skill)}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        removeSkill(skill);
+                      }}
                       className="ml-1 hover:text-warm-900 dark:hover:text-warm-100"
                     >
                       <X className="w-3 h-3" />
@@ -414,7 +515,12 @@ export function ExperienceForm({
                 onKeyPress={(e) => e.key === "Enter" && addSkill()}
               />
               <Button
-                onClick={addSkill}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  addSkill();
+                }}
                 variant="outline"
                 size="sm"
                 className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
@@ -426,23 +532,16 @@ export function ExperienceForm({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        <div className="flex justify-end pt-4">
           <Button
-            onClick={onCancel}
-            variant="outline"
-            className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
+            type="submit"
             disabled={isSaving}
             className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
-      </div>
+      </form>
     </motion.div>
   );
 }

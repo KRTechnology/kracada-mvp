@@ -154,15 +154,21 @@ export async function updateFileUploadsAction(data: {
   try {
     const userId = await getCurrentUser();
 
+    // Build update object with only provided fields
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    // Only update fields that are provided in the data
+    if (data.profilePicture !== undefined) {
+      updateData.profilePicture = data.profilePicture;
+    }
+    if (data.cv !== undefined) {
+      updateData.cv = data.cv;
+    }
+
     // Update the user file uploads
-    await db
-      .update(users)
-      .set({
-        profilePicture: data.profilePicture || null,
-        cv: data.cv || null,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, userId));
+    await db.update(users).set(updateData).where(eq(users.id, userId));
 
     revalidatePath("/dashboard");
     return { success: true, message: "Files updated successfully" };
@@ -181,24 +187,34 @@ export async function createExperienceAction(data: ExperienceData) {
     const validatedData = experienceSchema.parse(data);
 
     // Create the experience
-    await db.insert(experiences).values({
-      userId,
-      jobTitle: validatedData.jobTitle,
-      employmentType: validatedData.employmentType,
-      company: validatedData.company,
-      currentlyWorking: validatedData.currentlyWorking,
-      startMonth: validatedData.startMonth || null,
-      startYear: validatedData.startYear || null,
-      endMonth: validatedData.endMonth || null,
-      endYear: validatedData.endYear || null,
-      description: validatedData.description || null,
-      skills: validatedData.skills
-        ? JSON.stringify(validatedData.skills)
-        : null,
-    });
+    const [newExperience] = await db
+      .insert(experiences)
+      .values({
+        userId,
+        jobTitle: validatedData.jobTitle,
+        employmentType: validatedData.employmentType,
+        company: validatedData.company,
+        currentlyWorking: validatedData.currentlyWorking,
+        startMonth: validatedData.startMonth || null,
+        startYear: validatedData.startYear || null,
+        endMonth: validatedData.endMonth || null,
+        endYear: validatedData.endYear || null,
+        description: validatedData.description || null,
+        skills: validatedData.skills
+          ? JSON.stringify(validatedData.skills)
+          : null,
+      })
+      .returning();
 
     revalidatePath("/dashboard");
-    return { success: true, message: "Experience added successfully" };
+    return {
+      success: true,
+      message: "Experience added successfully",
+      data: {
+        ...newExperience,
+        skills: newExperience.skills ? JSON.parse(newExperience.skills) : [],
+      },
+    };
   } catch (error) {
     console.error("Experience creation error:", error);
 
@@ -223,7 +239,7 @@ export async function updateExperienceAction(data: ExperienceUpdateData) {
     }
 
     // Update the experience
-    await db
+    const [updatedExperience] = await db
       .update(experiences)
       .set({
         jobTitle: validatedData.jobTitle,
@@ -245,10 +261,20 @@ export async function updateExperienceAction(data: ExperienceUpdateData) {
           eq(experiences.id, validatedData.id),
           eq(experiences.userId, userId)
         )
-      );
+      )
+      .returning();
 
     revalidatePath("/dashboard");
-    return { success: true, message: "Experience updated successfully" };
+    return {
+      success: true,
+      message: "Experience updated successfully",
+      data: {
+        ...updatedExperience,
+        skills: updatedExperience.skills
+          ? JSON.parse(updatedExperience.skills)
+          : [],
+      },
+    };
   } catch (error) {
     console.error("Experience update error:", error);
 

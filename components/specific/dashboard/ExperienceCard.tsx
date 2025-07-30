@@ -19,6 +19,17 @@ import {
 } from "@/app/(dashboard)/actions/profile-actions";
 import { ExperienceForm } from "./ExperienceForm";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Form validation schema
+const skillsPreferencesSchema = z.object({
+  skills: z.array(z.string()).optional(),
+  jobPreferences: z.array(z.string()).optional(),
+});
+
+type SkillsPreferencesData = z.infer<typeof skillsPreferencesSchema>;
 
 interface ExperienceCardProps {
   userData: {
@@ -47,53 +58,84 @@ export function ExperienceCard({
   experiences,
   onExperiencesUpdate,
 }: ExperienceCardProps) {
-  const [skills, setSkills] = useState<string[]>(userData.skills || []);
-  const [jobPreferences, setJobPreferences] = useState<string[]>(
-    userData.jobPreferences || []
-  );
-  const [newSkill, setNewSkill] = useState("");
-  const [newJobPreference, setNewJobPreference] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [showExperienceForm, setShowExperienceForm] = useState(false);
   const [editingExperience, setEditingExperience] = useState<any>(null);
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isDirty },
+    reset,
+    watch,
+    setValue,
+  } = useForm<SkillsPreferencesData>({
+    resolver: zodResolver(skillsPreferencesSchema),
+    defaultValues: {
+      skills: userData.skills || [],
+      jobPreferences: userData.jobPreferences || [],
+    },
+  });
+
+  const watchedSkills = watch("skills") || [];
+  const watchedJobPreferences = watch("jobPreferences") || [];
+
+  const [newSkill, setNewSkill] = useState("");
+  const [newJobPreference, setNewJobPreference] = useState("");
+
   const addSkill = () => {
-    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills([...skills, newSkill.trim()]);
+    if (newSkill.trim() && !watchedSkills.includes(newSkill.trim())) {
+      setValue("skills", [...watchedSkills, newSkill.trim()], {
+        shouldDirty: true,
+      });
       setNewSkill("");
     }
   };
 
   const removeSkill = (skillToRemove: string) => {
-    setSkills(skills.filter((skill) => skill !== skillToRemove));
+    setValue(
+      "skills",
+      watchedSkills.filter((skill) => skill !== skillToRemove),
+      { shouldDirty: true }
+    );
   };
 
   const addJobPreference = () => {
     if (
       newJobPreference.trim() &&
-      !jobPreferences.includes(newJobPreference.trim())
+      !watchedJobPreferences.includes(newJobPreference.trim())
     ) {
-      setJobPreferences([...jobPreferences, newJobPreference.trim()]);
+      setValue(
+        "jobPreferences",
+        [...watchedJobPreferences, newJobPreference.trim()],
+        { shouldDirty: true }
+      );
       setNewJobPreference("");
     }
   };
 
   const removeJobPreference = (preferenceToRemove: string) => {
-    setJobPreferences(
-      jobPreferences.filter((pref) => pref !== preferenceToRemove)
+    setValue(
+      "jobPreferences",
+      watchedJobPreferences.filter((pref) => pref !== preferenceToRemove),
+      { shouldDirty: true }
     );
   };
 
-  const handleSaveSkillsPreferences = async () => {
+  const onSubmit = async (data: SkillsPreferencesData) => {
     setIsSaving(true);
     try {
-      const result = await updateSkillsPreferencesAction({
-        skills,
-        jobPreferences,
-      });
+      const result = await updateSkillsPreferencesAction(data);
 
       if (result.success) {
         toast.success(result.message);
+        // Reset form to mark as clean after successful save
+        reset(data);
+        // Trigger collapse animation after successful save
+        setTimeout(() => {
+          setIsCollapsed(true);
+        }, 500);
       } else {
         toast.error(result.message);
       }
@@ -105,11 +147,15 @@ export function ExperienceCard({
     }
   };
 
+  // Prevent collapse when modal is open
+  const handleCardClick = () => {
+    if (isCollapsed && !showExperienceForm) {
+      setIsCollapsed(false);
+    }
+  };
+
   const handleCancel = () => {
-    setSkills(userData.skills || []);
-    setJobPreferences(userData.jobPreferences || []);
-    setNewSkill("");
-    setNewJobPreference("");
+    reset();
   };
 
   const handleAddExperience = () => {
@@ -140,11 +186,23 @@ export function ExperienceCard({
     }
   };
 
-  const handleExperienceFormSave = () => {
+  const handleExperienceFormSave = (newExperience?: any) => {
     setShowExperienceForm(false);
     setEditingExperience(null);
-    // Refresh experiences from server
-    // This will be handled by the parent component
+
+    // Update experiences list in real-time
+    if (newExperience) {
+      if (editingExperience) {
+        // Update existing experience
+        const updatedExperiences = experiences.map((exp) =>
+          exp.id === editingExperience.id ? newExperience : exp
+        );
+        onExperiencesUpdate(updatedExperiences);
+      } else {
+        // Add new experience
+        onExperiencesUpdate([...experiences, newExperience]);
+      }
+    }
   };
 
   const handleExperienceFormCancel = () => {
@@ -193,266 +251,330 @@ export function ExperienceCard({
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.2 }}
-      className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm p-6"
+      animate={{
+        opacity: 1,
+        y: 0,
+        height: isCollapsed ? "auto" : "auto",
+        padding: isCollapsed ? "1.5rem" : "1.5rem",
+      }}
+      transition={{
+        duration: 0.4,
+        delay: 0.2,
+        ease: [0.4, 0, 0.2, 1],
+      }}
+      className={`bg-white dark:bg-neutral-900 rounded-2xl shadow-sm transition-all duration-300 ${
+        isCollapsed ? "cursor-pointer hover:shadow-md" : ""
+      }`}
+      onClick={handleCardClick}
+      layout
     >
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+      <motion.div className="mb-6" layout>
+        <motion.h2
+          className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2"
+          layout
+        >
           Experience & Skills
-        </h2>
-        <p className="text-neutral-600 dark:text-neutral-400">
+        </motion.h2>
+        <motion.p className="text-neutral-600 dark:text-neutral-400" layout>
           Let others know how they can find you online.
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
 
-      <div className="space-y-8">
-        {/* Skills Section */}
-        <div className="space-y-4">
-          <Label className="text-neutral-700 dark:text-neutral-300 text-base">
-            Skills
-          </Label>
-
-          {/* Skills Display */}
-          {skills.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {skills.map((skill, index) => (
-                <motion.span
-                  key={skill}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-warm-50 dark:bg-warm-900/20 text-warm-700 dark:text-warm-300 rounded-full text-sm"
-                >
-                  {skill}
-                  <button
-                    onClick={() => removeSkill(skill)}
-                    className="ml-1 hover:text-warm-900 dark:hover:text-warm-100"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </motion.span>
-              ))}
-            </div>
-          )}
-
-          {/* Skills Input */}
-          <div className="space-y-3">
-            <Select value={newSkill} onValueChange={setNewSkill}>
-              <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
-                <SelectValue placeholder="Input your skills" />
-              </SelectTrigger>
-              <SelectContent>
-                {predefinedSkills.map((skill) => (
-                  <SelectItem key={skill} value={skill}>
-                    {skill}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex gap-2">
-              <Input
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                placeholder="Or type a custom skill"
-                className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
-                onKeyPress={(e) => e.key === "Enter" && addSkill()}
-              />
-              <Button
-                onClick={addSkill}
-                variant="outline"
-                size="sm"
-                className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              Add or select your skills
-            </p>
-          </div>
-        </div>
-
-        {/* Job Preferences Section */}
-        <div className="space-y-4">
-          <Label className="text-neutral-700 dark:text-neutral-300 text-base">
-            Job preferences
-          </Label>
-
-          {/* Job Preferences Display */}
-          {jobPreferences.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {jobPreferences.map((preference, index) => (
-                <motion.span
-                  key={preference}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm"
-                >
-                  {preference}
-                  <button
-                    onClick={() => removeJobPreference(preference)}
-                    className="ml-1 hover:text-blue-900 dark:hover:text-blue-100"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </motion.span>
-              ))}
-            </div>
-          )}
-
-          {/* Job Preferences Input */}
-          <div className="space-y-3">
-            <Select
-              value={newJobPreference}
-              onValueChange={setNewJobPreference}
-            >
-              <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
-                <SelectValue placeholder="Input your job preferences" />
-              </SelectTrigger>
-              <SelectContent>
-                {predefinedJobPreferences.map((preference) => (
-                  <SelectItem key={preference} value={preference}>
-                    {preference}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex gap-2">
-              <Input
-                value={newJobPreference}
-                onChange={(e) => setNewJobPreference(e.target.value)}
-                placeholder="Or type a custom preference"
-                className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
-                onKeyPress={(e) => e.key === "Enter" && addJobPreference()}
-              />
-              <Button
-                onClick={addJobPreference}
-                variant="outline"
-                size="sm"
-                className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Experiences Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-neutral-700 dark:text-neutral-300 text-base">
-              Work Experience
-            </Label>
-            <Button
-              onClick={handleAddExperience}
-              variant="outline"
-              className="border-warm-200 dark:border-warm-300 text-warm-600 dark:text-warm-300 hover:bg-warm-50 dark:hover:bg-warm-900/20"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Experience
-            </Button>
-          </div>
-
-          {/* Experience List */}
-          {experiences.length > 0 && (
+      <AnimatePresence mode="wait">
+        {!isCollapsed && (
+          <motion.form
+            key="form"
+            initial={{ opacity: 0, height: 0, scale: 0.95 }}
+            animate={{ opacity: 1, height: "auto", scale: 1 }}
+            exit={{ opacity: 0, height: 0, scale: 0.95 }}
+            transition={{
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-8"
+            layout
+          >
+            {/* Skills Section */}
             <div className="space-y-4">
-              {experiences.map((experience) => (
-                <motion.div
-                  key={experience.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700"
+              <Label className="text-neutral-700 dark:text-neutral-300 text-base">
+                Skills
+              </Label>
+
+              {/* Skills Display */}
+              {watchedSkills.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <AnimatePresence>
+                    {watchedSkills.map((skill) => (
+                      <motion.span
+                        key={skill}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-warm-50 dark:bg-warm-900/20 text-warm-700 dark:text-warm-300 rounded-full text-sm"
+                      >
+                        {skill}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            removeSkill(skill);
+                          }}
+                          className="ml-1 hover:text-warm-900 dark:hover:text-warm-100"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </motion.span>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {/* Skills Input */}
+              <div className="space-y-3">
+                <Select value={newSkill} onValueChange={setNewSkill}>
+                  <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
+                    <SelectValue placeholder="Input your skills" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {predefinedSkills.map((skill) => (
+                      <SelectItem key={skill} value={skill}>
+                        {skill}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <div className="flex gap-2">
+                  <Input
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    placeholder="Or type a custom skill"
+                    className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
+                    onKeyPress={(e) => e.key === "Enter" && addSkill()}
+                  />
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addSkill();
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Add or select your skills
+                </p>
+              </div>
+            </div>
+
+            {/* Job Preferences Section */}
+            <div className="space-y-4">
+              <Label className="text-neutral-700 dark:text-neutral-300 text-base">
+                Job preferences
+              </Label>
+
+              {/* Job Preferences Display */}
+              {watchedJobPreferences.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <AnimatePresence>
+                    {watchedJobPreferences.map((preference) => (
+                      <motion.span
+                        key={preference}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm"
+                      >
+                        {preference}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            removeJobPreference(preference);
+                          }}
+                          className="ml-1 hover:text-blue-900 dark:hover:text-blue-100"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </motion.span>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {/* Job Preferences Input */}
+              <div className="space-y-3">
+                <Select
+                  value={newJobPreference}
+                  onValueChange={setNewJobPreference}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
-                        {experience.jobTitle}
-                      </h4>
-                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                        {experience.company} • {experience.employmentType}
-                      </p>
-                      <p className="text-sm text-neutral-500 dark:text-neutral-500">
-                        {experience.startMonth} {experience.startYear} -{" "}
-                        {experience.currentlyWorking
-                          ? "Present"
-                          : `${experience.endMonth} ${experience.endYear}`}
-                      </p>
-                      {experience.description && (
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
-                          {experience.description}
-                        </p>
-                      )}
-                      {experience.skills.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {experience.skills.map((skill) => (
-                            <span
-                              key={skill}
-                              className="px-2 py-1 bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded text-xs"
-                            >
-                              {skill}
-                            </span>
-                          ))}
+                  <SelectTrigger className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600">
+                    <SelectValue placeholder="Input your job preferences" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {predefinedJobPreferences.map((preference) => (
+                      <SelectItem key={preference} value={preference}>
+                        {preference}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <div className="flex gap-2">
+                  <Input
+                    value={newJobPreference}
+                    onChange={(e) => setNewJobPreference(e.target.value)}
+                    placeholder="Or type a custom preference"
+                    className="bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600"
+                    onKeyPress={(e) => e.key === "Enter" && addJobPreference()}
+                  />
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addJobPreference();
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Experiences Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-neutral-700 dark:text-neutral-300 text-base">
+                  Work Experience
+                </Label>
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAddExperience();
+                  }}
+                  variant="outline"
+                  className="border-warm-200 dark:border-warm-300 text-warm-600 dark:text-warm-300 hover:bg-warm-50 dark:hover:bg-warm-900/20"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Experience
+                </Button>
+              </div>
+
+              {/* Experience List */}
+              {experiences.length > 0 && (
+                <div className="space-y-4">
+                  {experiences.map((experience) => (
+                    <motion.div
+                      key={experience.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
+                            {experience.jobTitle}
+                          </h4>
+                          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                            {experience.company} • {experience.employmentType}
+                          </p>
+                          <p className="text-sm text-neutral-500 dark:text-neutral-500">
+                            {experience.startMonth} {experience.startYear} -{" "}
+                            {experience.currentlyWorking
+                              ? "Present"
+                              : `${experience.endMonth} ${experience.endYear}`}
+                          </p>
+                          {experience.description && (
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
+                              {experience.description}
+                            </p>
+                          )}
+                          {experience.skills.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {experience.skills.map((skill) => (
+                                <span
+                                  key={skill}
+                                  className="px-2 py-1 bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded text-xs"
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div className="flex gap-2 ml-4">
-                      <Button
-                        onClick={() => handleEditExperience(experience)}
-                        variant="outline"
-                        size="sm"
-                        className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        onClick={() => handleDeleteExperience(experience.id)}
-                        variant="outline"
-                        size="sm"
-                        className="border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
+                        <div className="flex gap-2 ml-4">
+                          <Button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleEditExperience(experience);
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDeleteExperience(experience.id);
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
 
-          {experiences.length === 0 && (
-            <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
-              <p>No work experience added yet.</p>
-              <p className="text-sm mt-1">
-                Click "Add Experience" to get started.
-              </p>
+              {experiences.length === 0 && (
+                <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
+                  <p>No work experience added yet.</p>
+                  <p className="text-sm mt-1">
+                    Click "Add Experience" to get started.
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          <Button
-            onClick={handleCancel}
-            variant="outline"
-            className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSaveSkillsPreferences}
-            disabled={isSaving}
-            className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
-          >
-            {isSaving ? "Saving..." : "Save"}
-          </Button>
-        </div>
-      </div>
+            {/* Action Buttons */}
+            <div className="flex justify-end pt-4">
+              <Button
+                type="submit"
+                disabled={isSaving}
+                className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
 
       {/* Experience Form Modal */}
       <AnimatePresence>
