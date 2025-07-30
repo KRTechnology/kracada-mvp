@@ -46,7 +46,14 @@ export function ExperienceForm({
 }: ExperienceFormProps) {
   const [formData, setFormData] = useState({
     jobTitle: experience?.jobTitle || "",
-    employmentType: experience?.employmentType || "Full-time",
+    employmentType:
+      (experience?.employmentType as
+        | "Full-time"
+        | "Part-time"
+        | "Contract"
+        | "Freelance"
+        | "Internship"
+        | "Temporary") || "Full-time",
     company: experience?.company || "",
     currentlyWorking: experience?.currentlyWorking || false,
     startMonth: experience?.startMonth || "",
@@ -111,7 +118,19 @@ export function ExperienceForm({
   ];
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]:
+        field === "employmentType"
+          ? (value as
+              | "Full-time"
+              | "Part-time"
+              | "Contract"
+              | "Freelance"
+              | "Internship"
+              | "Temporary")
+          : value,
+    }));
   };
 
   const addSkill = () => {

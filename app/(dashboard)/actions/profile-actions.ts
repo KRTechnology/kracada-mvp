@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db/drizzle";
 import { users, experiences } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
@@ -239,8 +239,12 @@ export async function updateExperienceAction(data: ExperienceUpdateData) {
           : null,
         updatedAt: new Date(),
       })
-      .where(eq(experiences.id, validatedData.id))
-      .where(eq(experiences.userId, userId));
+      .where(
+        and(
+          eq(experiences.id, validatedData.id),
+          eq(experiences.userId, userId)
+        )
+      );
 
     revalidatePath("/dashboard");
     return { success: true, message: "Experience updated successfully" };
@@ -263,8 +267,9 @@ export async function deleteExperienceAction(experienceId: string) {
     // Delete the experience
     await db
       .delete(experiences)
-      .where(eq(experiences.id, experienceId))
-      .where(eq(experiences.userId, userId));
+      .where(
+        and(eq(experiences.id, experienceId), eq(experiences.userId, userId))
+      );
 
     revalidatePath("/dashboard");
     return { success: true, message: "Experience deleted successfully" };
