@@ -76,6 +76,7 @@ export async function updateProfileAction(data: ProfileUpdateData) {
     await db
       .update(users)
       .set({
+        fullName: `${validatedData.firstName} ${validatedData.lastName}`.trim(),
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
         email: validatedData.email,
@@ -302,12 +303,25 @@ export async function getUserProfileAction() {
       ? JSON.parse(userData.jobPreferences)
       : [];
 
+    // Split fullName into firstName and lastName if they don't exist
+    let firstName = userData.firstName;
+    let lastName = userData.lastName;
+
+    if (!firstName && !lastName && userData.fullName) {
+      const nameParts = userData.fullName.trim().split(" ");
+      firstName = nameParts[0] || "";
+      lastName = nameParts.slice(1).join(" ") || "";
+    }
+
     return {
       success: true,
       data: {
         ...userData,
+        firstName: firstName || "",
+        lastName: lastName || "",
         skills,
         jobPreferences,
+        accountType: userData.accountType,
       },
     };
   } catch (error) {

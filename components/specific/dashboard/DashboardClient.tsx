@@ -29,6 +29,7 @@ interface UserData {
   profilePicture: string | null;
   cv: string | null;
   hasCompletedProfile: boolean;
+  accountType: string;
 }
 
 interface ExperienceData {
@@ -76,6 +77,7 @@ export function DashboardClient() {
             profilePicture: profileResult.data.profilePicture,
             cv: profileResult.data.cv,
             hasCompletedProfile: profileResult.data.hasCompletedProfile,
+            accountType: profileResult.data.accountType,
           });
         } else {
           console.error("Failed to fetch user profile:", profileResult.message);
