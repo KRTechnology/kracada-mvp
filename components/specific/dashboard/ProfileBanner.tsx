@@ -63,7 +63,7 @@ export function ProfileBanner({
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="relative w-40 h-40 rounded-full border-4 border-white dark:border-[#FFFFFF14] bg-white dark:bg-[#0D0D0D] shadow-lg overflow-hidden flex-shrink-0"
+            className="relative w-40 h-40 rounded-full border-2 border-[#00000014] dark:border-[#FFFFFF14] bg-white dark:bg-[#0D0D0D] shadow-lg overflow-hidden flex-shrink-0"
           >
             {profileImageUrl ? (
               <Image

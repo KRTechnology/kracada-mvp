@@ -28,6 +28,7 @@ export default async function DashboardPage() {
             firstName={profileResult.data?.firstName}
             lastName={profileResult.data?.lastName}
             accountType={profileResult.data?.accountType}
+            profileImageUrl={profileResult.data?.profilePicture || undefined}
           />
 
           {/* Mobile Action Buttons */}
