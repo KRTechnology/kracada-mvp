@@ -70,6 +70,30 @@ module.exports = {
           bg: "#222020",
           container: "#121212",
         },
+        tab: {
+          light: {
+            bg: "#FAFAFA",
+            border: "#202123",
+            active: {
+              bg: "#FFF",
+              text: "#414651",
+            },
+            inactive: {
+              text: "#717680",
+            },
+          },
+          dark: {
+            bg: "#121212",
+            border: "#202123",
+            active: {
+              bg: "#363231",
+              text: "#FFE3DE",
+            },
+            inactive: {
+              text: "#A39997",
+            },
+          },
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

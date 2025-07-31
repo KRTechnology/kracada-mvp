@@ -2,6 +2,7 @@ import { getUserProfileAction } from "@/app/(dashboard)/actions/profile-actions"
 import { auth } from "@/auth";
 import { MobileActionButtons } from "@/components/specific/dashboard/MobileActionButtons";
 import { ProfileBanner } from "@/components/specific/dashboard/ProfileBanner";
+import { DashboardContent } from "@/components/specific/dashboard/DashboardContent";
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
@@ -34,12 +35,8 @@ export default async function DashboardPage() {
           {/* Mobile Action Buttons */}
           <MobileActionButtons />
 
-          {/* Content will go here in future iterations */}
-          <div className="p-6">
-            <p className="text-neutral-500 text-center">
-              Additional content sections will be implemented here
-            </p>
-          </div>
+          {/* Tab Switcher and Content */}
+          <DashboardContent />
         </div>
       </div>
     </div>
