@@ -14,7 +14,7 @@ import {
 import { Textarea } from "@/components/common/textarea";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { shouldShowRecruiterExperience } from "@/lib/utils";
 import { useForm } from "react-hook-form";
@@ -61,6 +61,28 @@ export function ProfileCard({ userData, onUserDataUpdate }: ProfileCardProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // Memoize defaultValues to prevent unnecessary re-renders
+  const defaultValues = useMemo(
+    () => ({
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      phone: userData.phone,
+      location: userData.location,
+      bio: userData.bio,
+      yearsOfExperience: userData.yearsOfExperience,
+    }),
+    [
+      userData.firstName,
+      userData.lastName,
+      userData.email,
+      userData.phone,
+      userData.location,
+      userData.bio,
+      userData.yearsOfExperience,
+    ]
+  );
+
   const {
     register,
     handleSubmit,
@@ -70,15 +92,7 @@ export function ProfileCard({ userData, onUserDataUpdate }: ProfileCardProps) {
     setValue,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: {
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.email,
-      phone: userData.phone,
-      location: userData.location,
-      bio: userData.bio,
-      yearsOfExperience: userData.yearsOfExperience,
-    },
+    defaultValues,
     mode: "onChange", // Enable real-time validation
   });
 

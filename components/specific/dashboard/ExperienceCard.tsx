@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
 import { Label } from "@/components/common/label";
@@ -70,6 +70,15 @@ export function ExperienceCard({
   const [showExperienceForm, setShowExperienceForm] = useState(false);
   const [editingExperience, setEditingExperience] = useState<any>(null);
 
+  // Memoize defaultValues to prevent unnecessary re-renders
+  const defaultValues = useMemo(
+    () => ({
+      skills: userData.skills || [],
+      jobPreferences: userData.jobPreferences || [],
+    }),
+    [userData.skills, userData.jobPreferences]
+  );
+
   const {
     register,
     handleSubmit,
@@ -79,10 +88,7 @@ export function ExperienceCard({
     setValue,
   } = useForm<SkillsPreferencesData>({
     resolver: zodResolver(skillsPreferencesSchema),
-    defaultValues: {
-      skills: userData.skills || [],
-      jobPreferences: userData.jobPreferences || [],
-    },
+    defaultValues,
   });
 
   const watchedSkills = watch("skills") || [];

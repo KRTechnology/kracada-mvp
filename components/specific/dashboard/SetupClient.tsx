@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProfilePictureCard } from "@/components/specific/dashboard/ProfilePictureCard";
 import { ProfileCard } from "@/components/specific/dashboard/ProfileCard";
@@ -105,11 +105,14 @@ export function SetupClient() {
   }, []);
 
   // Callback to update user data when profile picture or CV is updated
-  const handleUserDataUpdate = (updates: Partial<UserData>) => {
-    if (userData) {
-      setUserData({ ...userData, ...updates });
-    }
-  };
+  const handleUserDataUpdate = useCallback((updates: Partial<UserData>) => {
+    setUserData((prevData) => {
+      if (prevData) {
+        return { ...prevData, ...updates };
+      }
+      return prevData;
+    });
+  }, []);
 
   // Check if all required fields are completed
   const isProfileComplete =
