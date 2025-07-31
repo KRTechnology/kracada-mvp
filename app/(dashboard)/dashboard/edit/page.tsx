@@ -38,6 +38,8 @@ export default async function EditProfilePage() {
     cv: profileResult.data.cv,
     hasCompletedProfile: profileResult.data.hasCompletedProfile,
     accountType: profileResult.data.accountType,
+    website: profileResult.data.website,
+    portfolio: profileResult.data.portfolio,
   };
 
   // Convert experiences data to match the interface

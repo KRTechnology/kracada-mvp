@@ -15,6 +15,12 @@ const profileUpdateSchema = z.object({
   phone: z.string().optional(),
   location: z.string().optional(),
   bio: z.string().optional(),
+  website: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+  portfolio: z.string().optional(),
   yearsOfExperience: z.string().optional(),
 });
 
@@ -50,10 +56,21 @@ const experienceUpdateSchema = experienceSchema.extend({
   id: z.string().optional(),
 });
 
+// Schema for website and portfolio update validation
+const websitePortfolioSchema = z.object({
+  website: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+  portfolio: z.string().optional(),
+});
+
 export type ProfileUpdateData = z.infer<typeof profileUpdateSchema>;
 export type SkillsPreferencesData = z.infer<typeof skillsPreferencesSchema>;
 export type ExperienceData = z.infer<typeof experienceSchema>;
 export type ExperienceUpdateData = z.infer<typeof experienceUpdateSchema>;
+export type WebsitePortfolioData = z.infer<typeof websitePortfolioSchema>;
 
 // Get current user
 async function getCurrentUser() {
@@ -83,6 +100,8 @@ export async function updateProfileAction(data: ProfileUpdateData) {
         phone: validatedData.phone || null,
         location: validatedData.location || null,
         bio: validatedData.bio || null,
+        website: validatedData.website || null,
+        portfolio: validatedData.portfolio || null,
         yearsOfExperience: validatedData.yearsOfExperience
           ? parseInt(validatedData.yearsOfExperience)
           : null,
@@ -301,6 +320,43 @@ export async function deleteExperienceAction(experienceId: string) {
   } catch (error) {
     console.error("Experience deletion error:", error);
     return { success: false, message: "Failed to delete experience" };
+  }
+}
+
+// Update website and portfolio
+export async function updateWebsitePortfolioAction(data: WebsitePortfolioData) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Validate the data
+    const validatedData = websitePortfolioSchema.parse(data);
+
+    // Update the user website and portfolio
+    await db
+      .update(users)
+      .set({
+        website: validatedData.website || null,
+        portfolio: validatedData.portfolio || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/dashboard");
+    return {
+      success: true,
+      message: "Website and portfolio updated successfully",
+    };
+  } catch (error) {
+    console.error("Website portfolio update error:", error);
+
+    if (error instanceof z.ZodError) {
+      return { success: false, message: error.errors[0].message };
+    }
+
+    return {
+      success: false,
+      message: "Failed to update website and portfolio",
+    };
   }
 }
 

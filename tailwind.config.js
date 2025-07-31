@@ -73,7 +73,7 @@ module.exports = {
         tab: {
           light: {
             bg: "#FAFAFA",
-            border: "#202123",
+            border: "#E9EAEB",
             active: {
               bg: "#FFF",
               text: "#414651",

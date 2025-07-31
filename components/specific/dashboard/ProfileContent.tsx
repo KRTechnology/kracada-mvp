@@ -168,9 +168,6 @@ export function ProfileContent({ userData, experiences }: ProfileContentProps) {
                 <p key={index}>{paragraph}</p>
               ))}
             </div>
-            <button className="text-warm-200 hover:text-warm-300 transition-colors text-sm font-medium">
-              Read more
-            </button>
           </motion.div>
         )}
 

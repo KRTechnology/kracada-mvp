@@ -12,6 +12,10 @@ import {
   ExperienceCard,
   ExperienceCardRef,
 } from "@/components/specific/dashboard/ExperienceCard";
+import {
+  WebsitePortfolioCard,
+  WebsitePortfolioCardRef,
+} from "@/components/specific/dashboard/WebsitePortfolioCard";
 import { Button } from "@/components/common/button";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -31,6 +35,8 @@ interface UserData {
   cv: string | null;
   hasCompletedProfile: boolean;
   accountType: string;
+  website: string | null;
+  portfolio: string | null;
 }
 
 interface ExperienceData {
@@ -63,6 +69,7 @@ export function EditProfileClient({
   const router = useRouter();
   const experienceCardRef = useRef<ExperienceCardRef>(null);
   const profileCardRef = useRef<ProfileCardRef>(null);
+  const websitePortfolioCardRef = useRef<WebsitePortfolioCardRef>(null);
 
   // Callback to update user data when any component updates
   const handleUserDataUpdate = useCallback((updates: Partial<UserData>) => {
@@ -93,6 +100,11 @@ export function EditProfileClient({
       // Trigger ProfileCard save if it has unsaved changes
       if (profileCardRef.current) {
         await profileCardRef.current.save();
+      }
+
+      // Trigger WebsitePortfolioCard save if it has unsaved changes
+      if (websitePortfolioCardRef.current) {
+        await websitePortfolioCardRef.current.save();
       }
 
       // Show success message
@@ -152,6 +164,14 @@ export function EditProfileClient({
               onUserDataUpdate={handleUserDataUpdate}
               isEditMode={true}
               ref={experienceCardRef}
+            />
+
+            {/* Website & Portfolio Section */}
+            <WebsitePortfolioCard
+              userData={currentUserData}
+              onUserDataUpdate={handleUserDataUpdate}
+              isEditMode={true}
+              ref={websitePortfolioCardRef}
             />
 
             {/* Action Buttons */}
