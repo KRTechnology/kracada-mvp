@@ -63,7 +63,33 @@ export default function LoginForm() {
         toast.error("Invalid email or password");
       } else {
         toast.success("Login successful");
-        router.push("/dashboard");
+
+        // Check if user has completed profile and redirect accordingly
+        try {
+          const response = await fetch("/api/auth/profile-status", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.hasCompletedProfile) {
+              router.push("/dashboard");
+            } else {
+              router.push("/dashboard/setup");
+            }
+          } else {
+            // Fallback to dashboard if API call fails
+            router.push("/dashboard");
+          }
+        } catch (error) {
+          console.error("Error checking profile status:", error);
+          // Fallback to dashboard if API call fails
+          router.push("/dashboard");
+        }
+
         router.refresh();
       }
     } catch (error) {
