@@ -18,9 +18,16 @@ interface ProfilePictureCardProps {
     cv?: string | null;
     id: string; // User ID for uploads
   };
+  onUserDataUpdate?: (updates: {
+    profilePicture?: string | null;
+    cv?: string | null;
+  }) => void;
 }
 
-export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
+export function ProfilePictureCard({
+  userData,
+  onUserDataUpdate,
+}: ProfilePictureCardProps) {
   const [profilePictureUrl, setProfilePictureUrl] = useState(
     userData.profilePicture
   );
@@ -82,6 +89,9 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
           // Update database with new profile picture URL
           await updateFileUploadsAction({ profilePicture: result.url });
 
+          // Notify parent component of the update
+          onUserDataUpdate?.({ profilePicture: result.url });
+
           toast.success("Profile picture uploaded successfully!");
         } else {
           toast.error(result.error || "Failed to upload profile picture");
@@ -136,6 +146,9 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
           // Update database with new CV URL
           await updateFileUploadsAction({ cv: result.url });
 
+          // Notify parent component of the update
+          onUserDataUpdate?.({ cv: result.url });
+
           toast.success("CV uploaded successfully!");
         } else {
           toast.error(result.error || "Failed to upload CV");
@@ -163,6 +176,9 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
           // Update database to remove profile picture URL
           await updateFileUploadsAction({ profilePicture: null });
 
+          // Notify parent component of the update
+          onUserDataUpdate?.({ profilePicture: null });
+
           toast.success("Profile picture removed successfully");
         } else {
           toast.error("Failed to remove profile picture from storage");
@@ -177,6 +193,9 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
 
       // Update database to remove profile picture URL
       await updateFileUploadsAction({ profilePicture: null });
+
+      // Notify parent component of the update
+      onUserDataUpdate?.({ profilePicture: null });
 
       toast.success("Profile picture removed");
     }
@@ -193,6 +212,9 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
           // Update database to remove CV URL
           await updateFileUploadsAction({ cv: null });
 
+          // Notify parent component of the update
+          onUserDataUpdate?.({ cv: null });
+
           toast.success("CV removed successfully");
         } else {
           toast.error("Failed to remove CV from storage");
@@ -207,6 +229,9 @@ export function ProfilePictureCard({ userData }: ProfilePictureCardProps) {
 
       // Update database to remove CV URL
       await updateFileUploadsAction({ cv: null });
+
+      // Notify parent component of the update
+      onUserDataUpdate?.({ cv: null });
 
       toast.success("CV removed");
     }

@@ -104,6 +104,13 @@ export function SetupClient() {
     fetchUserData();
   }, []);
 
+  // Callback to update user data when profile picture or CV is updated
+  const handleUserDataUpdate = (updates: Partial<UserData>) => {
+    if (userData) {
+      setUserData({ ...userData, ...updates });
+    }
+  };
+
   // Check if all required fields are completed
   const isProfileComplete =
     userData &&
@@ -198,16 +205,28 @@ export function SetupClient() {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-[1010px] mx-auto">
             <div className="space-y-6">
-              <ProfilePictureCard userData={userData} />
-              <ProfileCard userData={userData} />
+              <ProfilePictureCard
+                userData={userData}
+                onUserDataUpdate={handleUserDataUpdate}
+              />
+              <ProfileCard
+                userData={userData}
+                onUserDataUpdate={handleUserDataUpdate}
+              />
               <ExperienceCard
                 userData={userData}
                 experiences={experiences}
                 onExperiencesUpdate={setExperiences}
+                onUserDataUpdate={handleUserDataUpdate}
               />
 
               {/* Continue Button */}
-              <div className="flex flex-col items-center pt-8 space-y-4">
+              <motion.div
+                className="flex flex-col items-center pt-8 space-y-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.6 }}
+              >
                 <Button
                   onClick={handleContinue}
                   disabled={!canContinue || isContinuing}
@@ -218,7 +237,12 @@ export function SetupClient() {
 
                 {/* Progress Feedback */}
                 {!canContinue && (
-                  <div className="w-full max-w-md">
+                  <motion.div
+                    className="w-full max-w-md"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.8 }}
+                  >
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                       <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
                         Complete your profile to continue:
@@ -258,9 +282,9 @@ export function SetupClient() {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
