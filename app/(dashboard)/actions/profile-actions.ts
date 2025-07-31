@@ -154,7 +154,6 @@ export async function updateFileUploadsAction(data: {
   try {
     const userId = await getCurrentUser();
 
-    // Build update object with only provided fields
     const updateData: any = {
       updatedAt: new Date(),
     };
@@ -167,7 +166,6 @@ export async function updateFileUploadsAction(data: {
       updateData.cv = data.cv;
     }
 
-    // Update the user file uploads
     await db.update(users).set(updateData).where(eq(users.id, userId));
 
     revalidatePath("/dashboard");
