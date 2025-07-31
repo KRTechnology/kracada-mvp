@@ -1,8 +1,9 @@
 import { getUserProfileAction } from "@/app/(dashboard)/actions/profile-actions";
 import { auth } from "@/auth";
+import { DashboardContent } from "@/components/specific/dashboard/DashboardContent";
 import { MobileActionButtons } from "@/components/specific/dashboard/MobileActionButtons";
 import { ProfileBanner } from "@/components/specific/dashboard/ProfileBanner";
-import { DashboardContent } from "@/components/specific/dashboard/DashboardContent";
+
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
