@@ -22,11 +22,13 @@ interface ProfilePictureCardProps {
     profilePicture?: string | null;
     cv?: string | null;
   }) => void;
+  isEditMode?: boolean;
 }
 
 export function ProfilePictureCard({
   userData,
   onUserDataUpdate,
+  isEditMode = false,
 }: ProfilePictureCardProps) {
   const [profilePictureUrl, setProfilePictureUrl] = useState(
     userData.profilePicture
@@ -92,7 +94,10 @@ export function ProfilePictureCard({
           // Notify parent component of the update
           onUserDataUpdate?.({ profilePicture: result.url });
 
-          toast.success("Profile picture uploaded successfully!");
+          // Only show toast if not in edit mode
+          if (!isEditMode) {
+            toast.success("Profile picture uploaded successfully!");
+          }
         } else {
           toast.error(result.error || "Failed to upload profile picture");
         }
@@ -149,7 +154,10 @@ export function ProfilePictureCard({
           // Notify parent component of the update
           onUserDataUpdate?.({ cv: result.url });
 
-          toast.success("CV uploaded successfully!");
+          // Only show toast if not in edit mode
+          if (!isEditMode) {
+            toast.success("CV uploaded successfully!");
+          }
         } else {
           toast.error(result.error || "Failed to upload CV");
         }
@@ -179,7 +187,10 @@ export function ProfilePictureCard({
           // Notify parent component of the update
           onUserDataUpdate?.({ profilePicture: null });
 
-          toast.success("Profile picture removed successfully");
+          // Only show toast if not in edit mode
+          if (!isEditMode) {
+            toast.success("Profile picture removed successfully");
+          }
         } else {
           toast.error("Failed to remove profile picture from storage");
         }
@@ -197,7 +208,10 @@ export function ProfilePictureCard({
       // Notify parent component of the update
       onUserDataUpdate?.({ profilePicture: null });
 
-      toast.success("Profile picture removed");
+      // Only show toast if not in edit mode
+      if (!isEditMode) {
+        toast.success("Profile picture removed");
+      }
     }
   };
 
@@ -215,7 +229,10 @@ export function ProfilePictureCard({
           // Notify parent component of the update
           onUserDataUpdate?.({ cv: null });
 
-          toast.success("CV removed successfully");
+          // Only show toast if not in edit mode
+          if (!isEditMode) {
+            toast.success("CV removed successfully");
+          }
         } else {
           toast.error("Failed to remove CV from storage");
         }
@@ -233,7 +250,10 @@ export function ProfilePictureCard({
       // Notify parent component of the update
       onUserDataUpdate?.({ cv: null });
 
-      toast.success("CV removed");
+      // Only show toast if not in edit mode
+      if (!isEditMode) {
+        toast.success("CV removed");
+      }
     }
   };
 

@@ -4,7 +4,10 @@ import { useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { ProfileBanner } from "@/components/specific/dashboard/ProfileBanner";
 import { ProfilePictureCard } from "@/components/specific/dashboard/ProfilePictureCard";
-import { ProfileCard } from "@/components/specific/dashboard/ProfileCard";
+import {
+  ProfileCard,
+  ProfileCardRef,
+} from "@/components/specific/dashboard/ProfileCard";
 import {
   ExperienceCard,
   ExperienceCardRef,
@@ -59,6 +62,7 @@ export function EditProfileClient({
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
   const experienceCardRef = useRef<ExperienceCardRef>(null);
+  const profileCardRef = useRef<ProfileCardRef>(null);
 
   // Callback to update user data when any component updates
   const handleUserDataUpdate = useCallback((updates: Partial<UserData>) => {
@@ -84,6 +88,11 @@ export function EditProfileClient({
       // Trigger ExperienceCard save if it has unsaved changes
       if (experienceCardRef.current) {
         await experienceCardRef.current.save();
+      }
+
+      // Trigger ProfileCard save if it has unsaved changes
+      if (profileCardRef.current) {
+        await profileCardRef.current.save();
       }
 
       // Show success message
@@ -124,6 +133,7 @@ export function EditProfileClient({
             <ProfilePictureCard
               userData={currentUserData}
               onUserDataUpdate={handleUserDataUpdate}
+              isEditMode={true}
             />
 
             {/* Profile Information Section */}
@@ -131,6 +141,7 @@ export function EditProfileClient({
               userData={currentUserData}
               onUserDataUpdate={handleUserDataUpdate}
               isEditMode={true}
+              ref={profileCardRef}
             />
 
             {/* Experience & Skills Section */}

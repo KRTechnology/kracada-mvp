@@ -168,7 +168,10 @@ export const ExperienceCard = forwardRef<
         const result = await updateSkillsPreferencesAction(data);
 
         if (result.success) {
-          toast.success(result.message);
+          // Only show toast if not in edit mode (to avoid multiple toasts)
+          if (!isEditMode) {
+            toast.success(result.message);
+          }
 
           // Notify parent component of the update
           onUserDataUpdate?.(data);
