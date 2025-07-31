@@ -182,10 +182,9 @@ export function ProfileContent({ userData, experiences }: ProfileContentProps) {
                 <motion.div
                   key={experience.id}
                   variants={itemVariants}
-                  className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
+                  className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start gap-3">
-                    {/* Company Icon */}
                     <div
                       className={`w-10 h-10 rounded-full ${getCompanyColor(experience.company)} flex items-center justify-center flex-shrink-0`}
                     >
@@ -199,10 +198,10 @@ export function ProfileContent({ userData, experiences }: ProfileContentProps) {
                       <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm">
                         {experience.jobTitle}
                       </h4>
-                      <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+                      <p className="text-neutral-600 dark:text-neutral-200 text-sm">
                         {experience.company}
                       </p>
-                      <p className="text-neutral-500 dark:text-neutral-500 text-xs">
+                      <p className="text-neutral-500 dark:text-neutral-200 text-xs">
                         {experience.startMonth} {experience.startYear} -{" "}
                         {experience.currentlyWorking
                           ? "Present"

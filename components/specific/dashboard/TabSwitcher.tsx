@@ -45,7 +45,7 @@ export function TabSwitcher({
           className="absolute top-1 left-1 w-[calc(100%/4-2px)] h-[calc(100%-8px)] bg-tab-light-active-bg dark:bg-tab-dark-active-bg rounded-[8px]"
           initial={false}
           animate={{
-            x: `${activeTabIndex * (100)}%`,
+            x: `${activeTabIndex * 100}%`,
           }}
           transition={{
             type: "spring",

@@ -35,10 +35,10 @@ interface DashboardContentProps {
 }
 
 const tabOptions = [
-  { value: "Profile", label: "Profile" },
-  { value: "Activities", label: "Activities" },
-  { value: "Bookmarks", label: "Bookmarks" },
-  { value: "Applications", label: "Applications" },
+  { value: "Profile", label: "Profile", count: 0 },
+  { value: "Activities", label: "Activities", count: 0 },
+  { value: "Bookmarks", label: "Bookmarks", count: 0 },
+  { value: "Applications", label: "Applications", count: 0 },
 ] as const;
 
 export function DashboardContent({
@@ -63,7 +63,7 @@ export function DashboardContent({
         <TabSwitcher
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          applicationsCount={2} // This will be dynamic in the future
+          applicationsCount={0} // Set to 0 for now
         />
       </div>
 
@@ -104,7 +104,14 @@ export function DashboardContent({
                       : "text-neutral-700 dark:text-neutral-300"
                   }`}
                 >
-                  {option.label}
+                  <div className="flex items-center justify-between">
+                    <span>{option.label}</span>
+                    {option.count && option.count > 0 && (
+                      <span className="text-xs bg-neutral-200 dark:bg-neutral-600 text-neutral-700 dark:text-neutral-200 px-2 py-1 rounded-full">
+                        {option.count}
+                      </span>
+                    )}
+                  </div>
                 </button>
               ))}
             </motion.div>
@@ -129,34 +136,88 @@ export function DashboardContent({
 
             {activeTab === "Activities" && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-                  Activities
-                </h3>
-                <p className="text-neutral-600 dark:text-neutral-400">
-                  Activities tab content will be implemented here.
-                </p>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4">
+                    <svg
+                      className="w-8 h-8 text-neutral-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
+                    No activities yet
+                  </h4>
+                  <p className="text-neutral-600 dark:text-neutral-400 max-w-md">
+                    Your recent activities will appear here. This could include
+                    job applications, profile updates, and other interactions.
+                  </p>
+                </div>
               </div>
             )}
 
             {activeTab === "Bookmarks" && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-                  Bookmarks
-                </h3>
-                <p className="text-neutral-600 dark:text-neutral-400">
-                  Bookmarks tab content will be implemented here.
-                </p>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4">
+                    <svg
+                      className="w-8 h-8 text-neutral-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                      />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
+                    No bookmarks yet
+                  </h4>
+                  <p className="text-neutral-600 dark:text-neutral-400 max-w-md">
+                    Save interesting jobs, companies, or articles to your
+                    bookmarks to easily access them later.
+                  </p>
+                </div>
               </div>
             )}
 
             {activeTab === "Applications" && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-                  Applications
-                </h3>
-                <p className="text-neutral-600 dark:text-neutral-400">
-                  Applications tab content will be implemented here.
-                </p>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4">
+                    <svg
+                      className="w-8 h-8 text-neutral-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
+                    No applications yet
+                  </h4>
+                  <p className="text-neutral-600 dark:text-neutral-400 max-w-md">
+                    Track your job applications here. When you apply to jobs,
+                    they will appear in this section with their current status.
+                  </p>
+                </div>
               </div>
             )}
           </motion.div>
