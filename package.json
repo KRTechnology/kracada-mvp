@@ -8,7 +8,7 @@
     "start": "next start",
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
-    "db:push": "drizzle-kit push:pg",
+    "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:drop": "npx drizzle-kit drop"
   },

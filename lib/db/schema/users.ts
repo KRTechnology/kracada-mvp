@@ -34,6 +34,8 @@ export const users = pgTable("users", {
   phone: varchar("phone", { length: 50 }),
   location: varchar("location", { length: 255 }),
   bio: text("bio"),
+  website: varchar("website", { length: 255 }),
+  portfolio: varchar("portfolio", { length: 255 }),
   yearsOfExperience: integer("years_of_experience"),
 
   // Skills and preferences (stored as JSON arrays)
