@@ -26,10 +26,10 @@ const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().optional(),
-  location: z.string().optional(),
-  bio: z.string().optional(),
-  yearsOfExperience: z.string().optional(),
+  phone: z.string().nullable().optional(),
+  location: z.string().nullable().optional(),
+  bio: z.string().nullable().optional(),
+  yearsOfExperience: z.string().nullable().optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileFormSchema>;
@@ -40,24 +40,29 @@ interface ProfileCardProps {
     firstName: string;
     lastName: string;
     email: string;
-    phone: string;
-    location: string;
-    bio: string;
-    yearsOfExperience: string;
+    phone: string | null;
+    location: string | null;
+    bio: string | null;
+    yearsOfExperience: string | null;
     accountType: string;
   };
   onUserDataUpdate?: (updates: {
     firstName?: string;
     lastName?: string;
     email?: string;
-    phone?: string;
-    location?: string;
-    bio?: string;
-    yearsOfExperience?: string;
+    phone?: string | null;
+    location?: string | null;
+    bio?: string | null;
+    yearsOfExperience?: string | null;
   }) => void;
+  isEditMode?: boolean;
 }
 
-export function ProfileCard({ userData, onUserDataUpdate }: ProfileCardProps) {
+export function ProfileCard({
+  userData,
+  onUserDataUpdate,
+  isEditMode = false,
+}: ProfileCardProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -67,10 +72,10 @@ export function ProfileCard({ userData, onUserDataUpdate }: ProfileCardProps) {
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      phone: userData.phone,
-      location: userData.location,
-      bio: userData.bio,
-      yearsOfExperience: userData.yearsOfExperience,
+      phone: userData.phone || "",
+      location: userData.location || "",
+      bio: userData.bio || "",
+      yearsOfExperience: userData.yearsOfExperience || "",
     }),
     [
       userData.firstName,
@@ -101,20 +106,42 @@ export function ProfileCard({ userData, onUserDataUpdate }: ProfileCardProps) {
   const onSubmit = async (data: ProfileFormData) => {
     setIsSaving(true);
     try {
-      const result = await updateProfileAction(data);
+      // Convert form data to match the expected format for updateProfileAction
+      const userDataUpdate = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone || undefined,
+        location: data.location || undefined,
+        bio: data.bio || undefined,
+        yearsOfExperience: data.yearsOfExperience || undefined,
+      };
+
+      const result = await updateProfileAction(userDataUpdate);
 
       if (result.success) {
         toast.success(result.message);
 
-        // Notify parent component of the update
-        onUserDataUpdate?.(data);
+        // Notify parent component of the update with nullable format
+        onUserDataUpdate?.({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone || null,
+          location: data.location || null,
+          bio: data.bio || null,
+          yearsOfExperience: data.yearsOfExperience || null,
+        });
 
         // Reset form to mark as clean after successful save
         reset(data);
-        // Trigger collapse animation after successful save
-        setTimeout(() => {
-          setIsCollapsed(true);
-        }, 500); // Small delay to show success message
+
+        // Only trigger collapse animation if not in edit mode
+        if (!isEditMode) {
+          setTimeout(() => {
+            setIsCollapsed(true);
+          }, 500); // Small delay to show success message
+        }
       } else {
         toast.error(result.message);
       }
@@ -134,7 +161,7 @@ export function ProfileCard({ userData, onUserDataUpdate }: ProfileCardProps) {
   });
 
   const handleCardClick = () => {
-    if (isCollapsed) {
+    if (isCollapsed && !isEditMode) {
       setIsCollapsed(false);
     }
   };
@@ -145,7 +172,7 @@ export function ProfileCard({ userData, onUserDataUpdate }: ProfileCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.2 }}
       className={`bg-white dark:bg-neutral-900 rounded-2xl shadow-sm transition-all duration-300 p-6 ${
-        isCollapsed ? "cursor-pointer hover:shadow-md" : ""
+        isCollapsed && !isEditMode ? "cursor-pointer hover:shadow-md" : ""
       }`}
       onClick={handleCardClick}
     >
@@ -158,7 +185,7 @@ export function ProfileCard({ userData, onUserDataUpdate }: ProfileCardProps) {
         </p>
       </div>
 
-      {!isCollapsed && (
+      {(!isCollapsed || isEditMode) && (
         <motion.form
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
@@ -325,16 +352,18 @@ export function ProfileCard({ userData, onUserDataUpdate }: ProfileCardProps) {
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex justify-end pt-4">
-            <Button
-              type="submit"
-              disabled={isSaving}
-              className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
-            >
-              {isSaving ? "Saving..." : "Save"}
-            </Button>
-          </div>
+          {/* Action Buttons - Only show if not in edit mode */}
+          {!isEditMode && (
+            <div className="flex justify-end pt-4">
+              <Button
+                type="submit"
+                disabled={isSaving}
+                className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          )}
         </motion.form>
       )}
     </motion.div>

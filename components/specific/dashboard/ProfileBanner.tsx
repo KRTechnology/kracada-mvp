@@ -2,12 +2,14 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface ProfileBannerProps {
   firstName?: string;
   lastName?: string;
   accountType?: string;
   profileImageUrl?: string;
+  showEditButton?: boolean;
 }
 
 export function ProfileBanner({
@@ -15,7 +17,14 @@ export function ProfileBanner({
   lastName = "Usoro",
   accountType = "Job Seeker",
   profileImageUrl,
+  showEditButton = true,
 }: ProfileBannerProps) {
+  const router = useRouter();
+
+  const handleEditProfile = () => {
+    router.push("/dashboard/edit");
+  };
+
   return (
     <div className="relative">
       {/* Banner Section with Padding - Apply padding to the container that holds the image */}
@@ -96,9 +105,14 @@ export function ProfileBanner({
             transition={{ duration: 0.5, delay: 0.6 }}
             className="hidden md:block flex-shrink-0"
           >
-            <button className="px-4 py-2 bg-white dark:bg-dark-container border border-neutral-300 dark:border-[#313337] text-neutral-700 dark:text-[#D8DDE7] rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm">
-              Edit profile
-            </button>
+            {showEditButton && (
+              <button
+                onClick={handleEditProfile}
+                className="px-4 py-2 bg-white dark:bg-dark-container border border-neutral-300 dark:border-[#313337] text-neutral-700 dark:text-[#D8DDE7] rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm"
+              >
+                Edit profile
+              </button>
+            )}
           </motion.div>
         </motion.div>
       </div>

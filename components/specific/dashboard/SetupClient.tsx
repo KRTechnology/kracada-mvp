@@ -19,10 +19,10 @@ interface UserData {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
-  location: string;
-  bio: string;
-  yearsOfExperience: string;
+  phone: string | null;
+  location: string | null;
+  bio: string | null;
+  yearsOfExperience: string | null;
   skills: string[];
   jobPreferences: string[];
   profilePicture: string | null;
@@ -67,11 +67,11 @@ export function SetupClient() {
             firstName: profileResult.data.firstName || "",
             lastName: profileResult.data.lastName || "",
             email: profileResult.data.email,
-            phone: profileResult.data.phone || "",
-            location: profileResult.data.location || "",
-            bio: profileResult.data.bio || "",
+            phone: profileResult.data.phone || null,
+            location: profileResult.data.location || null,
+            bio: profileResult.data.bio || null,
             yearsOfExperience:
-              profileResult.data.yearsOfExperience?.toString() || "",
+              profileResult.data.yearsOfExperience?.toString() || null,
             skills: profileResult.data.skills || [],
             jobPreferences: profileResult.data.jobPreferences || [],
             profilePicture: profileResult.data.profilePicture,
@@ -105,14 +105,29 @@ export function SetupClient() {
   }, []);
 
   // Callback to update user data when profile picture or CV is updated
-  const handleUserDataUpdate = useCallback((updates: Partial<UserData>) => {
-    setUserData((prevData) => {
-      if (prevData) {
-        return { ...prevData, ...updates };
-      }
-      return prevData;
-    });
-  }, []);
+  const handleUserDataUpdate = useCallback(
+    (updates: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      phone?: string | null;
+      location?: string | null;
+      bio?: string | null;
+      yearsOfExperience?: string | null;
+      skills?: string[];
+      jobPreferences?: string[];
+      profilePicture?: string | null;
+      cv?: string | null;
+    }) => {
+      setUserData((prevData) => {
+        if (prevData) {
+          return { ...prevData, ...updates };
+        }
+        return prevData;
+      });
+    },
+    []
+  );
 
   // Check if all required fields are completed
   const isProfileComplete =

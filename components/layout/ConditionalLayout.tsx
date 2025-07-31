@@ -24,6 +24,7 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
 
   const isDashboardRoute = pathname.startsWith("/dashboard");
   const isDashboardPage = pathname === "/dashboard";
+  const isEditProfilePage = pathname === "/dashboard/edit";
 
   // Show only header for auth and dashboard routes
   const showFooter = !isAuthRoute && !isDashboardRoute;
@@ -33,7 +34,7 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
       className={`flex flex-col min-h-screen ${
         isAuthRoute
           ? "bg-white dark:bg-neutral-900"
-          : isDashboardPage
+          : isDashboardPage || isEditProfilePage
             ? "bg-neutral-50 dark:bg-dark-bg"
             : ""
       }`}
