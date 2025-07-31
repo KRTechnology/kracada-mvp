@@ -67,6 +67,8 @@ module.exports = {
         },
         dark: {
           DEFAULT: "#0D0D0D",
+          bg: "#222020",
+          container: "#121212",
         },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

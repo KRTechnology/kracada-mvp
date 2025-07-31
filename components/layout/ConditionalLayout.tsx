@@ -23,13 +23,20 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     pathname.startsWith("/signup-confirmation");
 
   const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isDashboardPage = pathname === "/dashboard";
 
   // Show only header for auth and dashboard routes
   const showFooter = !isAuthRoute && !isDashboardRoute;
 
   return (
     <div
-      className={`flex flex-col min-h-screen ${isAuthRoute ? "bg-white dark:bg-neutral-900" : ""}`}
+      className={`flex flex-col min-h-screen ${
+        isAuthRoute
+          ? "bg-white dark:bg-neutral-900"
+          : isDashboardPage
+            ? "bg-neutral-50 dark:bg-dark-bg"
+            : ""
+      }`}
     >
       <Header />
       <main
