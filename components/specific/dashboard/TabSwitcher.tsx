@@ -30,8 +30,9 @@ export function TabSwitcher({
   applicationsCount = 0,
 }: TabSwitcherProps) {
   const [tabsWithBadge] = useState(() =>
-    tabs.map((tab) =>
-      tab.id === "Applications" ? { ...tab, badge: applicationsCount } : tab
+    tabs.map(
+      // tab.id === "Applications" ? { ...tab, badge: applicationsCount } : tab
+      (tab) => tab
     )
   );
 

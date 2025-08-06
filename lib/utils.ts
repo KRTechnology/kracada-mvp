@@ -1,9 +1,17 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export const lineClamp = (lines: number) => ({
+  display: "-webkit-box",
+  WebkitLineClamp: lines,
+  WebkitBoxOrient: "vertical" as const,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+});
 
 // Account type utilities
 export const ACCOUNT_TYPES = {

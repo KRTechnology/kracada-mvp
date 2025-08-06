@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TabSwitcher, TabType } from "./TabSwitcher";
 import { ProfileContent } from "./ProfileContent";
+import { BookmarksContent } from "./BookmarksContent";
 import { ChevronDown } from "lucide-react";
 
 interface DashboardContentProps {
@@ -163,34 +164,7 @@ export function DashboardContent({
               </div>
             )}
 
-            {activeTab === "Bookmarks" && (
-              <div className="space-y-4">
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4">
-                    <svg
-                      className="w-8 h-8 text-neutral-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                      />
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
-                    No bookmarks yet
-                  </h4>
-                  <p className="text-neutral-600 dark:text-neutral-400 max-w-md">
-                    Save interesting jobs, companies, or articles to your
-                    bookmarks to easily access them later.
-                  </p>
-                </div>
-              </div>
-            )}
+            {activeTab === "Bookmarks" && <BookmarksContent />}
 
             {activeTab === "Applications" && (
               <div className="space-y-4">

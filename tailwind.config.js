@@ -65,6 +65,16 @@ module.exports = {
           800: "#1F2937",
           900: "#111827",
         },
+        skillPill: {
+          light: {
+            bg: "#E2E8F0",
+            text: "#334155",
+          },
+          dark: {
+            bg: "#18212E",
+            text: "#C5C1C0",
+          },
+        },
         dark: {
           DEFAULT: "#0D0D0D",
           bg: "#222020",
