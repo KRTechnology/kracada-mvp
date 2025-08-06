@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { MapPin, MoreVertical } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface JobItem {
   id: number;
@@ -19,6 +20,11 @@ interface JobCardProps {
 }
 
 const JobCard = ({ job, index }: JobCardProps) => {
+  const router = useRouter();
+
+  const handleCardClick = () => {
+    router.push(`/jobs/${job.id}`);
+  };
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -38,6 +44,7 @@ const JobCard = ({ job, index }: JobCardProps) => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
+      onClick={handleCardClick}
       className="bg-white dark:bg-[#121212] border border-neutral-50 dark:border-[#232020] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative"
     >
       {/* Three Dots Menu - positioned outside the hover scale container */}
@@ -45,6 +52,7 @@ const JobCard = ({ job, index }: JobCardProps) => {
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
+          onClick={(e) => e.stopPropagation()}
           className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors flex items-center justify-center"
           style={{ width: "24px", height: "24px" }}
         >
