@@ -10,7 +10,7 @@ interface VideoCardProps {
 
 export function VideoCard({ video }: VideoCardProps) {
   return (
-    <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-dark rounded-lg border border-neutral-50 dark:border-[#232020] p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3">
         {/* Video Thumbnail Placeholder */}
         <div className="w-20 h-12 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center mr-3 relative">

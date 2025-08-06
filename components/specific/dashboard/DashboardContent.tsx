@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TabSwitcher, TabType } from "./TabSwitcher";
 import { ProfileContent } from "./ProfileContent";
 import { BookmarksContent } from "./BookmarksContent";
+import { ApplicationsContent } from "./ApplicationsContent";
 import { ChevronDown } from "lucide-react";
 
 interface DashboardContentProps {
@@ -64,7 +65,7 @@ export function DashboardContent({
         <TabSwitcher
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          applicationsCount={0} // Set to 0 for now
+          applicationsCount={2}
         />
       </div>
 
@@ -166,34 +167,7 @@ export function DashboardContent({
 
             {activeTab === "Bookmarks" && <BookmarksContent />}
 
-            {activeTab === "Applications" && (
-              <div className="space-y-4">
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4">
-                    <svg
-                      className="w-8 h-8 text-neutral-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
-                    No applications yet
-                  </h4>
-                  <p className="text-neutral-600 dark:text-neutral-400 max-w-md">
-                    Track your job applications here. When you apply to jobs,
-                    they will appear in this section with their current status.
-                  </p>
-                </div>
-              </div>
-            )}
+            {activeTab === "Applications" && <ApplicationsContent />}
           </motion.div>
         </AnimatePresence>
       </div>

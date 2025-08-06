@@ -75,6 +75,16 @@ module.exports = {
             text: "#C5C1C0",
           },
         },
+        statusPill: {
+          light: {
+            border: "#D5D7DA",
+            text: "#414651",
+          },
+          dark: {
+            border: "#313337",
+            text: "#414651",
+          },
+        },
         dark: {
           DEFAULT: "#0D0D0D",
           bg: "#222020",
