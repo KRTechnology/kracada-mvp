@@ -38,7 +38,7 @@ const JobCard = ({ job, index }: JobCardProps) => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
-      className="bg-white dark:bg-[#121212] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative"
+      className="bg-white dark:bg-[#121212] border border-neutral-50 dark:border-[#232020] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative"
     >
       {/* Three Dots Menu - positioned outside the hover scale container */}
       <div className="absolute top-6 right-6 z-10">
@@ -58,20 +58,8 @@ const JobCard = ({ job, index }: JobCardProps) => {
         className="h-full"
       >
         {/* Company Logo Placeholder */}
-        <div className="w-12 h-12 mb-4 bg-neutral-200 dark:bg-neutral-700 rounded-lg flex items-center justify-center">
-          <div
-            className="w-full h-full rounded-lg"
-            style={{
-              backgroundImage: `
-                linear-gradient(45deg, #f3f4f6 25%, transparent 25%), 
-                linear-gradient(-45deg, #f3f4f6 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #f3f4f6 75%), 
-                linear-gradient(-45deg, transparent 75%, #f3f4f6 75%)
-              `,
-              backgroundSize: "8px 8px",
-              backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
-            }}
-          />
+        <div className="w-12 h-12 mb-4 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-600 rounded" />
         </div>
 
         {/* Job Title */}
@@ -81,17 +69,17 @@ const JobCard = ({ job, index }: JobCardProps) => {
 
         {/* Company Name and Location */}
         <div className="flex items-center justify-between mb-4">
-          <span className="text-neutral-600 dark:text-neutral-300 font-medium">
+          <span className="text-neutral-600 dark:text-white font-medium">
             {job.company}
           </span>
-          <div className="flex items-center text-neutral-500 dark:text-neutral-400 text-sm">
+          <div className="flex items-center text-neutral-500 dark:text-white text-sm">
             <MapPin className="w-4 h-4 mr-1" />
             <span>{job.location}</span>
           </div>
         </div>
 
         {/* Job Description */}
-        <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed mb-6 line-clamp-3">
+        <p className="text-neutral-600 dark:text-white text-sm leading-relaxed mb-6 line-clamp-3">
           {job.description}
         </p>
 
@@ -100,7 +88,7 @@ const JobCard = ({ job, index }: JobCardProps) => {
           {job.skills.map((skill, skillIndex) => (
             <span
               key={skillIndex}
-              className="px-3 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 text-xs font-medium rounded-full"
+              className="px-3 py-1 bg-skillPill-light-bg dark:bg-skillPill-dark-bg text-skillPill-light-text dark:text-skillPill-dark-text text-xs font-medium rounded-full"
             >
               {skill}
             </span>
