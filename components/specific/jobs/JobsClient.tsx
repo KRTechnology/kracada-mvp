@@ -91,10 +91,10 @@ export function JobsClient({ initialJobs, locations }: JobsClientProps) {
           </div>
 
           {/* Location Dropdown */}
-          <div className="relative">
+          <div className="relative w-full lg:w-64">
             <button
               onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
-              className="flex items-center justify-between w-full lg:w-48 px-4 py-3 border border-neutral-200 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-warm-200 focus:border-transparent transition-colors"
+              className="flex items-center justify-between w-full px-4 py-3 border border-neutral-200 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-warm-200 focus:border-transparent transition-colors"
             >
               <div className="flex items-center min-w-0 flex-1">
                 <MapPin className="w-5 h-5 text-neutral-400 mr-2 flex-shrink-0" />
@@ -143,10 +143,10 @@ export function JobsClient({ initialJobs, locations }: JobsClientProps) {
             </AnimatePresence>
           </div>
 
-          {/* Search Button */}
-          <button className="bg-warm-200 hover:bg-warm-300 text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-sm">
+          {/* Search Button - Commented out for future use */}
+          {/* <button className="bg-warm-200 hover:bg-warm-300 text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-sm">
             Search
-          </button>
+          </button> */}
         </div>
 
         {/* Job Count and Notification Toggle */}
