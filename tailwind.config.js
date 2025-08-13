@@ -75,6 +75,20 @@ module.exports = {
             text: "#C5C1C0",
           },
         },
+        goBackButton: {
+          light: {
+            border: "#E2E8F0",
+            text: "#334155",
+          },
+          dark: {
+            border: "#585251",
+            text: "#FFE3DE",
+          },
+        },
+        sectionBorder: {
+          light: "#EBE9E9",
+          dark: "#585251",
+        },
         statusPill: {
           light: {
             border: "#D5D7DA",
