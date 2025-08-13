@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Upload, X, FileText, Linkedin, Award, Globe } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ export function JobApplicationDialog({
   jobTitle,
   companyName,
 }: JobApplicationDialogProps) {
+  const router = useRouter();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
@@ -44,6 +46,11 @@ export function JobApplicationDialog({
     setCertification("");
     setLinkedinProfile("");
     onClose();
+  };
+
+  const handleViewApplicationStatus = () => {
+    onClose();
+    router.push("/jobs/applications");
   };
 
   const handleFileUpload = (
@@ -263,7 +270,7 @@ export function JobApplicationDialog({
               </button>
             ) : (
               <button
-                onClick={handleClose}
+                onClick={handleViewApplicationStatus}
                 className="px-4 py-2 bg-warm-200 hover:bg-warm-300 text-white rounded-lg font-medium transition-colors h-10"
               >
                 View Application Status
