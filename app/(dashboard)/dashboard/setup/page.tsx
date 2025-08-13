@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getUserProfileAction } from "@/app/(dashboard)/actions/profile-actions";
-import { SetupClient } from "@/components/specific/dashboard/SetupClient";
+import { SetupClientFactory } from "@/components/specific/dashboard/SetupClientFactory";
 
 export default async function SetupPage() {
   const session = await auth();
@@ -16,5 +16,11 @@ export default async function SetupPage() {
     redirect("/dashboard");
   }
 
-  return <SetupClient />;
+  // Get user's account type to determine which setup client to render
+  const accountType =
+    profileResult.success && profileResult.data?.accountType
+      ? profileResult.data.accountType
+      : "Job Seeker"; // Default fallback
+
+  return <SetupClientFactory accountType={accountType} />;
 }

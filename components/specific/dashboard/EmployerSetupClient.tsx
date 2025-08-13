@@ -1,18 +1,28 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ProfilePictureCard } from "@/components/specific/dashboard/ProfilePictureCard";
-import { ProfileCard } from "@/components/specific/dashboard/ProfileCard";
-import { ExperienceCard } from "@/components/specific/dashboard/ExperienceCard";
+import { motion } from "framer-motion";
+import { EmployerProfilePictureCard } from "@/components/specific/dashboard/EmployerProfilePictureCard";
+import { EmployerPersonalDetailsCard } from "./EmployerPersonalDetailsCard";
+import { EmployerCompanyLogoCard } from "./EmployerCompanyLogoCard";
+import { EmployerCompanyDetailsCard } from "./EmployerCompanyDetailsCard";
 import { Button } from "@/components/common/button";
+import { Input } from "@/components/common/input";
+import { Label } from "@/components/common/label";
+import { Textarea } from "@/components/common/textarea";
 import {
-  getUserProfileAction,
-  getUserExperiencesAction,
-  markProfileCompletedAction,
-} from "@/app/(dashboard)/actions/profile-actions";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/common/select";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import {
+  getUserProfileAction,
+  markProfileCompletedAction,
+} from "@/app/(dashboard)/actions/profile-actions";
 
 interface UserData {
   id: string;
@@ -22,32 +32,31 @@ interface UserData {
   phone: string | null;
   location: string | null;
   bio: string | null;
-  yearsOfExperience: string | null;
-  skills: string[];
-  jobPreferences: string[];
+  yearsOfExperience: number | null;
   profilePicture: string | null;
-  cv: string | null;
   hasCompletedProfile: boolean;
   accountType: string;
+  companyLogo?: string | null;
+  recruiterExperience?: string | null;
 }
 
-interface ExperienceData {
-  id: string;
-  jobTitle: string;
-  employmentType: string;
-  company: string;
-  currentlyWorking: boolean;
-  startMonth: string | null;
-  startYear: string | null;
-  endMonth: string | null;
-  endYear: string | null;
-  description: string | null;
-  skills: string[];
+interface CompanyData {
+  companyLogo: string | null;
+  companyName: string;
+  companyDescription: string;
+  companyWebsite: string;
+  companyEmail: string;
 }
 
-export function SetupClient() {
+export function EmployerSetupClient() {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [experiences, setExperiences] = useState<ExperienceData[]>([]);
+  const [companyData, setCompanyData] = useState<CompanyData>({
+    companyLogo: null,
+    companyName: "",
+    companyDescription: "",
+    companyWebsite: "",
+    companyEmail: "",
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isContinuing, setIsContinuing] = useState(false);
   const router = useRouter();
@@ -56,42 +65,19 @@ export function SetupClient() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const [profileResult, experiencesResult] = await Promise.all([
-          getUserProfileAction(),
-          getUserExperiencesAction(),
-        ]);
+        const result = await getUserProfileAction();
 
-        if (profileResult.success && profileResult.data) {
-          setUserData({
-            id: profileResult.data.id,
-            firstName: profileResult.data.firstName || "",
-            lastName: profileResult.data.lastName || "",
-            email: profileResult.data.email,
-            phone: profileResult.data.phone || null,
-            location: profileResult.data.location || null,
-            bio: profileResult.data.bio || null,
-            yearsOfExperience:
-              profileResult.data.yearsOfExperience?.toString() || null,
-            skills: profileResult.data.skills || [],
-            jobPreferences: profileResult.data.jobPreferences || [],
-            profilePicture: profileResult.data.profilePicture,
-            cv: profileResult.data.cv,
-            hasCompletedProfile: profileResult.data.hasCompletedProfile,
-            accountType: profileResult.data.accountType,
+        if (result.success && result.data) {
+          setUserData(result.data);
+          setCompanyData({
+            companyLogo: result.data.companyLogo || null,
+            companyName: result.data.companyName || "",
+            companyDescription: result.data.companyDescription || "",
+            companyWebsite: result.data.companyWebsite || "",
+            companyEmail: result.data.companyEmail || "",
           });
         } else {
-          console.error("Failed to fetch user profile:", profileResult.message);
-          toast.error("Failed to load profile data");
-        }
-
-        if (experiencesResult.success && experiencesResult.data) {
-          setExperiences(experiencesResult.data);
-        } else {
-          console.error(
-            "Failed to fetch experiences:",
-            experiencesResult.message
-          );
-          toast.error("Failed to load experiences");
+          toast.error(result.message || "Failed to load profile data");
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -104,7 +90,7 @@ export function SetupClient() {
     fetchUserData();
   }, []);
 
-  // Callback to update user data when profile picture or CV is updated
+  // Callback to update user data when profile picture is updated
   const handleUserDataUpdate = useCallback(
     (updates: {
       firstName?: string;
@@ -113,11 +99,8 @@ export function SetupClient() {
       phone?: string | null;
       location?: string | null;
       bio?: string | null;
-      yearsOfExperience?: string | null;
-      skills?: string[];
-      jobPreferences?: string[];
+      yearsOfExperience?: number | null;
       profilePicture?: string | null;
-      cv?: string | null;
     }) => {
       setUserData((prevData) => {
         if (prevData) {
@@ -125,6 +108,30 @@ export function SetupClient() {
         }
         return prevData;
       });
+    },
+    []
+  );
+
+  // Handle company data updates
+  const handleCompanyDataUpdate = useCallback(
+    (updates: Partial<CompanyData>) => {
+      setCompanyData((prevData) => ({
+        ...prevData,
+        ...updates,
+      }));
+    },
+    []
+  );
+
+  // Handle company logo updates
+  const handleCompanyLogoUpdate = useCallback(
+    (updates: { companyLogo?: string | null }) => {
+      if (updates.companyLogo !== undefined) {
+        setCompanyData((prevData) => ({
+          ...prevData,
+          companyLogo: updates.companyLogo || null,
+        }));
+      }
     },
     []
   );
@@ -139,21 +146,16 @@ export function SetupClient() {
     userData.location &&
     userData.bio &&
     userData.profilePicture && // Profile picture is required
-    userData.cv && // CV is required
-    (userData.accountType === "Employer" ||
-    userData.accountType === "Business Owner"
-      ? userData.yearsOfExperience
-      : true);
+    userData.recruiterExperience; // Recruiter experience is required for employers
 
-  const isSkillsComplete =
-    userData &&
-    userData.skills.length > 0 &&
-    userData.jobPreferences.length > 0;
+  const isCompanyComplete =
+    companyData.companyLogo &&
+    companyData.companyName &&
+    companyData.companyDescription &&
+    companyData.companyWebsite &&
+    companyData.companyEmail;
 
-  const isExperiencesComplete = experiences.length > 0;
-
-  const canContinue =
-    isProfileComplete && isSkillsComplete && isExperiencesComplete;
+  const canContinue = isProfileComplete && isCompanyComplete;
 
   const handleContinue = async () => {
     if (!canContinue) return;
@@ -166,7 +168,7 @@ export function SetupClient() {
         toast.success("Profile completed successfully!");
         router.push("/dashboard");
       } else {
-        toast.error(result.message);
+        toast.error(result.message || "Failed to complete profile");
       }
     } catch (error) {
       console.error("Continue error:", error);
@@ -223,19 +225,27 @@ export function SetupClient() {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-[1010px] mx-auto">
             <div className="space-y-6">
-              <ProfilePictureCard
+              {/* Profile Picture Section */}
+              <EmployerProfilePictureCard
                 userData={userData}
                 onUserDataUpdate={handleUserDataUpdate}
               />
-              <ProfileCard
+
+              {/* Profile (Personal Details) Section */}
+              <EmployerPersonalDetailsCard
                 userData={userData}
                 onUserDataUpdate={handleUserDataUpdate}
               />
-              <ExperienceCard
-                userData={userData}
-                experiences={experiences}
-                onExperiencesUpdate={setExperiences}
-                onUserDataUpdate={handleUserDataUpdate}
+
+              {/* Company Details Section */}
+              <EmployerCompanyLogoCard
+                userData={userData!}
+                onUserDataUpdate={handleCompanyLogoUpdate}
+              />
+
+              <EmployerCompanyDetailsCard
+                companyData={companyData}
+                onCompanyDataUpdate={handleCompanyDataUpdate}
               />
 
               {/* Continue Button */}
@@ -278,24 +288,28 @@ export function SetupClient() {
                             <span>Upload a profile picture</span>
                           </div>
                         )}
-                        {userData && !userData.cv && (
+                        {userData && !userData.recruiterExperience && (
                           <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
                             <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span>Upload your CV</span>
+                            <span>Specify years of recruiting experience</span>
                           </div>
                         )}
-                        {!isSkillsComplete && (
+                        {!isCompanyComplete && (
                           <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
                             <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span>
-                              Add at least one skill and job preference
-                            </span>
+                            <span>Complete company details</span>
                           </div>
                         )}
-                        {!isExperiencesComplete && (
+                        {companyData && !companyData.companyLogo && (
                           <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
                             <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span>Add at least one work experience</span>
+                            <span>Upload company logo</span>
+                          </div>
+                        )}
+                        {companyData && !companyData.companyDescription && (
+                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span>Add company description</span>
                           </div>
                         )}
                       </div>

@@ -45,6 +45,14 @@ export const users = pgTable("users", {
   // File uploads
   profilePicture: varchar("profile_picture", { length: 500 }),
   cv: varchar("cv", { length: 500 }),
+  companyLogo: varchar("company_logo", { length: 500 }),
+
+  // Company details (for employers)
+  companyName: varchar("company_name", { length: 255 }),
+  companyDescription: text("company_description"),
+  companyWebsite: varchar("company_website", { length: 255 }),
+  companyEmail: varchar("company_email", { length: 255 }),
+  recruiterExperience: varchar("recruiter_experience", { length: 50 }),
 
   // Profile completion flag
   hasCompletedProfile: boolean("has_completed_profile")

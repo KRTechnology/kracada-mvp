@@ -36,6 +36,20 @@
       "when": 1755071474107,
       "tag": "0004_silent_thor_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1755079588444,
+      "tag": "0005_right_thena",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1755082580966,
+      "tag": "0006_flippant_whizzer",
+      "breakpoints": true
     }
   ]
 }

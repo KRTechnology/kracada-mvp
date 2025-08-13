@@ -195,6 +195,133 @@ export async function updateFileUploadsAction(data: {
   }
 }
 
+// Update employer profile picture only (no CV)
+export async function updateEmployerProfilePictureAction(
+  profilePicture: string | null
+) {
+  try {
+    const userId = await getCurrentUser();
+
+    await db
+      .update(users)
+      .set({
+        profilePicture,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Profile picture updated successfully" };
+  } catch (error) {
+    console.error("Employer profile picture update error:", error);
+    return { success: false, message: "Failed to update profile picture" };
+  }
+}
+
+// Update company logo
+export async function updateCompanyLogoAction(companyLogo: string | null) {
+  try {
+    const userId = await getCurrentUser();
+
+    await db
+      .update(users)
+      .set({
+        companyLogo,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Company logo updated successfully" };
+  } catch (error) {
+    console.error("Company logo update error:", error);
+    return { success: false, message: "Failed to update company logo" };
+  }
+}
+
+// Update employer profile data
+export async function updateEmployerProfileAction(data: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  recruiterExperience?: string | null;
+}) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Validate the data
+    if (!data.firstName.trim() || !data.lastName.trim() || !data.email.trim()) {
+      return {
+        success: false,
+        message: "First name, last name, and email are required",
+      };
+    }
+
+    // Update the user profile
+    await db
+      .update(users)
+      .set({
+        firstName: data.firstName.trim(),
+        lastName: data.lastName.trim(),
+        fullName: `${data.firstName.trim()} ${data.lastName.trim()}`.trim(),
+        email: data.email.trim(),
+        phone: data.phone || null,
+        location: data.location || null,
+        bio: data.bio || null,
+        recruiterExperience: data.recruiterExperience || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Profile updated successfully" };
+  } catch (error) {
+    console.error("Employer profile update error:", error);
+    return { success: false, message: "Failed to update profile" };
+  }
+}
+
+// Update employer company details
+export async function updateEmployerCompanyDetailsAction(data: {
+  companyName: string;
+  companyDescription?: string | null;
+  companyWebsite?: string | null;
+  companyEmail?: string | null;
+}) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Validate the data
+    if (!data.companyName.trim()) {
+      return {
+        success: false,
+        message: "Company name is required",
+      };
+    }
+
+    // Update the user's company details
+    await db
+      .update(users)
+      .set({
+        companyName: data.companyName.trim(),
+        companyDescription: data.companyDescription || null,
+        companyWebsite: data.companyWebsite || null,
+        companyEmail: data.companyEmail || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Company details updated successfully" };
+  } catch (error) {
+    console.error("Employer company details update error:", error);
+    return { success: false, message: "Failed to update company details" };
+  }
+}
+
 // Create new experience
 export async function createExperienceAction(data: ExperienceData) {
   try {
