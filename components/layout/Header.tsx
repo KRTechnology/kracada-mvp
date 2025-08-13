@@ -2,6 +2,7 @@
 
 import { Logo } from "@/components/common/Logo";
 import { Spinner } from "@/components/common/spinner";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   LogOut,
@@ -10,10 +11,9 @@ import {
   User,
   X,
   Bell,
-  Moon,
-  Sun,
-  Monitor,
   CircleUserRound,
+  Sun,
+  Moon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -27,13 +27,11 @@ const Header = () => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [isDarkModeMenuOpen, setIsDarkModeMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const pathname = usePathname();
 
   // Refs for click outside detection
   const profileMenuRef = useRef<HTMLDivElement>(null);
-  const darkModeMenuRef = useRef<HTMLDivElement>(null);
 
   const user = session?.user;
   const isLoading = status === "loading";
@@ -47,7 +45,6 @@ const Header = () => {
     if (status === "unauthenticated") {
       setIsProfileMenuOpen(false);
       setIsMenuOpen(false);
-      setIsDarkModeMenuOpen(false);
     }
   }, [status]);
 
@@ -60,12 +57,6 @@ const Header = () => {
       ) {
         setIsProfileMenuOpen(false);
       }
-      if (
-        darkModeMenuRef.current &&
-        !darkModeMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsDarkModeMenuOpen(false);
-      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -77,19 +68,11 @@ const Header = () => {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
     if (isProfileMenuOpen) setIsProfileMenuOpen(false);
-    if (isDarkModeMenuOpen) setIsDarkModeMenuOpen(false);
   };
 
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
     if (isMenuOpen) setIsMenuOpen(false);
-    if (isDarkModeMenuOpen) setIsDarkModeMenuOpen(false);
-  };
-
-  const toggleDarkModeMenu = () => {
-    setIsDarkModeMenuOpen(!isDarkModeMenuOpen);
-    if (isMenuOpen) setIsMenuOpen(false);
-    if (isProfileMenuOpen) setIsProfileMenuOpen(false);
   };
 
   const handleSignOut = async () => {
@@ -109,7 +92,6 @@ const Header = () => {
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
-    setIsDarkModeMenuOpen(false);
   };
 
   return (
@@ -168,8 +150,9 @@ const Header = () => {
         {/* Auth Buttons or User Profile */}
         <div className="hidden md:flex items-center space-x-4 ml-8">
           {!user && !isLoading ? (
-            // Unauthenticated state - show login/signup buttons
+            // Unauthenticated state - show login/signup buttons and theme toggle
             <>
+              <ThemeToggle />
               <Link
                 href="/login"
                 className={`h-11 px-4 rounded-lg ${
@@ -215,69 +198,7 @@ const Header = () => {
               </button>
 
               {/* Dark Mode Toggle */}
-              <div className="relative" ref={darkModeMenuRef}>
-                <button
-                  onClick={toggleDarkModeMenu}
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-[#A4A7AE] hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-                >
-                  {theme === "dark" ? (
-                    <Moon className="w-5 h-5" />
-                  ) : theme === "light" ? (
-                    <Sun className="w-5 h-5" />
-                  ) : (
-                    <Monitor className="w-5 h-5" />
-                  )}
-                </button>
-
-                {/* Dark Mode Menu */}
-                <AnimatePresence>
-                  {isDarkModeMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute right-0 top-full mt-2 w-40 rounded-lg shadow-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 z-50"
-                    >
-                      <div className="p-2">
-                        <button
-                          onClick={() => handleThemeChange("light")}
-                          className={`w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-md transition-colors ${
-                            theme === "light"
-                              ? "text-warm-200 dark:text-warm-200"
-                              : "text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200"
-                          }`}
-                        >
-                          <Sun className="w-4 h-4" />
-                          <span>Light</span>
-                        </button>
-                        <button
-                          onClick={() => handleThemeChange("dark")}
-                          className={`w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-md transition-colors ${
-                            theme === "dark"
-                              ? "text-warm-200 dark:text-warm-200"
-                              : "text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200"
-                          }`}
-                        >
-                          <Moon className="w-4 h-4" />
-                          <span>Dark</span>
-                        </button>
-                        <button
-                          onClick={() => handleThemeChange("system")}
-                          className={`w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-md transition-colors ${
-                            theme === "system"
-                              ? "text-warm-200 dark:text-warm-200"
-                              : "text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200"
-                          }`}
-                        >
-                          <Monitor className="w-4 h-4" />
-                          <span>System</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <ThemeToggle />
 
               {/* Profile Icon with Dropdown */}
               <div className="relative" ref={profileMenuRef}>
@@ -351,31 +272,6 @@ const Header = () => {
                             <CircleUserRound className="w-5 h-5" />
                             <span>View profile</span>
                           </Link>
-
-                          <div className="flex items-center justify-between px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors">
-                            <div className="flex items-center space-x-3">
-                              {theme === "dark" ? (
-                                <Moon className="w-5 h-5" />
-                              ) : (
-                                <Sun className="w-5 h-5" />
-                              )}
-                              <span>Dark Mode</span>
-                            </div>
-                            <div
-                              className="w-10 h-5 bg-neutral-200 dark:bg-neutral-600 rounded-full relative cursor-pointer"
-                              onClick={() =>
-                                setTheme(theme === "dark" ? "light" : "dark")
-                              }
-                            >
-                              <div
-                                className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${
-                                  theme === "dark"
-                                    ? "translate-x-5"
-                                    : "translate-x-0.5"
-                                }`}
-                              ></div>
-                            </div>
-                          </div>
 
                           <Link
                             href="/settings"
@@ -531,6 +427,7 @@ const Header = () => {
               {!user && !isLoading ? (
                 // Unauthenticated mobile view
                 <div className="flex flex-col gap-4">
+                  <ThemeToggle />
                   <Link
                     href="/signup"
                     className={`h-14 rounded-xl ${
@@ -590,19 +487,15 @@ const Header = () => {
                     <Settings className="w-5 h-5" />
                     <span>Settings</span>
                   </Link>
-                  <button
-                    onClick={() => {
-                      setTheme(theme === "dark" ? "light" : "dark");
-                    }}
-                    className="flex items-center space-x-2 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors text-left"
-                  >
-                    {theme === "dark" ? (
-                      <Sun className="w-5 h-5" />
-                    ) : (
-                      <Moon className="w-5 h-5" />
-                    )}
-                    <span>Dark Mode</span>
-                  </button>
+                  <div className="px-4 py-3">
+                    <ThemeToggle variant="inline" size="sm" />
+                  </div>
+                  <div className="flex items-center space-x-3 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                    <div className="w-5 h-5 rounded-full border-2 border-neutral-400 flex items-center justify-center">
+                      <span className="text-xs">?</span>
+                    </div>
+                    <span>Support</span>
+                  </div>
                   <button
                     onClick={handleSignOut}
                     disabled={isSigningOut}
