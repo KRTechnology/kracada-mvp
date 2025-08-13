@@ -38,6 +38,7 @@ import {
   WebsitePortfolioCard,
   WebsitePortfolioCardRef,
 } from "@/components/specific/dashboard/WebsitePortfolioCard";
+import { toast } from "sonner";
 
 interface UserData {
   id: string;
@@ -128,11 +129,12 @@ export function ProfileTabContent({
       }
 
       // Show success message
-      console.log("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
 
       // TODO: Show toast notification
     } catch (error) {
       console.error("Save error:", error);
+      toast.error("Failed to save profile changes.");
       // TODO: Show error toast
     } finally {
       setIsSaving(false);

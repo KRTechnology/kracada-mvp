@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Checkbox } from "@/components/common/checkbox";
+import { toast } from "sonner";
 
 interface NotificationSetting {
   id: string;
@@ -147,6 +148,9 @@ export function NotificationsTabContent() {
         return category;
       })
     );
+
+    // Show toast notification
+    toast.success("Notification settings updated!");
   };
 
   const handleAllOn = (categoryId: string) => {
@@ -166,6 +170,9 @@ export function NotificationsTabContent() {
         return category;
       })
     );
+
+    // Show toast notification
+    toast.success("All notifications enabled for this category!");
   };
 
   const handleAllOff = (categoryId: string) => {
@@ -185,6 +192,9 @@ export function NotificationsTabContent() {
         return category;
       })
     );
+
+    // Show toast notification
+    toast.success("All notifications disabled for this category!");
   };
 
   return (

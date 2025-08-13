@@ -6,6 +6,7 @@ import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
 import { Label } from "@/components/common/label";
 import { Laptop, Smartphone, Monitor } from "lucide-react";
+import { toast } from "sonner";
 
 interface ActiveSession {
   id: string;
@@ -71,6 +72,7 @@ export function PasswordTabContent() {
       // TODO: Implement password update functionality
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
       console.log("Updating password:", passwordData);
+      toast.success("Password updated successfully!");
 
       // Reset form
       setPasswordData({
@@ -80,6 +82,7 @@ export function PasswordTabContent() {
       });
     } catch (error) {
       console.error("Password update error:", error);
+      toast.error("Failed to update password.");
     } finally {
       setIsUpdating(false);
     }
@@ -96,6 +99,9 @@ export function PasswordTabContent() {
   const handleLogoutSession = (sessionId: string) => {
     // TODO: Implement session logout functionality
     console.log("Logging out session:", sessionId);
+
+    // Show toast notification
+    toast.success("Session logged out successfully!");
   };
 
   const getDeviceIcon = (deviceType: string) => {
