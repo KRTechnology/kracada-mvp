@@ -176,7 +176,7 @@ const Header = () => {
               <div className="relative" ref={profileMenuRef}>
                 <button
                   onClick={toggleProfileMenu}
-                  className="flex items-center space-x-2 px-2 py-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <div className="w-10 h-10 rounded-full bg-warm-200 flex items-center justify-center text-white">
                     {user.name ? (
@@ -184,14 +184,6 @@ const Header = () => {
                     ) : (
                       <User className="w-5 h-5" />
                     )}
-                  </div>
-                  <div className="hidden lg:block">
-                    <p className="font-medium text-neutral-800 dark:text-neutral-200 text-sm">
-                      {user.name || "User"}
-                    </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {user.email || "user@example.com"}
-                    </p>
                   </div>
                 </button>
 
