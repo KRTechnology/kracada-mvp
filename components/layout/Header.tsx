@@ -151,7 +151,7 @@ const Header = () => {
             <div className="flex items-center space-x-3">
               {/* Settings Icon */}
               <button
-                onClick={() => router.push("/dashboard")}
+                onClick={() => router.push("/dashboard/settings")}
                 className="w-10 h-10 rounded-full flex items-center justify-center text-[#A4A7AE] hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
               >
                 <Settings className="w-5 h-5" />
