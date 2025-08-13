@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ProfileTabContent } from "@/components/specific/dashboard/settings/ProfileTabContent";
-import { PasswordTabContent } from "@/components/specific/dashboard/settings/PasswordTabContent";
-import { NotificationsTabContent } from "@/components/specific/dashboard/settings/NotificationsTabContent";
+import { ProfileTabContent } from "./settings/ProfileTabContent";
+import { PasswordTabContent } from "./settings/PasswordTabContent";
+import { NotificationsTabContent } from "./settings/NotificationsTabContent";
 
 type TabType = "profile" | "password" | "notifications";
 
@@ -41,19 +41,43 @@ interface ExperienceData {
   skills: string[];
 }
 
+interface NotificationCategory {
+  id: string;
+  title: string;
+  description: string;
+  settings: NotificationSetting[];
+}
+
+interface NotificationSetting {
+  id: string;
+  category: string;
+  event: string;
+  noneEnabled: boolean;
+  inAppEnabled: boolean;
+  emailEnabled: boolean;
+  eventDescription: string;
+  categoryDescription: string;
+  displayOrder: number;
+}
+
 interface SettingsClientProps {
   userData: UserData;
   experiences: ExperienceData[];
+  notificationPreferences: NotificationCategory[];
 }
 
-export function SettingsClient({ userData, experiences }: SettingsClientProps) {
+export function SettingsClient({
+  userData,
+  experiences,
+  notificationPreferences,
+}: SettingsClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("profile");
 
   const tabs = [
-    { id: "profile" as TabType, label: "Profile" },
-    { id: "password" as TabType, label: "Password" },
-    { id: "notifications" as TabType, label: "Notifications" },
-  ];
+    { id: "profile", label: "Profile" },
+    { id: "password", label: "Password" },
+    { id: "notifications", label: "Notifications" },
+  ] as const;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -64,7 +88,11 @@ export function SettingsClient({ userData, experiences }: SettingsClientProps) {
       case "password":
         return <PasswordTabContent />;
       case "notifications":
-        return <NotificationsTabContent />;
+        return (
+          <NotificationsTabContent
+            initialPreferences={notificationPreferences}
+          />
+        );
       default:
         return null;
     }
@@ -82,7 +110,7 @@ export function SettingsClient({ userData, experiences }: SettingsClientProps) {
                 Settings
               </h1>
               <p className="text-[#64748B] dark:text-neutral-100">
-                Manage your personal and organization settings.
+                Manage your account settings and preferences
               </p>
             </div>
 

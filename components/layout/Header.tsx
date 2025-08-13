@@ -238,7 +238,7 @@ const Header = () => {
                           </Link>
 
                           <Link
-                            href="/settings"
+                            href="/dashboard/settings"
                             className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors"
                             onClick={() => setIsProfileMenuOpen(false)}
                           >
@@ -409,7 +409,7 @@ const Header = () => {
                     <span>Profile</span>
                   </Link>
                   <Link
-                    href="/settings"
+                    href="/dashboard/settings"
                     className="flex items-center space-x-2 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >

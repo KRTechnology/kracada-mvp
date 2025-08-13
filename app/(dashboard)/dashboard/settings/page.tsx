@@ -4,6 +4,7 @@ import {
   getUserProfileAction,
   getUserExperiencesAction,
 } from "@/app/(dashboard)/actions/profile-actions";
+import { getUserNotificationPreferencesAction } from "@/app/(dashboard)/actions/notification-actions";
 import { SettingsClient } from "@/components/specific/dashboard/SettingsClient";
 
 export default async function SettingsPage() {
@@ -21,6 +22,10 @@ export default async function SettingsPage() {
 
   // Get user experiences
   const experiencesResult = await getUserExperiencesAction();
+
+  // Get user notification preferences
+  const notificationPreferencesResult =
+    await getUserNotificationPreferencesAction();
 
   // Convert the profile data to match the SettingsClient interface
   const userData = {
@@ -60,5 +65,17 @@ export default async function SettingsPage() {
         }))
       : [];
 
-  return <SettingsClient userData={userData} experiences={experiences} />;
+  // Get notification preferences data
+  const notificationPreferences =
+    notificationPreferencesResult.success && notificationPreferencesResult.data
+      ? notificationPreferencesResult.data
+      : [];
+
+  return (
+    <SettingsClient
+      userData={userData}
+      experiences={experiences}
+      notificationPreferences={notificationPreferences}
+    />
+  );
 }

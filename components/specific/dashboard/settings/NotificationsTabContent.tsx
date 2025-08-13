@@ -5,11 +5,9 @@ import { motion } from "framer-motion";
 import { Checkbox } from "@/components/common/checkbox";
 import { toast } from "sonner";
 import {
-  getUserNotificationPreferencesAction,
   updateUserNotificationPreferencesAction,
   bulkUpdateNotificationPreferencesAction,
 } from "@/app/(dashboard)/actions/notification-actions";
-import { Spinner } from "@/components/common/spinner";
 
 interface NotificationSetting {
   id: string;
@@ -30,37 +28,21 @@ interface NotificationCategory {
   settings: NotificationSetting[];
 }
 
-export function NotificationsTabContent() {
-  const [notificationSettings, setNotificationSettings] = useState<
-    NotificationCategory[]
-  >([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface NotificationsTabContentProps {
+  initialPreferences: NotificationCategory[];
+}
+
+export function NotificationsTabContent({
+  initialPreferences,
+}: NotificationsTabContentProps) {
+  const [notificationSettings, setNotificationSettings] =
+    useState<NotificationCategory[]>(initialPreferences);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Fetch notification preferences on component mount
+  // Update local state when initialPreferences change
   useEffect(() => {
-    fetchNotificationPreferences();
-  }, []);
-
-  const fetchNotificationPreferences = async () => {
-    try {
-      setIsLoading(true);
-      const result = await getUserNotificationPreferencesAction();
-
-      if (result.success && result.data) {
-        setNotificationSettings(result.data);
-      } else {
-        toast.error(
-          result.message || "Failed to load notification preferences"
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching notification preferences:", error);
-      toast.error("Failed to load notification preferences");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setNotificationSettings(initialPreferences);
+  }, [initialPreferences]);
 
   const handleNotificationChange = async (
     categoryId: string,
@@ -234,23 +216,6 @@ export function NotificationsTabContent() {
       setIsUpdating(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="bg-white dark:bg-dark-container rounded-2xl shadow-sm p-6"
-        >
-          <div className="flex items-center justify-center py-12">
-            <Spinner size="lg" />
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

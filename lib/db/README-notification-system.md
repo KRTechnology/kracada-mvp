@@ -112,6 +112,46 @@ Creates default preferences for a new user.
 
 Seeds the default preferences table (admin function).
 
+## Frontend Integration
+
+### Settings Page Architecture
+
+The notification preferences are now fetched at the **page level** instead of the component level:
+
+```typescript
+// app/(dashboard)/dashboard/settings/page.tsx
+const notificationPreferencesResult = await getUserNotificationPreferencesAction();
+const notificationPreferences = notificationPreferencesResult.success && notificationPreferencesResult.data
+  ? notificationPreferencesResult.data
+  : [];
+
+return (
+  <SettingsClient
+    userData={userData}
+    experiences={experiences}
+    notificationPreferences={notificationPreferences}
+  />
+);
+```
+
+### Benefits of Page-Level Fetching
+
+- **No Loading States**: Data is available immediately when switching tabs
+- **Better UX**: Instant tab switching without spinners
+- **Data Persistence**: Preferences remain available across tab navigation
+- **Performance**: Single fetch at page load instead of per-tab
+
+### Component Structure
+
+```
+SettingsPage (Server Component)
+├── Fetches: Profile, Experiences, Notification Preferences
+└── SettingsClient (Client Component)
+    ├── ProfileTabContent
+    ├── PasswordTabContent
+    └── NotificationsTabContent (receives initialPreferences)
+```
+
 ## Usage Examples
 
 ### Frontend Component
@@ -156,6 +196,51 @@ const result = await bulkUpdateNotificationPreferencesAction("jobs", {
 });
 ```
 
+## Database Seeding
+
+### Seeding Scripts
+
+The system includes comprehensive seeding capabilities:
+
+```bash
+# Run all seeds
+npm run db:seed:notifications
+
+# Run specific seed
+npm run db:seed:notifications notification-preferences
+```
+
+### Seed Data Structure
+
+The notification preferences seed creates the following structure:
+
+```
+alerts (3 preferences)
+├── password_change: in-app + email
+├── new_browser_signin: none
+└── new_device_linked: email only
+
+jobs (2 preferences)
+├── new_job_post: in-app only
+└── job_application_status: in-app only
+
+articles (3 preferences)
+├── new_topics: email only
+├── new_comment_on_article: none
+└── likes_on_article: none
+
+news (1 preference)
+└── news_updates: email only
+```
+
+### Safety Features
+
+- **Idempotent**: Safe to run multiple times
+- **Error Handling**: Comprehensive error handling with detailed logging
+- **Process Management**: Proper cleanup on termination
+- **Database Connection**: Safe connection handling
+- **Transaction Safety**: Database operations are atomic
+
 ## Future Enhancements
 
 ### In-App Notifications
@@ -183,6 +268,9 @@ Run the SQL migration file to create the tables and seed default data:
 ```bash
 # Apply the migration
 psql -d your_database -f lib/db/migrations/0003_notification_preferences.sql
+
+# Or use the seeding script
+npm run db:seed:notifications
 ```
 
 ## Testing
