@@ -20,6 +20,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
+import {
+  defaultNavigationConfig,
+  getNavigationClasses,
+  isNavigationActive,
+} from "@/lib/utils/navigation";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -102,48 +107,15 @@ const Header = () => {
           <Logo />
           {/* Responsive Navigation: spacing and scroll */}
           <nav className="hidden md:flex items-center ml-5 space-x-4 xl:space-x-8 overflow-x-auto scrollbar-none min-w-0">
-            <Link
-              href="/jobs"
-              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
-            >
-              Jobs
-            </Link>
-            <Link
-              href="/news"
-              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
-            >
-              News
-            </Link>
-            <Link
-              href="/lifestyle"
-              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
-            >
-              Lifestyle
-            </Link>
-            <Link
-              href="/entertainment"
-              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
-            >
-              Entertainment
-            </Link>
-            <Link
-              href="/cv-optimization"
-              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
-            >
-              CV Optimization
-            </Link>
-            <Link
-              href="/hotels-restaurants"
-              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
-            >
-              Hotels & Restaurants
-            </Link>
-            <Link
-              href="/travel-tourism"
-              className="text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors"
-            >
-              Travel & Tourism
-            </Link>
+            {defaultNavigationConfig.items.map((navItem) => (
+              <Link
+                key={navItem.href}
+                href={navItem.href}
+                className={getNavigationClasses(navItem, pathname, "desktop")}
+              >
+                {navItem.label}
+              </Link>
+            ))}
           </nav>
         </div>
 
@@ -371,55 +343,20 @@ const Header = () => {
           >
             <div className="p-6 flex flex-col">
               <nav className="flex flex-col gap-6 mb-8">
-                <Link
-                  href="/jobs"
-                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Jobs
-                </Link>
-                <Link
-                  href="/news"
-                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  News
-                </Link>
-                <Link
-                  href="/lifestyle"
-                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Lifestyle
-                </Link>
-                <Link
-                  href="/entertainment"
-                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Entertainment
-                </Link>
-                <Link
-                  href="/cv-optimization"
-                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  CV Optimization
-                </Link>
-                <Link
-                  href="/hotels-restaurants"
-                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Hotels & Restaurants
-                </Link>
-                <Link
-                  href="/travel-tourism"
-                  className="text-neutral-900 dark:text-neutral-100 text-base font-bold"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Travel & Tourism
-                </Link>
+                {defaultNavigationConfig.items.map((navItem) => (
+                  <Link
+                    key={navItem.href}
+                    href={navItem.href}
+                    className={getNavigationClasses(
+                      navItem,
+                      pathname,
+                      "mobile"
+                    )}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {navItem.label}
+                  </Link>
+                ))}
               </nav>
               <div className="border-b border-neutral-100 dark:border-neutral-800 mb-4" />
 
