@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { JobItem } from "@/lib/data/jobs-data";
+import { JobApplicationDialog } from "@/components/specific/jobs/JobApplicationDialog";
 
 interface JobDetailsClientProps {
   job: JobItem;
@@ -13,14 +14,14 @@ interface JobDetailsClientProps {
 export function JobDetailsClient({ job }: JobDetailsClientProps) {
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(false);
+  const [isApplicationDialogOpen, setIsApplicationDialogOpen] = useState(false);
 
   const handleGoBack = () => {
     router.back();
   };
 
   const handleApply = () => {
-    // TODO: Implement apply functionality
-    console.log("Apply for job:", job.id);
+    setIsApplicationDialogOpen(true);
   };
 
   const handleSave = () => {
@@ -42,14 +43,14 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 pt-20">
+    <div className="min-h-screen bg-neutral-50 dark:bg-dark-bg pt-20">
       <div className="container mx-auto px-4 py-8">
         {/* Main Job Details Card */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm max-w-4xl mx-auto pb-6"
+          className="bg-white dark:bg-dark rounded-2xl shadow-sm max-w-4xl mx-auto pb-6"
         >
           {/* Go Back Button - Now inside the card */}
           <div className="p-6">
@@ -58,7 +59,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
               onClick={handleGoBack}
-              className="flex items-center space-x-2 px-4 py-2 border border-goBackButton-light dark:border-goBackButton-dark text-goBackButton-light dark:text-goBackButton-dark rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-goBackButton-light dark:border-goBackButton-dark-border text-goBackButton-light dark:text-goBackButton-dark-text rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm font-medium">Go Back</span>
@@ -66,7 +67,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
           </div>
 
           {/* Job Details Sections - All wrapped in one border, including Job Title */}
-          <div className="mx-6 mb-10 p-6 border border-sectionBorder-light dark:border-sectionBorder-dark rounded-[10px] space-y-4">
+          <div className="mx-6 mb-10 p-6 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px] space-y-4">
             {/* Job Header Section */}
             <div className="pb-4">
               <div className="flex items-start justify-between">
@@ -99,7 +100,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
             </div>
 
             {/* Salary Range */}
-            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-dark rounded-[10px]">
+            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
                 Salary Range
               </h2>
@@ -109,7 +110,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
             </div>
 
             {/* Job Description */}
-            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-dark rounded-[10px]">
+            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-3">
                 Job Description
               </h2>
@@ -130,7 +131,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
             </div>
 
             {/* Industry */}
-            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-dark rounded-[10px]">
+            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
                 Industry
               </h2>
@@ -140,7 +141,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
             </div>
 
             {/* Requirements */}
-            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-dark rounded-[10px]">
+            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-3">
                 Requirements
               </h2>
@@ -164,7 +165,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
             </div>
 
             {/* Application Deadline */}
-            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-dark rounded-[10px]">
+            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
                 Application Deadline
               </h2>
@@ -172,7 +173,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
             </div>
 
             {/* Company Information */}
-            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-dark rounded-[10px]">
+            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-3">
                 Company Information
               </h2>
@@ -226,6 +227,12 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
           </div>
         </motion.div>
       </div>
+      <JobApplicationDialog
+        isOpen={isApplicationDialogOpen}
+        onClose={() => setIsApplicationDialogOpen(false)}
+        jobTitle={job.title}
+        companyName={job.company}
+      />
     </div>
   );
 }

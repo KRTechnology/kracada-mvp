@@ -88,6 +88,7 @@ module.exports = {
         sectionBorder: {
           light: "#EBE9E9",
           dark: "#585251",
+          darkSecondary: "#222020",
         },
         statusPill: {
           light: {
