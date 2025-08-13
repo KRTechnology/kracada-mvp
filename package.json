@@ -11,8 +11,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:drop": "npx drizzle-kit drop",
-    "db:seed:notifications": "tsx lib/db/seed/index.ts",
-    "db:seed:sessions": "tsx lib/db/seed/session-seed.ts"
+    "db:seed:notifications": "tsx lib/db/seed/index.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.850.0",
