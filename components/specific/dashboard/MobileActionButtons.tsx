@@ -3,12 +3,24 @@
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 
-export function MobileActionButtons() {
+interface MobileActionButtonsProps {
+  accountType?: string;
+}
+
+export function MobileActionButtons({ accountType }: MobileActionButtonsProps) {
   const router = useRouter();
 
   const handleEditProfile = () => {
     router.push("/dashboard/edit");
   };
+
+  const handleCreateJobPost = () => {
+    router.push("/jobs/create");
+  };
+
+  // Check if user can create job posts
+  const canCreateJobPost =
+    accountType === "Employer" || accountType === "Business Owner";
 
   return (
     <motion.div
@@ -23,9 +35,14 @@ export function MobileActionButtons() {
       >
         Edit Profile
       </button>
-      <button className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
-        Create a post
-      </button>
+      {canCreateJobPost && (
+        <button
+          onClick={handleCreateJobPost}
+          className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+        >
+          Create job post
+        </button>
+      )}
     </motion.div>
   );
 }

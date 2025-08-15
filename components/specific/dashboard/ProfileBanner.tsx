@@ -27,6 +27,14 @@ export function ProfileBanner({
     router.push("/dashboard/edit");
   };
 
+  const handleCreateJobPost = () => {
+    // router.push("/jobs/create");
+  };
+
+  // Check if user can create job posts
+  const canCreateJobPost =
+    accountType === "Employer" || accountType === "Business Owner";
+
   return (
     <div className="relative">
       {/* Banner Section with Padding - Apply padding to the container that holds the image */}
@@ -106,12 +114,12 @@ export function ProfileBanner({
             </div>
           </div>
 
-          {/* Action Button - Centered vertically with profile image */}
+          {/* Action Buttons - Centered vertically with profile image */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="hidden md:block flex-shrink-0"
+            className="hidden md:flex items-center gap-3 flex-shrink-0"
           >
             {showEditButton && (
               <button
@@ -119,6 +127,15 @@ export function ProfileBanner({
                 className="px-4 py-2 bg-white dark:bg-dark-container border border-neutral-300 dark:border-[#313337] text-neutral-700 dark:text-[#D8DDE7] rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm"
               >
                 Edit profile
+              </button>
+            )}
+
+            {canCreateJobPost && (
+              <button
+                onClick={handleCreateJobPost}
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 border border-orange-600 dark:border-orange-500 text-white dark:text-white rounded-lg transition-colors shadow-sm font-medium"
+              >
+                Create job post
               </button>
             )}
           </motion.div>

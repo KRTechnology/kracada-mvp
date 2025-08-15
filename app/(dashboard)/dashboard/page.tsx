@@ -59,7 +59,7 @@ export default async function DashboardPage() {
           />
 
           {/* Mobile Action Buttons */}
-          <MobileActionButtons />
+          <MobileActionButtons accountType={profileResult.data?.accountType} />
 
           {/* Tab Switcher and Content */}
           <DashboardContent userData={userData} experiences={experiences} />
