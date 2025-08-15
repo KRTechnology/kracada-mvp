@@ -3,12 +3,18 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export type TabType = "Profile" | "Activities" | "Bookmarks" | "Applications";
+export type TabType =
+  | "Profile"
+  | "Activities"
+  | "Bookmarks"
+  | "Applications"
+  | "Job Posts";
 
 interface TabSwitcherProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
   applicationsCount?: number;
+  accountType?: string;
 }
 
 interface TabItem {
@@ -17,22 +23,42 @@ interface TabItem {
   badge?: number;
 }
 
-const tabs: TabItem[] = [
-  { id: "Profile", label: "Profile" },
-  { id: "Activities", label: "Activities" },
-  { id: "Bookmarks", label: "Bookmarks" },
-  { id: "Applications", label: "Applications" },
-];
+const getTabsForAccountType = (accountType?: string): TabItem[] => {
+  const baseTabs = [
+    { id: "Profile" as TabType, label: "Profile" },
+    { id: "Activities" as TabType, label: "Activities" },
+    { id: "Bookmarks" as TabType, label: "Bookmarks" },
+  ];
+
+  // Add account-specific tab
+  if (accountType === "Employer" || accountType === "Business Owner") {
+    return [...baseTabs, { id: "Job Posts" as TabType, label: "Job Posts" }];
+  } else {
+    return [
+      ...baseTabs,
+      { id: "Applications" as TabType, label: "Applications" },
+    ];
+  }
+};
 
 export function TabSwitcher({
   activeTab,
   onTabChange,
   applicationsCount = 0,
+  accountType,
 }: TabSwitcherProps) {
+  const tabs = getTabsForAccountType(accountType);
+
   const [tabsWithBadge] = useState(() =>
-    tabs.map((tab) =>
-      tab.id === "Applications" ? { ...tab, badge: applicationsCount } : tab
-    )
+    tabs.map((tab) => {
+      if (tab.id === "Applications") {
+        return { ...tab, badge: applicationsCount };
+      }
+      if (tab.id === "Job Posts") {
+        return { ...tab, badge: 0 }; // TODO: Add job posts count
+      }
+      return tab;
+    })
   );
 
   const activeTabIndex = tabsWithBadge.findIndex((tab) => tab.id === activeTab);
@@ -42,10 +68,11 @@ export function TabSwitcher({
       <div className="relative bg-tab-light-bg dark:bg-tab-dark-bg border border-tab-light-border dark:border-tab-dark-border rounded-[10px] p-1">
         {/* Animated Background Slider */}
         <motion.div
-          className="absolute top-1 left-1 w-[calc(100%/4-2px)] h-[calc(100%-8px)] bg-tab-light-active-bg dark:bg-tab-dark-active-bg rounded-[8px]"
+          className="absolute top-1 left-1 h-[calc(100%-8px)] bg-tab-light-active-bg dark:bg-tab-dark-active-bg rounded-[8px]"
           initial={false}
           animate={{
             x: `${activeTabIndex * 100}%`,
+            width: `calc(100%/${tabs.length} - 2px)`,
           }}
           transition={{
             type: "spring",

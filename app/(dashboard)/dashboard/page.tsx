@@ -62,7 +62,11 @@ export default async function DashboardPage() {
           <MobileActionButtons accountType={profileResult.data?.accountType} />
 
           {/* Tab Switcher and Content */}
-          <DashboardContent userData={userData} experiences={experiences} />
+          <DashboardContent
+            userData={userData}
+            experiences={experiences}
+            accountType={profileResult.data?.accountType}
+          />
         </div>
       </div>
     </div>
