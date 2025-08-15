@@ -1,5 +1,6 @@
 "use client";
 
+import { useAccountTypeStyles } from "@/lib/hooks/useAccountTypeStyles";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -20,6 +21,7 @@ export function ProfileBanner({
   showEditButton = true,
 }: ProfileBannerProps) {
   const router = useRouter();
+  const { pillStyles, statusColor } = useAccountTypeStyles(accountType);
 
   const handleEditProfile = () => {
     router.push("/dashboard/edit");
@@ -91,8 +93,14 @@ export function ProfileBanner({
               {firstName} {lastName}
             </h1>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-[#FFF6EE] dark:bg-[#161616] border border-[#F9DBAF] dark:border-[#684108] text-[#D03F17] dark:text-[#D8DDE7] rounded-full text-sm font-medium flex items-center gap-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full" />
+              <span
+                className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border transition-all duration-200"
+                style={pillStyles}
+              >
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: statusColor }}
+                />
                 {accountType}
               </span>
             </div>

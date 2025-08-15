@@ -48,7 +48,7 @@ function getLocationFromIP(ipAddress: string | null): string {
   // For now, return a simplified location
   // In production, you could integrate with a service like MaxMind for basic country detection
   // But for MVP, we'll keep it simple
-  return "United States"; // Placeholder - could be enhanced later
+  return "Lagos"; // Placeholder - could be enhanced later
 }
 
 // Helper function to format relative time
