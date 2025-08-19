@@ -1,11 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import {
-  getUserProfileAction,
-  getUserExperiencesAction,
-} from "@/app/(dashboard)/actions/profile-actions";
+import { getUserProfileWithExperiencesAction } from "@/app/(dashboard)/actions/profile-actions";
 import { getUserNotificationPreferencesAction } from "@/app/(dashboard)/actions/notification-actions";
-import { SettingsClient } from "@/components/specific/dashboard/SettingsClient";
+import { JobSeekerSettingsClient } from "@/components/specific/dashboard/JobSeekerSettingsClient";
+import { EmployerSettingsClient } from "@/components/specific/dashboard/EmployerSettingsClient";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -15,55 +13,59 @@ export default async function SettingsPage() {
   }
 
   // Check if user has completed profile
-  const profileResult = await getUserProfileAction();
+  const profileResult = await getUserProfileWithExperiencesAction();
   if (!profileResult.success || !profileResult.data?.hasCompletedProfile) {
     redirect("/dashboard/setup");
   }
 
-  // Get user experiences
-  const experiencesResult = await getUserExperiencesAction();
+  const { accountType, ...profileData } = profileResult.data;
+  const finalAccountType = accountType || "Job Seeker";
 
   // Get user notification preferences
   const notificationPreferencesResult =
     await getUserNotificationPreferencesAction();
 
-  // Convert the profile data to match the SettingsClient interface
+  // Convert the profile data to match the client component interfaces
   const userData = {
-    id: profileResult.data.id,
-    firstName: profileResult.data.firstName,
-    lastName: profileResult.data.lastName,
-    email: profileResult.data.email,
-    phone: profileResult.data.phone,
-    location: profileResult.data.location,
-    bio: profileResult.data.bio,
-    yearsOfExperience: profileResult.data.yearsOfExperience?.toString() || null,
-    skills: profileResult.data.skills || [],
-    jobPreferences: profileResult.data.jobPreferences || [],
-    profilePicture: profileResult.data.profilePicture,
-    cv: profileResult.data.cv,
-    hasCompletedProfile: profileResult.data.hasCompletedProfile,
-    accountType: profileResult.data.accountType,
-    website: profileResult.data.website,
-    portfolio: profileResult.data.portfolio,
+    id: profileData.id,
+    firstName: profileData.firstName,
+    lastName: profileData.lastName,
+    email: profileData.email,
+    phone: profileData.phone,
+    location: profileData.location,
+    bio: profileData.bio,
+    yearsOfExperience: profileData.yearsOfExperience?.toString() || null,
+    skills: profileData.skills || [],
+    jobPreferences: profileData.jobPreferences || [],
+    profilePicture: profileData.profilePicture,
+    cv: profileData.cv,
+    hasCompletedProfile: profileData.hasCompletedProfile,
+    accountType: finalAccountType,
+    website: profileData.website,
+    portfolio: profileData.portfolio,
+    // Employer-specific fields
+    recruiterExperience: profileData.recruiterExperience,
+    companyLogo: profileData.companyLogo,
+    companyName: profileData.companyName,
+    companyDescription: profileData.companyDescription,
+    companyWebsite: profileData.companyWebsite,
+    companyEmail: profileData.companyEmail,
   };
 
   // Convert experiences data to match the interface
-  const experiences =
-    experiencesResult.success && experiencesResult.data
-      ? experiencesResult.data.map((exp) => ({
-          id: exp.id,
-          jobTitle: exp.jobTitle,
-          employmentType: exp.employmentType,
-          company: exp.company,
-          currentlyWorking: exp.currentlyWorking,
-          startMonth: exp.startMonth,
-          startYear: exp.startYear,
-          endMonth: exp.endMonth,
-          endYear: exp.endYear,
-          description: exp.description,
-          skills: exp.skills || [],
-        }))
-      : [];
+  const experiences = (profileData.experiences || []).map((exp) => ({
+    id: exp.id,
+    jobTitle: exp.jobTitle,
+    employmentType: exp.employmentType,
+    company: exp.company,
+    currentlyWorking: exp.currentlyWorking,
+    startMonth: exp.startMonth,
+    startYear: exp.startYear,
+    endMonth: exp.endMonth,
+    endYear: exp.endYear,
+    description: exp.description,
+    skills: exp.skills || [],
+  }));
 
   // Get notification preferences data
   const notificationPreferences =
@@ -71,11 +73,37 @@ export default async function SettingsPage() {
       ? notificationPreferencesResult.data
       : [];
 
-  return (
-    <SettingsClient
-      userData={userData}
-      experiences={experiences}
-      notificationPreferences={notificationPreferences}
-    />
-  );
+  // Render appropriate client component based on account type
+  if (finalAccountType === "Job Seeker" || finalAccountType === "Contributor") {
+    return (
+      <JobSeekerSettingsClient
+        userData={userData}
+        experiences={experiences}
+        notificationPreferences={notificationPreferences}
+      />
+    );
+  } else if (
+    finalAccountType === "Employer" ||
+    finalAccountType === "Business Owner"
+  ) {
+    return (
+      <EmployerSettingsClient
+        userData={userData}
+        experiences={experiences}
+        notificationPreferences={notificationPreferences}
+      />
+    );
+  } else {
+    // Fallback to Job Seeker for unknown account types
+    console.warn(
+      `Unknown account type: ${finalAccountType}, falling back to Job Seeker`
+    );
+    return (
+      <JobSeekerSettingsClient
+        userData={userData}
+        experiences={experiences}
+        notificationPreferences={notificationPreferences}
+      />
+    );
+  }
 }

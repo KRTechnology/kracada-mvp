@@ -25,6 +25,13 @@ interface UserData {
   accountType: string;
   website: string | null;
   portfolio: string | null;
+  // Employer-specific fields (optional for Job Seeker)
+  recruiterExperience?: string | null;
+  companyLogo?: string | null;
+  companyName?: string | null;
+  companyDescription?: string | null;
+  companyWebsite?: string | null;
+  companyEmail?: string | null;
 }
 
 interface ExperienceData {
@@ -60,17 +67,17 @@ interface NotificationSetting {
   displayOrder: number;
 }
 
-interface SettingsClientProps {
+interface JobSeekerSettingsClientProps {
   userData: UserData;
   experiences: ExperienceData[];
   notificationPreferences: NotificationCategory[];
 }
 
-export function SettingsClient({
+export function JobSeekerSettingsClient({
   userData,
   experiences,
   notificationPreferences,
-}: SettingsClientProps) {
+}: JobSeekerSettingsClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("profile");
 
   const tabs = [
