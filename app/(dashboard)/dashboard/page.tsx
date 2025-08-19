@@ -48,7 +48,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen">
       {/* Main Content Container */}
-      <div className="mx-4 md:mx-[88px] mt-4">
+      <div className="mx-4 md:mx-[88px] mt-4 pb-10">
         {/* White Card Container */}
         <div className="bg-white dark:bg-dark-container rounded-2xl shadow-sm overflow-hidden">
           {/* Banner Section */}
