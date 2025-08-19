@@ -198,19 +198,11 @@ export function EmployerCompanyLogoCard({
         {/* Upload Controls */}
         <div className="flex flex-col space-y-3">
           <div className="flex items-center space-x-3">
-            <input
-              type="file"
-              id="company-logo-upload"
-              accept="image/*"
-              onChange={handleCompanyLogoUpload}
-              className="hidden"
-              disabled={isPending}
-            />
             <Button
               type="button"
               variant="outline"
               className="bg-warm-200 hover:bg-warm-300 text-white border-warm-200 hover:border-warm-300 px-4 py-2 rounded-lg flex items-center space-x-2"
-              disabled={isPending}
+              disabled={isPending || !!companyLogoUrl}
               onClick={() =>
                 document.getElementById("company-logo-upload")?.click()
               }
@@ -218,6 +210,15 @@ export function EmployerCompanyLogoCard({
               <Upload className="w-4 h-4" />
               <span>Upload</span>
             </Button>
+
+            <input
+              type="file"
+              id="company-logo-upload"
+              accept="image/*"
+              onChange={handleCompanyLogoUpload}
+              className="hidden"
+              disabled={isPending || !!companyLogoUrl}
+            />
 
             {companyLogoUrl && (
               <Button

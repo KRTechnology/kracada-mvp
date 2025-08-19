@@ -331,7 +331,7 @@ export function ProfilePictureCard({
                   <Button
                     variant="default"
                     className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark cursor-pointer w-28"
-                    disabled={isPending}
+                    disabled={isPending || !!profilePictureUrl}
                     onClick={() => {
                       document
                         .getElementById("profile-picture-upload")
@@ -356,7 +356,7 @@ export function ProfilePictureCard({
                     accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
                     onChange={handleProfilePictureUpload}
                     className="hidden"
-                    disabled={isPending}
+                    disabled={isPending || !!profilePictureUrl}
                   />
                 </label>
 
@@ -445,7 +445,7 @@ export function ProfilePictureCard({
                   <Button
                     variant="outline"
                     className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 cursor-pointer"
-                    disabled={isPending}
+                    disabled={isPending || !!cvUrl}
                     onClick={() => {
                       document.getElementById("cv-upload")?.click();
                     }}
@@ -468,7 +468,7 @@ export function ProfilePictureCard({
                     accept=".pdf,application/pdf"
                     onChange={handleCVUpload}
                     className="hidden"
-                    disabled={isPending}
+                    disabled={isPending || !!cvUrl}
                   />
                 </label>
               </div>

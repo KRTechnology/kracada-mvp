@@ -201,19 +201,11 @@ export function EmployerProfilePictureCard({
         {/* Upload Controls */}
         <div className="flex flex-col space-y-3">
           <div className="flex items-center space-x-3">
-            <input
-              type="file"
-              id="profile-picture-upload"
-              accept="image/*"
-              onChange={handleProfilePictureUpload}
-              className="hidden"
-              disabled={isPending}
-            />
             <Button
               type="button"
               variant="outline"
               className="bg-warm-200 hover:bg-warm-300 text-white border-warm-200 hover:border-warm-300 px-4 py-2 rounded-lg flex items-center space-x-2"
-              disabled={isPending}
+              disabled={isPending || !!profilePictureUrl}
               onClick={() =>
                 document.getElementById("profile-picture-upload")?.click()
               }
@@ -222,12 +214,21 @@ export function EmployerProfilePictureCard({
               <span>Upload</span>
             </Button>
 
+            <input
+              type="file"
+              id="profile-picture-upload"
+              accept="image/*"
+              onChange={handleProfilePictureUpload}
+              className="hidden"
+              disabled={isPending || !!profilePictureUrl}
+            />
+
             {profilePictureUrl && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleRemoveProfilePicture}
-                className="border-neutral-200 dark:text-neutral-600 text-neutral-700 dark:text-neutral-300 px-4 py-2 rounded-lg flex items-center space-x-2"
+                className="border-neutral-200 dark:text-neutral-600 text-neutral-700  px-4 py-2 rounded-lg flex items-center space-x-2"
                 disabled={isPending}
               >
                 <X className="w-4 h-4" />
