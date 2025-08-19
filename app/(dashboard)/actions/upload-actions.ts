@@ -42,6 +42,7 @@ export async function uploadProfilePicture(
     // Extract data from FormData
     const file = formData.get("file") as File;
     const userId = formData.get("userId") as string;
+    const fullName = formData.get("fullName") as string;
 
     // Validate input
     const validation = profilePictureSchema.safeParse({ file, userId });
@@ -78,10 +79,19 @@ export async function uploadProfilePicture(
       };
     }
 
+    // Create custom path with user-id-full-name format
+    const sanitizedName = fullName
+      ? fullName
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+      : "unknown";
+    const customPath = `profile-pictures/${userId}-${sanitizedName}`;
+
     // Upload file
     const result: UploadResult = await cloudflareUploadService.uploadFile({
       file,
-      folder: `profile-pictures/${userId}`,
+      customPath,
       filename: `profile-picture-${Date.now()}`,
     });
 
@@ -130,6 +140,7 @@ export async function uploadCV(formData: FormData): Promise<CVUploadResult> {
     // Extract data from FormData
     const file = formData.get("file") as File;
     const userId = formData.get("userId") as string;
+    const fullName = formData.get("fullName") as string;
 
     // Validate input
     const validation = cvUploadSchema.safeParse({ file, userId });
@@ -157,10 +168,19 @@ export async function uploadCV(formData: FormData): Promise<CVUploadResult> {
       };
     }
 
+    // Create custom path with user-id-full-name format
+    const sanitizedName = fullName
+      ? fullName
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+      : "unknown";
+    const customPath = `cvs/${userId}-${sanitizedName}`;
+
     // Upload file
     const result: UploadResult = await cloudflareUploadService.uploadFile({
       file,
-      folder: `cvs/${userId}`,
+      customPath,
       filename: `cv-${Date.now()}.pdf`,
     });
 
@@ -211,6 +231,7 @@ export async function uploadCompanyLogo(
     // Extract data from FormData
     const file = formData.get("file") as File;
     const userId = formData.get("userId") as string;
+    const fullName = formData.get("fullName") as string;
 
     // Validate input
     const validation = profilePictureSchema.safeParse({ file, userId });
@@ -247,10 +268,19 @@ export async function uploadCompanyLogo(
       };
     }
 
+    // Create custom path with user-id-full-name format
+    const sanitizedName = fullName
+      ? fullName
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+      : "unknown";
+    const customPath = `company-logos/${userId}-${sanitizedName}`;
+
     // Upload file
     const result: UploadResult = await cloudflareUploadService.uploadFile({
       file,
-      folder: `company-logos/${userId}`,
+      customPath,
       filename: `company-logo-${Date.now()}`,
     });
 

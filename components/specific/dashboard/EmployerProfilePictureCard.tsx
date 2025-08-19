@@ -15,6 +15,8 @@ interface EmployerProfilePictureCardProps {
   userData: {
     profilePicture?: string | null;
     id: string; // User ID for uploads
+    firstName: string;
+    lastName: string;
   };
   onUserDataUpdate?: (updates: { profilePicture?: string | null }) => void;
   isEditMode?: boolean;
@@ -74,6 +76,10 @@ export function EmployerProfilePictureCard({
         const formData = new FormData();
         formData.append("file", file);
         formData.append("userId", userData.id);
+        formData.append(
+          "fullName",
+          `${userData.firstName} ${userData.lastName}`.trim()
+        );
 
         const result = await uploadProfilePicture(formData);
 

@@ -11,6 +11,7 @@ export interface UploadOptions {
   file: File;
   folder?: string;
   filename?: string;
+  customPath?: string; // New option for custom path structure
 }
 
 export interface UploadResult {
@@ -66,7 +67,7 @@ class CloudflareR2UploadService {
    */
   async uploadFile(options: UploadOptions): Promise<UploadResult> {
     try {
-      const { file, folder = "uploads", filename } = options;
+      const { file, folder = "uploads", filename, customPath } = options;
 
       // Validate file
       if (!file || file.size === 0) {
@@ -88,7 +89,11 @@ class CloudflareR2UploadService {
       // Generate unique filename if not provided
       const fileExtension = file.name.split(".").pop() || "";
       const uniqueFilename = filename || `${createId()}.${fileExtension}`;
-      const key = `${folder}/${uniqueFilename}`;
+
+      // Use custom path if provided, otherwise fall back to folder structure
+      const key = customPath
+        ? `${customPath}/${uniqueFilename}`
+        : `${folder}/${uniqueFilename}`;
 
       // Convert file to buffer
       const arrayBuffer = await file.arrayBuffer();

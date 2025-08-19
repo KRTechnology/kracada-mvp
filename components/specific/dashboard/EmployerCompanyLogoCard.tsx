@@ -15,6 +15,8 @@ interface EmployerCompanyLogoCardProps {
   userData: {
     companyLogo?: string | null;
     id: string; // User ID for uploads
+    firstName: string;
+    lastName: string;
   };
   onUserDataUpdate?: (updates: { companyLogo?: string | null }) => void;
   isEditMode?: boolean;
@@ -70,6 +72,10 @@ export function EmployerCompanyLogoCard({
         const formData = new FormData();
         formData.append("file", file);
         formData.append("userId", userData.id);
+        formData.append(
+          "fullName",
+          `${userData.firstName} ${userData.lastName}`.trim()
+        );
 
         const result = await uploadCompanyLogo(formData);
 
