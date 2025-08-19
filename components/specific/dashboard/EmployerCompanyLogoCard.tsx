@@ -165,7 +165,7 @@ export function EmployerCompanyLogoCard({
               <img
                 src={companyLogoUrl}
                 alt="Company logo"
-                className="w-24 h-24 rounded-full object-cover"
+                className="w-24 h-24 rounded-full object-contain"
               />
             ) : (
               <div className="w-12 h-12 text-gray-400">

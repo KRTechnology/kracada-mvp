@@ -37,6 +37,13 @@ interface UserData {
   accountType: string;
   website: string | null;
   portfolio: string | null;
+  // Employer-specific fields (optional for Job Seeker)
+  recruiterExperience?: string | null;
+  companyLogo?: string | null;
+  companyName?: string | null;
+  companyDescription?: string | null;
+  companyWebsite?: string | null;
+  companyEmail?: string | null;
 }
 
 interface ExperienceData {
@@ -53,15 +60,15 @@ interface ExperienceData {
   skills: string[];
 }
 
-interface EditProfileClientProps {
+interface JobSeekerEditProfileClientProps {
   userData: UserData;
   experiences: ExperienceData[];
 }
 
-export function EditProfileClient({
+export function JobSeekerEditProfileClient({
   userData,
   experiences,
-}: EditProfileClientProps) {
+}: JobSeekerEditProfileClientProps) {
   const [currentUserData, setCurrentUserData] = useState<UserData>(userData);
   const [currentExperiences, setCurrentExperiences] =
     useState<ExperienceData[]>(experiences);

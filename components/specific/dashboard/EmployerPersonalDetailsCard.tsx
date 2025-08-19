@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
 import { Label } from "@/components/common/label";
@@ -40,11 +40,15 @@ interface EmployerPersonalDetailsCardProps {
   isEditMode?: boolean;
 }
 
-export function EmployerPersonalDetailsCard({
-  userData,
-  onUserDataUpdate,
-  isEditMode = false,
-}: EmployerPersonalDetailsCardProps) {
+export interface EmployerPersonalDetailsCardRef {
+  save: () => Promise<void>;
+  hasUnsavedChanges: () => boolean;
+}
+
+export const EmployerPersonalDetailsCard = forwardRef<
+  EmployerPersonalDetailsCardRef,
+  EmployerPersonalDetailsCardProps
+>(({ userData, onUserDataUpdate, isEditMode = false }, ref) => {
   const [formData, setFormData] = useState({
     firstName: userData.firstName || "",
     lastName: userData.lastName || "",
@@ -57,6 +61,12 @@ export function EmployerPersonalDetailsCard({
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Expose save and hasUnsavedChanges methods via ref
+  useImperativeHandle(ref, () => ({
+    save: handleSave,
+    hasUnsavedChanges: () => hasChanges,
+  }));
 
   // Handle form field changes
   const handleFieldChange = useCallback(
@@ -105,10 +115,15 @@ export function EmployerPersonalDetailsCard({
           recruiterExperience: formData.recruiterExperience || null,
         });
 
-        toast.success("Personal details updated successfully!");
+        // Only show toast if not in edit mode
+        if (!isEditMode) {
+          toast.success("Personal details updated successfully!");
+        }
 
-        // Auto-collapse the form after successful save
-        setIsCollapsed(true);
+        // Auto-collapse the form after successful save (only if not in edit mode)
+        if (!isEditMode) {
+          setIsCollapsed(true);
+        }
       } else {
         toast.error(result.message || "Failed to update personal details");
       }
@@ -417,29 +432,31 @@ export function EmployerPersonalDetailsCard({
               />
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isUpdating}
-                className="border-neutral-200 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 px-6 py-2"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                onClick={handleSave}
-                disabled={isUpdating}
-                className="bg-warm-200 hover:bg-warm-300 text-white px-6 py-2"
-              >
-                {isUpdating ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
+            {/* Action Buttons - Only show if not in edit mode */}
+            {!isEditMode && (
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={isUpdating}
+                  className="border-neutral-200 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 px-6 py-2"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isUpdating}
+                  className="bg-warm-200 hover:bg-warm-300 text-white px-6 py-2"
+                >
+                  {isUpdating ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
   );
-}
+});
