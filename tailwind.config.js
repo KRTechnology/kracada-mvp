@@ -129,6 +129,50 @@ module.exports = {
             },
           },
         },
+        // Job post pill colors
+        jobPill: {
+          applicants: {
+            light: {
+              bg: "#ECFDF3",
+              border: "#ABEFC6",
+              dot: "#17B26A",
+              text: "#067647",
+            },
+            dark: {
+              bg: "#171717",
+              border: "#136A36",
+              dot: "#17B26A",
+              text: "#078F56",
+            },
+          },
+          views: {
+            light: {
+              bg: "#FAFAFA",
+              border: "#E9EAEB",
+              dot: "#717680",
+              text: "#414651",
+            },
+            dark: {
+              bg: "#171717",
+              border: "#202123",
+              dot: "#717680",
+              text: "#414651",
+            },
+          },
+        },
+        // View applications button colors
+        viewButton: {
+          light: {
+            bg: "#FFFFFF",
+            border: "#D5D7DA",
+            text: "#414651",
+          },
+          dark: {
+            bg: "#0D0D0D",
+            border: "#313337",
+            text: "#414651",
+          },
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
