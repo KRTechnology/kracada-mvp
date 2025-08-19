@@ -25,6 +25,14 @@ export function BookmarksContent() {
   const [activeSubTab, setActiveSubTab] = useState<SubTabType>("Jobs");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Default tabs for bookmarks
+  const defaultTabs = [
+    { id: "Jobs" as SubTabType, label: "Jobs", count: 20 },
+    { id: "Articles" as SubTabType, label: "Articles", count: 0 },
+    { id: "Videos" as SubTabType, label: "Videos", count: 0 },
+    { id: "Hotels" as SubTabType, label: "Hotels", count: 2 },
+  ];
+
   const getDataForTab = (tab: SubTabType) => {
     switch (tab) {
       case "Jobs":
@@ -49,6 +57,18 @@ export function BookmarksContent() {
   const handleSubTabChange = (tab: SubTabType) => {
     setActiveSubTab(tab);
     setCurrentPage(1); // Reset to first page when changing tabs
+  };
+
+  // Wrapper function to handle type conversion for SubTabSwitcher
+  const handleTabChangeWrapper = (tab: any) => {
+    if (
+      tab === "Jobs" ||
+      tab === "Articles" ||
+      tab === "Videos" ||
+      tab === "Hotels"
+    ) {
+      handleSubTabChange(tab);
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -137,7 +157,8 @@ export function BookmarksContent() {
       <div className="pb-4">
         <SubTabSwitcher
           activeTab={activeSubTab}
-          onTabChange={handleSubTabChange}
+          onTabChange={handleTabChangeWrapper}
+          tabs={defaultTabs}
         />
       </div>
 

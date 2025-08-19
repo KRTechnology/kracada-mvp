@@ -4,35 +4,40 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 
 export type SubTabType = "Jobs" | "Articles" | "Videos" | "Hotels";
+export type JobPostsSubTabType = "Active Jobs" | "Closed Jobs";
+
+// Union type for all possible sub-tab types
+export type AllSubTabType = SubTabType | JobPostsSubTabType;
 
 interface SubTabSwitcherProps {
-  activeTab: SubTabType;
-  onTabChange: (tab: SubTabType) => void;
+  activeTab: AllSubTabType;
+  onTabChange: (tab: AllSubTabType) => void;
+  tabs: Array<{
+    id: AllSubTabType;
+    label: string;
+    count: number;
+  }>;
+  layoutId?: string;
 }
 
 interface SubTabItem {
-  id: SubTabType;
+  id: AllSubTabType;
   label: string;
   count: number;
 }
 
-const subTabs: SubTabItem[] = [
-  { id: "Jobs", label: "Jobs", count: 20 },
-  { id: "Articles", label: "Articles", count: 0 },
-  { id: "Videos", label: "Videos", count: 0 },
-  { id: "Hotels", label: "Hotels", count: 2 },
-];
-
 export function SubTabSwitcher({
   activeTab,
   onTabChange,
+  tabs,
+  layoutId = "subtab-underline",
 }: SubTabSwitcherProps) {
-  const activeTabIndex = subTabs.findIndex((tab) => tab.id === activeTab);
+  const activeTabIndex = tabs.findIndex((tab) => tab.id === activeTab);
 
   return (
     <div>
       <div className="flex justify-between">
-        {subTabs.map((tab, index) => (
+        {tabs.map((tab, index) => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
@@ -58,7 +63,7 @@ export function SubTabSwitcher({
             {/* Animated underline */}
             {activeTab === tab.id && (
               <motion.div
-                layoutId="subtab-underline"
+                layoutId={layoutId}
                 className="absolute bottom-0 left-0 right-0 h-0.5 bg-warm-200 dark:bg-warm-200"
                 initial={false}
                 transition={{

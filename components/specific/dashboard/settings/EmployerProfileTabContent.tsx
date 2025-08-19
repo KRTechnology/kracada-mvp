@@ -1,40 +1,18 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/common/button";
-import { Input } from "@/components/common/input";
-import { Label } from "@/components/common/label";
-import { Textarea } from "@/components/common/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/common/select";
-import {
-  Upload,
-  X,
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Globe,
-  Briefcase,
-  Plus,
-  Trash2,
-} from "lucide-react";
-import { EmployerProfilePictureCard } from "@/components/specific/dashboard/EmployerProfilePictureCard";
-import {
-  EmployerPersonalDetailsCard,
-  EmployerPersonalDetailsCardRef,
-} from "@/components/specific/dashboard/EmployerPersonalDetailsCard";
 import {
   EmployerCompanyDetailsCard,
   EmployerCompanyDetailsCardRef,
 } from "@/components/specific/dashboard/EmployerCompanyDetailsCard";
 import { EmployerCompanyLogoCard } from "@/components/specific/dashboard/EmployerCompanyLogoCard";
+import {
+  EmployerPersonalDetailsCard,
+  EmployerPersonalDetailsCardRef,
+} from "@/components/specific/dashboard/EmployerPersonalDetailsCard";
+import { EmployerProfilePictureCard } from "@/components/specific/dashboard/EmployerProfilePictureCard";
+import { motion } from "framer-motion";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface UserData {
