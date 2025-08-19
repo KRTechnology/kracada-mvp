@@ -487,6 +487,71 @@ export async function updateWebsitePortfolioAction(data: WebsitePortfolioData) {
   }
 }
 
+// Get user profile data with experiences
+export async function getUserProfileWithExperiencesAction() {
+  try {
+    const userId = await getCurrentUser();
+
+    // Fetch user profile and experiences in parallel
+    const [userResult, experiencesResult] = await Promise.all([
+      db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1),
+      db
+        .select()
+        .from(experiences)
+        .where(eq(experiences.userId, userId))
+        .orderBy(experiences.createdAt),
+    ]);
+
+    if (!userResult.length) {
+      return { success: false, message: "User not found" };
+    }
+
+    const userData = userResult[0];
+
+    // Parse JSON fields
+    const skills = userData.skills ? JSON.parse(userData.skills) : [];
+    const jobPreferences = userData.jobPreferences
+      ? JSON.parse(userData.jobPreferences)
+      : [];
+
+    // Split fullName into firstName and lastName if they don't exist
+    let firstName = userData.firstName;
+    let lastName = userData.lastName;
+
+    if (!firstName && !lastName && userData.fullName) {
+      const nameParts = userData.fullName.trim().split(" ");
+      firstName = nameParts[0] || "";
+      lastName = nameParts.slice(1).join(" ") || "";
+    }
+
+    // Parse experiences skills
+    const experiencesWithParsedSkills = experiencesResult.map((exp) => ({
+      ...exp,
+      skills: exp.skills ? JSON.parse(exp.skills) : [],
+    }));
+
+    return {
+      success: true,
+      data: {
+        ...userData,
+        firstName: firstName || "",
+        lastName: lastName || "",
+        skills,
+        jobPreferences,
+        accountType: userData.accountType,
+        experiences: experiencesWithParsedSkills,
+      },
+    };
+  } catch (error) {
+    console.error("Get user profile with experiences error:", error);
+    return { success: false, message: "Failed to get user profile with experiences" };
+  }
+}
+
 // Get user profile data
 export async function getUserProfileAction() {
   try {

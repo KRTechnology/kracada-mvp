@@ -1,16 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProfilePictureCard } from "@/components/specific/dashboard/ProfilePictureCard";
 import { ProfileCard } from "@/components/specific/dashboard/ProfileCard";
 import { ExperienceCard } from "@/components/specific/dashboard/ExperienceCard";
 import { Button } from "@/components/common/button";
-import {
-  getUserProfileAction,
-  getUserExperiencesAction,
-  markProfileCompletedAction,
-} from "@/app/(dashboard)/actions/profile-actions";
+import { markProfileCompletedAction } from "@/app/(dashboard)/actions/profile-actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -45,64 +41,35 @@ interface ExperienceData {
   skills: string[];
 }
 
-export function JobSeekerSetupClient() {
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [experiences, setExperiences] = useState<ExperienceData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface JobSeekerSetupClientProps {
+  profileData: any;
+}
+
+export function JobSeekerSetupClient({
+  profileData,
+}: JobSeekerSetupClientProps) {
+  const [userData, setUserData] = useState<UserData>({
+    id: profileData.id,
+    firstName: profileData.firstName || "",
+    lastName: profileData.lastName || "",
+    email: profileData.email,
+    phone: profileData.phone || null,
+    location: profileData.location || null,
+    bio: profileData.bio || null,
+    yearsOfExperience: profileData.yearsOfExperience?.toString() || null,
+    skills: profileData.skills || [],
+    jobPreferences: profileData.jobPreferences || [],
+    profilePicture: profileData.profilePicture,
+    cv: profileData.cv,
+    hasCompletedProfile: profileData.hasCompletedProfile,
+    accountType: profileData.accountType,
+  });
+
+  const [experiences, setExperiences] = useState<ExperienceData[]>(
+    profileData.experiences || []
+  );
   const [isContinuing, setIsContinuing] = useState(false);
   const router = useRouter();
-
-  // Fetch user data on component mount
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const [profileResult, experiencesResult] = await Promise.all([
-          getUserProfileAction(),
-          getUserExperiencesAction(),
-        ]);
-
-        if (profileResult.success && profileResult.data) {
-          setUserData({
-            id: profileResult.data.id,
-            firstName: profileResult.data.firstName || "",
-            lastName: profileResult.data.lastName || "",
-            email: profileResult.data.email,
-            phone: profileResult.data.phone || null,
-            location: profileResult.data.location || null,
-            bio: profileResult.data.bio || null,
-            yearsOfExperience:
-              profileResult.data.yearsOfExperience?.toString() || null,
-            skills: profileResult.data.skills || [],
-            jobPreferences: profileResult.data.jobPreferences || [],
-            profilePicture: profileResult.data.profilePicture,
-            cv: profileResult.data.cv,
-            hasCompletedProfile: profileResult.data.hasCompletedProfile,
-            accountType: profileResult.data.accountType,
-          });
-        } else {
-          console.error("Failed to fetch user profile:", profileResult.message);
-          toast.error("Failed to load profile data");
-        }
-
-        if (experiencesResult.success && experiencesResult.data) {
-          setExperiences(experiencesResult.data);
-        } else {
-          console.error(
-            "Failed to fetch experiences:",
-            experiencesResult.message
-          );
-          toast.error("Failed to load experiences");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, []);
 
   // Callback to update user data when profile picture or CV is updated
   const handleUserDataUpdate = useCallback(
@@ -175,28 +142,6 @@ export function JobSeekerSetupClient() {
       setIsContinuing(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-neutral-900">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-warm-200 border-t-transparent"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!userData) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-neutral-900">
-        <div className="text-center py-12">
-          <p className="text-neutral-600 dark:text-neutral-400">
-            Failed to load profile data
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-900">

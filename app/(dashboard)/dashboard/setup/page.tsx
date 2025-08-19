@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { getUserProfileAction } from "@/app/(dashboard)/actions/profile-actions";
-import { SetupClientFactory } from "@/components/specific/dashboard/SetupClientFactory";
+import { getUserProfileWithExperiencesAction } from "@/app/(dashboard)/actions/profile-actions";
+import { JobSeekerSetupClient } from "@/components/specific/dashboard/JobSeekerSetupClient";
+import { EmployerSetupClient } from "@/components/specific/dashboard/EmployerSetupClient";
+import { BusinessOwnerSetupClient } from "@/components/specific/dashboard/BusinessOwnerSetupClient";
+import { ContributorSetupClient } from "@/components/specific/dashboard/ContributorSetupClient";
 
 export default async function SetupPage() {
   const session = await auth();
@@ -10,17 +13,35 @@ export default async function SetupPage() {
     redirect("/login");
   }
 
-  // Check if user has already completed profile
-  const profileResult = await getUserProfileAction();
+  // Check if user has already completed profile and get all profile data
+  const profileResult = await getUserProfileWithExperiencesAction();
   if (profileResult.success && profileResult.data?.hasCompletedProfile) {
     redirect("/dashboard");
   }
 
-  // Get user's account type to determine which setup client to render
-  const accountType =
-    profileResult.success && profileResult.data?.accountType
-      ? profileResult.data.accountType
-      : "Job Seeker"; // Default fallback
+  if (!profileResult.success || !profileResult.data) {
+    redirect("/login");
+  }
 
-  return <SetupClientFactory accountType={accountType} />;
+  // Get user's account type and profile data
+  const { accountType, ...profileData } = profileResult.data;
+  const finalAccountType = accountType || "Job Seeker";
+
+  // Render the appropriate setup client based on account type
+  switch (finalAccountType) {
+    case "Job Seeker":
+      return <JobSeekerSetupClient profileData={profileData} />;
+    case "Employer":
+      return <EmployerSetupClient profileData={profileData} />;
+    case "Business Owner":
+      return <BusinessOwnerSetupClient profileData={profileData} />;
+    case "Contributor":
+      return <ContributorSetupClient profileData={profileData} />;
+    default:
+      // Fallback to Job Seeker if account type is unknown
+      console.warn(
+        `Unknown account type: ${finalAccountType}, falling back to Job Seeker`
+      );
+      return <JobSeekerSetupClient profileData={profileData} />;
+  }
 }

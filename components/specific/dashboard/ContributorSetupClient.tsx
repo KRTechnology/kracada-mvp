@@ -1,9 +1,144 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ProfilePictureCard } from "@/components/specific/dashboard/ProfilePictureCard";
+import { ProfileCard } from "@/components/specific/dashboard/ProfileCard";
+import { ExperienceCard } from "@/components/specific/dashboard/ExperienceCard";
 import { Button } from "@/components/common/button";
+import {
+  markProfileCompletedAction,
+} from "@/app/(dashboard)/actions/profile-actions";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-export function ContributorSetupClient() {
+interface UserData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  location: string | null;
+  bio: string | null;
+  yearsOfExperience: string | null;
+  skills: string[];
+  jobPreferences: string[];
+  profilePicture: string | null;
+  cv: string | null;
+  hasCompletedProfile: boolean;
+  accountType: string;
+}
+
+interface ExperienceData {
+  id: string;
+  jobTitle: string;
+  employmentType: string;
+  company: string;
+  currentlyWorking: boolean;
+  startMonth: string | null;
+  startYear: string | null;
+  endMonth: string | null;
+  endYear: string | null;
+  description: string | null;
+  skills: string[];
+}
+
+interface ContributorSetupClientProps {
+  profileData: any;
+}
+
+export function ContributorSetupClient({ profileData }: ContributorSetupClientProps) {
+  const [userData, setUserData] = useState<UserData>({
+    id: profileData.id,
+    firstName: profileData.firstName || "",
+    lastName: profileData.lastName || "",
+    email: profileData.email,
+    phone: profileData.phone || null,
+    location: profileData.location || null,
+    bio: profileData.bio || null,
+    yearsOfExperience: profileData.yearsOfExperience?.toString() || null,
+    skills: profileData.skills || [],
+    jobPreferences: profileData.jobPreferences || [],
+    profilePicture: profileData.profilePicture,
+    cv: profileData.cv,
+    hasCompletedProfile: profileData.hasCompletedProfile,
+    accountType: profileData.accountType,
+  });
+  
+  const [experiences, setExperiences] = useState<ExperienceData[]>(
+    profileData.experiences || []
+  );
+  const [isContinuing, setIsContinuing] = useState(false);
+  const router = useRouter();
+
+  // Callback to update user data when profile picture or CV is updated
+  const handleUserDataUpdate = useCallback(
+    (updates: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      phone?: string | null;
+      location?: string | null;
+      bio?: string | null;
+      yearsOfExperience?: string | null;
+      skills?: string[];
+      jobPreferences?: string[];
+      profilePicture?: string | null;
+      cv?: string | null;
+    }) => {
+      setUserData((prevData) => {
+        if (prevData) {
+          return { ...prevData, ...updates };
+        }
+        return prevData;
+      });
+    },
+    []
+  );
+
+  // Check if all required fields are completed
+  const isProfileComplete =
+    userData &&
+    userData.firstName &&
+    userData.lastName &&
+    userData.email &&
+    userData.phone &&
+    userData.location &&
+    userData.bio &&
+    userData.profilePicture && // Profile picture is required
+    userData.cv; // CV is required
+
+  const isSkillsComplete =
+    userData &&
+    userData.skills.length > 0 &&
+    userData.jobPreferences.length > 0;
+
+  const isExperiencesComplete = experiences.length > 0;
+
+  const canContinue =
+    isProfileComplete && isSkillsComplete && isExperiencesComplete;
+
+  const handleContinue = async () => {
+    if (!canContinue) return;
+
+    setIsContinuing(true);
+    try {
+      const result = await markProfileCompletedAction();
+
+      if (result.success) {
+        toast.success("Profile completed successfully!");
+        router.push("/dashboard");
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Continue error:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsContinuing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-900">
       {/* Top Section - White Background */}
@@ -28,26 +163,88 @@ export function ContributorSetupClient() {
       <div className="bg-slate-100 dark:bg-neutral-800 min-h-[calc(100vh-200px)]">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-[1010px] mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white dark:bg-dark-container rounded-2xl shadow-sm p-12 text-center"
-            >
-              <h3 className="text-xl font-semibold text-[#334155] dark:text-neutral-100 mb-4">
-                Contributor Setup
-              </h3>
-              <p className="text-[#64748B] dark:text-neutral-400 mb-6">
-                This setup flow is coming soon. Contributors will have a
-                specialized onboarding experience.
-              </p>
-              <Button
-                className="bg-warm-200 hover:bg-warm-300 text-white px-6 py-2 rounded-lg"
-                onClick={() => window.history.back()}
+            <div className="space-y-6">
+              <ProfilePictureCard
+                userData={userData}
+                onUserDataUpdate={handleUserDataUpdate}
+              />
+              <ProfileCard
+                userData={userData}
+                onUserDataUpdate={handleUserDataUpdate}
+              />
+              <ExperienceCard
+                userData={userData}
+                experiences={experiences}
+                onExperiencesUpdate={setExperiences}
+                onUserDataUpdate={handleUserDataUpdate}
+              />
+
+              {/* Continue Button */}
+              <motion.div
+                className="flex flex-col items-center pt-8 space-y-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.6 }}
               >
-                Go Back
-              </Button>
-            </motion.div>
+                <Button
+                  onClick={handleContinue}
+                  disabled={!canContinue || isContinuing}
+                  className="px-8 py-3 bg-warm-200 hover:bg-warm-300 text-white dark:text-dark text-lg font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isContinuing ? "Completing..." : "Complete Profile"}
+                </Button>
+
+                {/* Progress Feedback */}
+                {!canContinue && (
+                  <motion.div
+                    className="w-full max-w-md"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.8 }}
+                  >
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                        Complete your profile to continue:
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        {!isProfileComplete && (
+                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span>Fill out all profile information</span>
+                          </div>
+                        )}
+                        {userData && !userData.profilePicture && (
+                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span>Upload a profile picture</span>
+                          </div>
+                        )}
+                        {userData && !userData.cv && (
+                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span>Upload your CV</span>
+                          </div>
+                        )}
+                        {!isSkillsComplete && (
+                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span>
+                              Add at least one skill and job preference
+                            </span>
+                          </div>
+                        )}
+                        {!isExperiencesComplete && (
+                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span>Add at least one work experience</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>

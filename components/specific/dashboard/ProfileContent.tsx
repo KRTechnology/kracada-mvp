@@ -182,7 +182,7 @@ export function ProfileContent({ userData, experiences }: ProfileContentProps) {
                 <motion.div
                   key={experience.id}
                   variants={itemVariants}
-                  className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
+                  className="dark:bg-neutral-800 rounded-lg p-4 border border-tab-light-border shadow-sm dark:border-neutral-700 hover:shadow transition-shadow cursor-pointer"
                 >
                   <div className="flex items-start gap-3">
                     <div
@@ -221,7 +221,7 @@ export function ProfileContent({ userData, experiences }: ProfileContentProps) {
             <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
               Skills
             </h3>
-            <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700">
+            <div className="bg-tab-light-bg dark:bg-neutral-800 rounded-lg p-4 border border-tab-light-border shadow-sm dark:border-neutral-700">
               <div className="flex flex-wrap gap-2">
                 {userData.skills.map((skill, index) => (
                   <SkillTag key={index}>{skill}</SkillTag>
@@ -237,7 +237,7 @@ export function ProfileContent({ userData, experiences }: ProfileContentProps) {
             <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
               Job Preferences
             </h3>
-            <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700">
+            <div className="bg-tab-light-bg dark:bg-neutral-800 rounded-lg p-4 border border-tab-light-border shadow-sm dark:border-neutral-700">
               <div className="flex flex-wrap gap-2">
                 {userData.jobPreferences.map((preference, index) => (
                   <span

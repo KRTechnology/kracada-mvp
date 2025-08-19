@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { EmployerProfilePictureCard } from "@/components/specific/dashboard/EmployerProfilePictureCard";
 import { EmployerPersonalDetailsCard } from "./EmployerPersonalDetailsCard";
@@ -20,7 +20,6 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
-  getUserProfileAction,
   markProfileCompletedAction,
 } from "@/app/(dashboard)/actions/profile-actions";
 
@@ -48,47 +47,37 @@ interface CompanyData {
   companyEmail: string;
 }
 
-export function EmployerSetupClient() {
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [companyData, setCompanyData] = useState<CompanyData>({
-    companyLogo: null,
-    companyName: "",
-    companyDescription: "",
-    companyWebsite: "",
-    companyEmail: "",
+interface EmployerSetupClientProps {
+  profileData: any;
+}
+
+export function EmployerSetupClient({ profileData }: EmployerSetupClientProps) {
+  const [userData, setUserData] = useState<UserData>({
+    id: profileData.id,
+    firstName: profileData.firstName || "",
+    lastName: profileData.lastName || "",
+    email: profileData.email,
+    phone: profileData.phone || null,
+    location: profileData.location || null,
+    bio: profileData.bio || null,
+    yearsOfExperience: profileData.yearsOfExperience || null,
+    profilePicture: profileData.profilePicture,
+    hasCompletedProfile: profileData.hasCompletedProfile,
+    accountType: profileData.accountType,
+    companyLogo: profileData.companyLogo || null,
+    recruiterExperience: profileData.recruiterExperience || null,
   });
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const [companyData, setCompanyData] = useState<CompanyData>({
+    companyLogo: profileData.companyLogo || null,
+    companyName: profileData.companyName || "",
+    companyDescription: profileData.companyDescription || "",
+    companyWebsite: profileData.companyWebsite || "",
+    companyEmail: profileData.companyEmail || "",
+  });
+  
   const [isContinuing, setIsContinuing] = useState(false);
   const router = useRouter();
-
-  // Fetch user data on component mount
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const result = await getUserProfileAction();
-
-        if (result.success && result.data) {
-          setUserData(result.data);
-          setCompanyData({
-            companyLogo: result.data.companyLogo || null,
-            companyName: result.data.companyName || "",
-            companyDescription: result.data.companyDescription || "",
-            companyWebsite: result.data.companyWebsite || "",
-            companyEmail: result.data.companyEmail || "",
-          });
-        } else {
-          toast.error(result.message || "Failed to load profile data");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, []);
 
   // Callback to update user data when profile picture is updated
   const handleUserDataUpdate = useCallback(
@@ -177,28 +166,6 @@ export function EmployerSetupClient() {
       setIsContinuing(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-neutral-900">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-warm-200 border-t-transparent"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!userData) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-neutral-900">
-        <div className="text-center py-12">
-          <p className="text-neutral-600 dark:text-neutral-400">
-            Failed to load profile data
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-900">
