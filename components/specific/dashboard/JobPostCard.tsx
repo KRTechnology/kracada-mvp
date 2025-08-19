@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MoreVertical, MapPin } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { JobPostDropdown } from "./JobPostDropdown";
 
 interface JobPostCardProps {
@@ -17,6 +18,7 @@ interface JobPostCardProps {
 }
 
 export function JobPostCard({ job }: JobPostCardProps) {
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleEdit = () => {
@@ -32,6 +34,10 @@ export function JobPostCard({ job }: JobPostCardProps) {
   const handleDuplicate = () => {
     console.log("Duplicate job:", job.id);
     // TODO: Implement duplicate functionality
+  };
+
+  const handleViewApplications = () => {
+    router.push(`/jobs/${job.id}/applications`);
   };
 
   return (
@@ -106,7 +112,10 @@ export function JobPostCard({ job }: JobPostCardProps) {
         </div>
 
         {/* View Applications Button */}
-        <button className="px-4 py-2 bg-viewButton-light-bg dark:bg-viewButton-dark-bg border border-viewButton-light-border dark:border-viewButton-dark-border rounded-lg text-viewButton-light-text dark:text-viewButton-dark-text text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+        <button
+          onClick={handleViewApplications}
+          className="px-4 py-2 bg-viewButton-light-bg dark:bg-viewButton-dark-bg border border-viewButton-light-border dark:border-viewButton-dark-border rounded-lg text-viewButton-light-text dark:text-viewButton-dark-text text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+        >
           View Applications
         </button>
       </div>
