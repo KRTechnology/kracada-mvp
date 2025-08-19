@@ -1,7 +1,4 @@
-import {
-  getUserProfileAction,
-  getUserExperiencesAction,
-} from "@/app/(dashboard)/actions/profile-actions";
+import { getUserProfileWithExperiencesAction } from "@/app/(dashboard)/actions/profile-actions";
 import { auth } from "@/auth";
 import { DashboardContent } from "@/components/specific/dashboard/DashboardContent";
 import { MobileActionButtons } from "@/components/specific/dashboard/MobileActionButtons";
@@ -15,16 +12,13 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Check if user has completed profile
-  const profileResult = await getUserProfileAction();
+  // Check if user has completed profile and get all profile data
+  const profileResult = await getUserProfileWithExperiencesAction();
   if (!profileResult.success || !profileResult.data?.hasCompletedProfile) {
     redirect("/dashboard/setup");
   }
 
-  // Get user experiences
-  const experiencesResult = await getUserExperiencesAction();
-
-  // Prepare user data for the dashboard
+  // Prepare complete user data for the dashboard
   const userData = {
     firstName: profileResult.data.firstName,
     lastName: profileResult.data.lastName,
@@ -36,13 +30,20 @@ export default async function DashboardPage() {
     portfolio: profileResult.data.portfolio,
     skills: profileResult.data.skills || [],
     jobPreferences: profileResult.data.jobPreferences || [],
+    profilePicture: profileResult.data.profilePicture,
+    cv: profileResult.data.cv,
+    yearsOfExperience: profileResult.data.yearsOfExperience,
+    recruiterExperience: profileResult.data.recruiterExperience,
+    companyLogo: profileResult.data.companyLogo,
+    companyName: profileResult.data.companyName,
+    companyDescription: profileResult.data.companyDescription,
+    companyWebsite: profileResult.data.companyWebsite,
+    companyEmail: profileResult.data.companyEmail,
+    accountType: profileResult.data.accountType,
   };
 
   // Prepare experiences data
-  const experiences =
-    experiencesResult.success && experiencesResult.data
-      ? experiencesResult.data
-      : [];
+  const experiences = profileResult.data.experiences || [];
 
   return (
     <div className="min-h-screen">

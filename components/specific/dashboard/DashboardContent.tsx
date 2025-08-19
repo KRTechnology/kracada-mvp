@@ -18,6 +18,16 @@ interface DashboardContentProps {
     portfolio?: string | null;
     skills?: string[];
     jobPreferences?: string[];
+    profilePicture?: string | null;
+    cv?: string | null;
+    yearsOfExperience?: number | null;
+    recruiterExperience?: string | null;
+    companyLogo?: string | null;
+    companyName?: string | null;
+    companyDescription?: string | null;
+    companyWebsite?: string | null;
+    companyEmail?: string | null;
+    accountType?: string;
   };
   experiences: Array<{
     id: string;
@@ -46,6 +56,12 @@ export function DashboardContent({
     setActiveTab(tab);
   };
 
+  // Ensure accountType is included in userData
+  const enrichedUserData = {
+    ...userData,
+    accountType: accountType || userData.accountType,
+  };
+
   return (
     <div className="space-y-6">
       {/* Desktop Tab Switcher */}
@@ -70,7 +86,7 @@ export function DashboardContent({
         <AnimatePresence mode="wait">
           <TabContentRenderer
             activeTab={activeTab}
-            userData={userData}
+            userData={enrichedUserData}
             experiences={experiences}
           />
         </AnimatePresence>
