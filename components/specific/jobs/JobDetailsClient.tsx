@@ -4,11 +4,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { JobItem } from "@/lib/data/jobs-data";
+import { JobDetailsData } from "@/app/actions/home-actions";
 import { JobApplicationDialog } from "@/components/specific/jobs/JobApplicationDialog";
 
 interface JobDetailsClientProps {
-  job: JobItem;
+  job: JobDetailsData;
 }
 
 export function JobDetailsClient({ job }: JobDetailsClientProps) {
@@ -72,9 +72,21 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
             <div className="pb-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-4">
-                  {/* Company Logo Placeholder */}
-                  <div className="w-16 h-16 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-600 rounded"></div>
+                  {/* Company Logo */}
+                  <div className="w-16 h-16 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {job.companyLogo ? (
+                      <img
+                        src={job.companyLogo}
+                        alt={`${job.company} logo`}
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-600 rounded flex items-center justify-center">
+                        <span className="text-neutral-500 dark:text-neutral-400 text-sm font-medium">
+                          {job.company.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Job Title and Company */}
@@ -87,7 +99,13 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
                     </p>
                     <div className="flex items-center text-neutral-500 dark:text-neutral-300">
                       <MapPin className="w-4 h-4 mr-2" />
-                      <span>Remote - Based in {job.location}</span>
+                      <span>
+                        {job.locationType === "remote"
+                          ? `Remote - Based in ${job.location}`
+                          : job.locationType === "hybrid"
+                            ? `Hybrid - ${job.location}`
+                            : job.location}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -105,7 +123,16 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
                 Salary Range
               </h2>
               <p className="text-neutral-700 dark:text-white font-semibold">
-                ₦6,000,000 - ₦8,500,000 per annum
+                {job.currency === "NGN"
+                  ? "₦"
+                  : job.currency === "USD"
+                    ? "$"
+                    : job.currency === "EUR"
+                      ? "€"
+                      : job.currency === "GBP"
+                        ? "£"
+                        : job.currency + " "}
+                {job.salaryRange} per annum
               </p>
             </div>
 
@@ -115,18 +142,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
                 Job Description
               </h2>
               <div className="text-neutral-700 dark:text-white space-y-3">
-                <p>
-                  {job.company} is seeking a talented {job.title} to join our
-                  fast-growing engineering team. You will work closely with
-                  product managers, designers, and backend developers to create
-                  seamless user experiences across web and mobile platforms.
-                </p>
-                <p>
-                  Your role will include translating UI/UX designs into
-                  high-quality code, optimizing components for maximum
-                  performance, and contributing to the development of scalable,
-                  reliable solutions.
-                </p>
+                <p className="whitespace-pre-wrap">{job.description}</p>
               </div>
             </div>
 
@@ -135,13 +151,13 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
                 Industry
               </h2>
-              <p className="text-neutral-700 dark:text-white">
-                Information Technology and Services
+              <p className="text-neutral-700 dark:text-white capitalize">
+                {job.industry}
               </p>
             </div>
 
-            {/* Requirements */}
-            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
+            {/* Requirements - Commented out for now, will implement with real data later */}
+            {/* <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-3">
                 Requirements
               </h2>
@@ -162,18 +178,24 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
                   preferred.
                 </li>
               </ul>
-            </div>
+            </div> */}
 
             {/* Application Deadline */}
             <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
                 Application Deadline
               </h2>
-              <p className="text-neutral-700 dark:text-white">May 30, 2025</p>
+              <p className="text-neutral-700 dark:text-white">
+                {new Date(job.deadline).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
             </div>
 
-            {/* Company Information */}
-            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
+            {/* Company Information - Commented out for now, will implement with real data later */}
+            {/* <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-3">
                 Company Information
               </h2>
@@ -183,7 +205,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
                 Our team is passionate about creating products that make a real
                 difference in the lives of users.
               </p>
-            </div>
+            </div> */}
 
             {/* Job Skills */}
             <div>
