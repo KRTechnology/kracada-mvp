@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SubTabSwitcher, SubTabType } from "./SubTabSwitcher";
-import { JobCard } from "./JobCard";
+import { JobPostCard } from "./JobPostCard";
 import { ArticleCard } from "./ArticleCard";
 import { VideoCard } from "./VideoCard";
 import { HotelCard } from "./HotelCard";
@@ -134,7 +134,19 @@ export function BookmarksContent() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ delay: index * 0.1 }}
             >
-              {activeSubTab === "Jobs" && <JobCard job={item as JobBookmark} />}
+              {activeSubTab === "Jobs" && (
+                <JobPostCard
+                  job={{
+                    id: (item as JobBookmark).id.toString(),
+                    jobTitle: (item as JobBookmark).title,
+                    company: (item as JobBookmark).company,
+                    location: (item as JobBookmark).location,
+                    applicantsCount: 0,
+                    viewsCount: 0,
+                    isRemote: false,
+                  }}
+                />
+              )}
               {activeSubTab === "Articles" && (
                 <ArticleCard article={item as ArticleBookmark} />
               )}

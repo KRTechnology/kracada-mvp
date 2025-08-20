@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Calendar, Upload } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Calendar, Upload, X, Plus, Folder, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,6 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/common/select";
+import { createJobAction } from "@/app/(dashboard)/actions/job-actions";
+import { toast } from "sonner";
+import {
+  uploadCompanyLogo,
+  deleteUploadedFile,
+} from "@/app/(dashboard)/actions/upload-actions";
+import { useSession } from "next-auth/react";
 
 // Zod schema for form validation
 const createJobPostSchema = z.object({
@@ -35,13 +42,15 @@ const createJobPostSchema = z.object({
     .min(10, "Job description must be at least 10 characters")
     .max(2000, "Job description must be less than 2000 characters"),
   jobLocation: z.string().min(1, "Job location is required"),
+  locationType: z.enum(["remote", "onsite", "hybrid"]),
   industry: z.string().min(1, "Industry is required"),
   salaryRange: z.string().min(1, "Salary range is required"),
   currency: z.string().min(1, "Currency is required"),
   jobType: z.string().min(1, "Job type is required"),
-
+  companyName: z.string().min(1, "Company name is required"),
   companyLogo: z.instanceof(File).optional().or(z.literal("")),
-  multimediaContent: z.instanceof(File).optional().or(z.literal("")),
+
+  requiredSkills: z.array(z.string()).min(1, "At least one skill is required"),
 });
 
 type CreateJobPostFormData = z.infer<typeof createJobPostSchema>;
@@ -55,7 +64,51 @@ export function CreateJobPostDialog({
   open,
   onOpenChange,
 }: CreateJobPostDialogProps) {
+  const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [skills, setSkills] = useState<string[]>([]);
+  const [newSkill, setNewSkill] = useState("");
+
+  // File upload states
+  const [companyLogoUrl, setCompanyLogoUrl] = useState<string | null>(null);
+  const [companyLogoKey, setCompanyLogoKey] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+  // Predefined skills for easy selection
+  const predefinedSkills = [
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Node.js",
+    "Python",
+    "Java",
+    "C++",
+    "HTML/CSS",
+    "SQL",
+    "MongoDB",
+    "PostgreSQL",
+    "AWS",
+    "Docker",
+    "Kubernetes",
+    "Git",
+    "Figma",
+    "Photoshop",
+    "Project Management",
+    "UI/UX Design",
+    "Data Analysis",
+    "Machine Learning",
+    "DevOps",
+    "Agile",
+    "Scrum",
+    "Customer Service",
+    "Sales",
+    "Marketing",
+    "Content Writing",
+    "Graphic Design",
+    "Video Editing",
+    "Social Media Management",
+  ];
 
   const {
     register,
@@ -72,29 +125,68 @@ export function CreateJobPostDialog({
       deadline: "01/04/2025",
       jobDescription: "",
       jobLocation: "",
+      locationType: "onsite",
       industry: "",
       salaryRange: "",
       currency: "NGN",
       jobType: "",
+      companyName: "",
       companyLogo: undefined,
-      multimediaContent: undefined,
+
+      requiredSkills: [],
     },
   });
+
+  // Sync skills state with form validation
+  useEffect(() => {
+    if (skills.length > 0) {
+      setValue("requiredSkills", skills, { shouldValidate: true });
+    }
+  }, [skills, setValue]);
 
   const onSubmit = async (data: CreateJobPostFormData) => {
     setIsSubmitting(true);
     try {
-      // TODO: Implement job post creation logic
-      console.log("Form data:", data);
+      // Prepare data for server action
+      const jobData = {
+        title: data.jobTitle,
+        description: data.jobDescription,
+        location: data.jobLocation,
+        locationType: data.locationType,
+        industry: data.industry,
+        jobType: data.jobType as
+          | "full-time"
+          | "part-time"
+          | "contract"
+          | "internship"
+          | "freelance",
+        salaryRange: data.salaryRange,
+        currency: data.currency,
+        deadline: data.deadline,
+        companyName: data.companyName,
+        companyLogo: companyLogoUrl || undefined,
+        companyWebsite: undefined, // TODO: Add to form if needed
+        companyEmail: undefined, // TODO: Add to form if needed
+        requiredSkills: data.requiredSkills,
+      };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await createJobAction(jobData);
 
-      // Reset form and close dialog on success
-      reset();
-      onOpenChange(false);
+      if (result.success) {
+        toast.success("Job post created successfully!");
+        reset();
+        setSkills([]);
+        setCompanyLogoUrl(null);
+        setCompanyLogoKey(null);
+        onOpenChange(false);
+        // Trigger a page refresh to show the new job
+        // window.location.reload();
+      } else {
+        toast.error(result.message || "Failed to create job post");
+      }
     } catch (error) {
       console.error("Error creating job post:", error);
+      toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }
@@ -113,17 +205,130 @@ export function CreateJobPostDialog({
 
   const handleCancel = () => {
     reset();
+    setSkills([]);
+    setCompanyLogoUrl(null);
+    setCompanyLogoKey(null);
     onOpenChange(false);
   };
 
   const handleFileUpload = (
-    field: keyof Pick<
-      CreateJobPostFormData,
-      "companyLogo" | "multimediaContent"
-    >,
+    field: keyof Pick<CreateJobPostFormData, "companyLogo">,
     file: File | null
   ) => {
     setValue(field, file || undefined);
+  };
+
+  const addSkill = () => {
+    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
+      const updatedSkills = [...skills, newSkill.trim()];
+      setSkills(updatedSkills);
+      setValue("requiredSkills", updatedSkills, { shouldValidate: true });
+      setNewSkill("");
+    }
+  };
+
+  const addSkillFromDropdown = (skill: string) => {
+    if (skill && !skills.includes(skill)) {
+      const updatedSkills = [...skills, skill];
+      setSkills(updatedSkills);
+      setValue("requiredSkills", updatedSkills, { shouldValidate: true });
+    }
+  };
+
+  // Company Logo Upload Handler
+  const handleCompanyLogoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Client-side validation
+    const MAX_LOGO_SIZE = 1 * 1024 * 1024; // 1MB
+    if (file.size > MAX_LOGO_SIZE) {
+      toast.error("Logo size exceeds 1MB limit. Please choose a smaller file.");
+      event.target.value = "";
+      return;
+    }
+
+    // Validate file type
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      toast.error(
+        "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF)."
+      );
+      event.target.value = "";
+      return;
+    }
+
+    setIsUploadingLogo(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("userId", session?.user?.id || "");
+      formData.append("fullName", "Company Logo");
+
+      const result = await uploadCompanyLogo(formData);
+
+      if (result.success && result.url) {
+        setCompanyLogoUrl(result.url);
+        setCompanyLogoKey(result.key || null);
+        toast.success("Company logo uploaded successfully!");
+      } else {
+        toast.error(result.error || "Failed to upload company logo");
+      }
+    } catch (error) {
+      console.error("Logo upload error:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsUploadingLogo(false);
+    }
+
+    // Reset input
+    event.target.value = "";
+  };
+
+  // Remove uploaded files
+  const handleRemoveCompanyLogo = async () => {
+    if (companyLogoKey) {
+      try {
+        const result = await deleteUploadedFile(companyLogoKey);
+        if (result.success) {
+          setCompanyLogoUrl(null);
+          setCompanyLogoKey(null);
+          toast.success("Company logo removed successfully");
+        } else {
+          toast.error("Failed to remove company logo from storage");
+        }
+      } catch (error) {
+        console.error("Delete error:", error);
+        toast.error("An error occurred while removing the file");
+      }
+    } else {
+      setCompanyLogoUrl(null);
+      setCompanyLogoKey(null);
+      toast.success("Company logo removed");
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    const updatedSkills = skills.filter((skill) => skill !== skillToRemove);
+    setSkills(updatedSkills);
+    setValue("requiredSkills", updatedSkills, { shouldValidate: true });
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addSkill();
+    }
   };
 
   return (
@@ -215,7 +420,7 @@ export function CreateJobPostDialog({
               )}
             </div>
 
-            {/* Row 3: Job Location and Industry */}
+            {/* Row 3: Job Location and Location Type */}
             <div className="space-y-2">
               <Label
                 htmlFor="jobLocation"
@@ -223,31 +428,55 @@ export function CreateJobPostDialog({
               >
                 Job Location
               </Label>
+              <Input
+                id="jobLocation"
+                placeholder="e.g., Lagos, Nigeria"
+                {...register("jobLocation")}
+                className={`h-11 border-[#E2E8F0] dark:border-[#18212E] bg-white dark:bg-[#0D0D0D] text-neutral-900 dark:text-[#D8DDE7] placeholder:text-neutral-500 dark:placeholder:text-neutral-400 text-sm sm:text-base focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition-colors ${
+                  errors.jobLocation ? "border-red-500 dark:border-red-500" : ""
+                }`}
+              />
+              {errors.jobLocation && (
+                <p className="text-xs text-red-500 dark:text-red-400">
+                  {errors.jobLocation.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="locationType"
+                className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-[#D8DDE7]"
+              >
+                Location Type
+              </Label>
               <Select
-                value={watch("jobLocation")}
-                onValueChange={(value) => setValue("jobLocation", value)}
+                value={watch("locationType")}
+                onValueChange={(value) =>
+                  setValue(
+                    "locationType",
+                    value as "remote" | "onsite" | "hybrid"
+                  )
+                }
               >
                 <SelectTrigger
                   className={`h-11 border-[#E2E8F0] dark:border-[#18212E] bg-white dark:bg-[#0D0D0D] text-neutral-900 dark:text-[#D8DDE7] text-sm sm:text-base transition-colors ${
-                    errors.jobLocation
+                    errors.locationType
                       ? "border-red-500 dark:border-red-500"
                       : ""
                   }`}
                 >
-                  <SelectValue placeholder="Input or select job location" />
+                  <SelectValue placeholder="Select location type" />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-[#0D0D0D] border-neutral-300 dark:border-[#313337]">
                   <SelectItem value="remote">Remote</SelectItem>
                   <SelectItem value="onsite">On-site</SelectItem>
                   <SelectItem value="hybrid">Hybrid</SelectItem>
-                  <SelectItem value="new-york">New York</SelectItem>
-                  <SelectItem value="london">London</SelectItem>
-                  <SelectItem value="tokyo">Tokyo</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.jobLocation && (
+              {errors.locationType && (
                 <p className="text-xs text-red-500 dark:text-red-400">
-                  {errors.jobLocation.message}
+                  {errors.locationType.message}
                 </p>
               )}
             </div>
@@ -295,16 +524,6 @@ export function CreateJobPostDialog({
                 Salary Range
               </Label>
               <div className="flex gap-2">
-                <Input
-                  id="salaryRange"
-                  placeholder="e.g., 50000 - 80000"
-                  {...register("salaryRange")}
-                  className={`flex-1 h-11 border-[#E2E8F0] dark:border-[#18212E] bg-white dark:bg-[#0D0D0D] text-neutral-900 dark:text-[#D8DDE7] placeholder:text-neutral-500 dark:placeholder:text-neutral-400 text-sm sm:text-base focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition-colors ${
-                    errors.salaryRange
-                      ? "border-red-500 dark:border-red-500"
-                      : ""
-                  }`}
-                />
                 <Select
                   value={watch("currency")}
                   onValueChange={(value) => setValue("currency", value)}
@@ -323,6 +542,16 @@ export function CreateJobPostDialog({
                     <SelectItem value="AUD">$ AUD</SelectItem>
                   </SelectContent>
                 </Select>
+                <Input
+                  id="salaryRange"
+                  placeholder="e.g., 50000 - 80000"
+                  {...register("salaryRange")}
+                  className={`flex-1 h-11 border-[#E2E8F0] dark:border-[#18212E] bg-white dark:bg-[#0D0D0D] text-neutral-900 dark:text-[#D8DDE7] placeholder:text-neutral-500 dark:placeholder:text-neutral-400 text-sm sm:text-base focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition-colors ${
+                    errors.salaryRange
+                      ? "border-red-500 dark:border-red-500"
+                      : ""
+                  }`}
+                />
               </div>
               {errors.salaryRange && (
                 <p className="text-xs text-red-500 dark:text-red-400">
@@ -364,53 +593,225 @@ export function CreateJobPostDialog({
               )}
             </div>
 
-            {/* Row 6: Upload company logo and Multimedia content */}
+            {/* Row 6: Company Name */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="companyName"
+                className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-[#D8DDE7]"
+              >
+                Company Name *
+              </Label>
+              <Input
+                id="companyName"
+                placeholder="Enter your company name"
+                {...register("companyName")}
+                className={`h-11 border-[#E2E8F0] dark:border-[#18212E] bg-white dark:bg-[#0D0D0D] text-neutral-900 dark:text-[#D8DDE7] placeholder:text-neutral-500 dark:placeholder:text-neutral-400 text-sm sm:text-base focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition-colors ${
+                  errors.companyName ? "border-red-500 dark:border-red-500" : ""
+                }`}
+              />
+              {errors.companyName && (
+                <p className="text-xs text-red-500 dark:text-red-400">
+                  {errors.companyName.message}
+                </p>
+              )}
+            </div>
+
+            {/* Row 7: Required Skills (spans full width) */}
+            <div className="lg:col-span-2 space-y-2">
+              <Label className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-[#D8DDE7]">
+                Required Skills *
+              </Label>
+              <div className="space-y-3">
+                {/* Skills Display */}
+                {skills.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map((skill, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-3 py-1 rounded-full text-sm"
+                      >
+                        <span>{skill}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeSkill(skill)}
+                          className="text-orange-600 dark:text-orange-300 hover:text-orange-800 dark:hover:text-orange-100"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Skills Input */}
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 block">
+                      Select from common skills:
+                    </Label>
+                    <Select
+                      value=""
+                      onValueChange={(value) => {
+                        if (value && !skills.includes(value)) {
+                          addSkillFromDropdown(value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="bg-white dark:bg-[#0D0D0D] border-[#E2E8F0] dark:border-[#18212E] text-neutral-900 dark:text-[#D8DDE7] focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition-colors">
+                        <SelectValue placeholder="Choose a skill to add" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-[#0D0D0D] border-neutral-300 dark:border-[#313337]">
+                        {predefinedSkills
+                          .filter((skill) => !skills.includes(skill))
+                          .map((skill) => (
+                            <SelectItem key={skill} value={skill}>
+                              {skill}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 block">
+                      Or add a custom skill:
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                        placeholder="Type your custom skill"
+                        className="flex-1 h-11 border-[#E2E8F0] dark:border-[#18212E] bg-white dark:bg-[#0D0D0D] text-neutral-900 dark:text-[#D8DDE7] placeholder:text-neutral-500 dark:placeholder:text-neutral-400 text-sm sm:text-base focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition-colors"
+                        onKeyPress={handleKeyPress}
+                      />
+                      <Button
+                        type="button"
+                        onClick={addSkill}
+                        variant="outline"
+                        size="sm"
+                        className="h-11 px-4 border-[#E2E8F0] dark:border-[#18212E] text-neutral-700 dark:text-[#D8DDE7] hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!newSkill.trim()}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    Add or select your required skills
+                  </p>
+                </div>
+
+                {errors.requiredSkills && (
+                  <p className="text-xs text-red-500 dark:text-red-400">
+                    {errors.requiredSkills.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Row 7: Upload company logo and Multimedia content */}
             <div className="space-y-2">
               <Label className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-[#D8DDE7]">
                 Upload company logo
               </Label>
-              <div className="border-2 border-dashed border-[#CBD5E1] dark:border-[#273444] rounded-lg p-3 sm:p-4 lg:p-6 text-center hover:border-[#94A3B8] dark:hover:border-[#334155] transition-colors cursor-pointer">
-                <Upload className="mx-auto h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-neutral-400 dark:text-neutral-500 mb-2 sm:mb-3 lg:mb-4" />
-                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-1 sm:mb-2">
-                  Drop your files or click to upload
-                </p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-500 mb-2 sm:mb-3 lg:mb-4">
-                  Supported file types: JPG, PNG or Webp
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="border-[#E2E8F0] dark:border-[#18212E] text-neutral-700 dark:text-[#D8DDE7] hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                >
-                  Browse
-                </Button>
-              </div>
-            </div>
+              <div className="border-2 border-dashed border-[#CBD5E1] dark:border-[#273444] rounded-lg p-3 sm:p-4 lg:p-6 text-center hover:border-[#94A3B8] dark:hover:border-[#334155] transition-colors cursor-pointer relative">
+                {companyLogoUrl ? (
+                  /* Logo Uploaded State */
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-16 h-16 rounded-xl bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                      <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                    </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-[#D8DDE7]">
-                Multimedia content{" "}
-                <span className="text-neutral-500 dark:text-neutral-400">
-                  (optional)
-                </span>
-              </Label>
-              <div className="border-2 border-dashed border-[#CBD5E1] dark:border-[#273444] rounded-lg p-3 sm:p-4 lg:p-6 text-center hover:border-[#94A3B8] dark:hover:border-[#334155] transition-colors cursor-pointer">
-                <Upload className="mx-auto h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-neutral-400 dark:text-neutral-500 mb-2 sm:mb-3 lg:mb-4" />
-                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-1 sm:mb-2">
-                  Drop your files or click to upload
-                </p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-500 mb-2 sm:mb-3 lg:mb-4">
-                  Supported file types: JPG, PNG or Webp
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="border-[#E2E8F0] dark:border-[#18212E] text-neutral-700 dark:text-[#D8DDE7] hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                >
-                  Browse
-                </Button>
+                    <div>
+                      <p className="text-neutral-900 dark:text-neutral-100 font-medium mb-1">
+                        Logo Uploaded Successfully
+                      </p>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                        Your company logo is ready
+                      </p>
+                      <div className="mt-3 flex justify-center">
+                        <img
+                          src={companyLogoUrl}
+                          alt="Company Logo"
+                          className="w-20 h-20 object-contain rounded-lg border border-neutral-200 dark:border-neutral-700"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        onClick={handleRemoveCompanyLogo}
+                        disabled={isUploadingLogo}
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Logo Upload State */
+                  <div className="flex flex-col items-center space-y-4">
+                    <Upload className="mx-auto h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-neutral-400 dark:text-neutral-500 mb-2 sm:mb-3 lg:mb-4" />
+                    <div>
+                      <p className="text-neutral-900 dark:text-neutral-100 font-medium mb-1">
+                        Drop your logo or click to upload
+                      </p>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                        Supported file types: JPG, PNG, WebP, GIF (Max: 1MB)
+                      </p>
+                    </div>
+
+                    <label htmlFor="company-logo-upload">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="border-[#E2E8F0] dark:border-[#18212E] text-neutral-700 dark:text-[#D8DDE7] hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer"
+                        disabled={isUploadingLogo}
+                        onClick={() => {
+                          document
+                            .getElementById("company-logo-upload")
+                            ?.click();
+                        }}
+                      >
+                        {isUploadingLogo ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent mr-2"></div>
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Browse
+                          </>
+                        )}
+                      </Button>
+                      <input
+                        id="company-logo-upload"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                        onChange={handleCompanyLogoUpload}
+                        className="hidden"
+                        disabled={isUploadingLogo}
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {/* Loading overlay for logo upload */}
+                {isUploadingLogo && (
+                  <div className="absolute inset-0 bg-white/80 dark:bg-neutral-900/80 rounded-xl flex items-center justify-center">
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-warm-200 border-t-transparent"></div>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                        Uploading logo...
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

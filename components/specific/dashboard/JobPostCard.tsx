@@ -4,6 +4,11 @@ import { useState } from "react";
 import { MoreVertical, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { JobPostDropdown } from "./JobPostDropdown";
+import {
+  deleteJobAction,
+  toggleJobStatusAction,
+} from "@/app/(dashboard)/actions/job-actions";
+import { toast } from "sonner";
 
 interface JobPostCardProps {
   job: {
@@ -26,9 +31,20 @@ export function JobPostCard({ job }: JobPostCardProps) {
     // TODO: Implement edit functionality
   };
 
-  const handleCloseJob = () => {
-    console.log("Close job:", job.id);
-    // TODO: Implement close job functionality
+  const handleCloseJob = async () => {
+    try {
+      const result = await toggleJobStatusAction(job.id);
+      if (result.success) {
+        toast.success(result.message);
+        // Trigger a page refresh to show the updated status
+        window.location.reload();
+      } else {
+        toast.error(result.message || "Failed to toggle job status");
+      }
+    } catch (error) {
+      console.error("Error toggling job status:", error);
+      toast.error("Failed to toggle job status");
+    }
   };
 
   const handleDuplicate = () => {
