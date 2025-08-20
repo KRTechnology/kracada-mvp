@@ -9,7 +9,6 @@ interface JobPostDropdownProps {
   onClose: () => void;
   onEdit: () => void;
   onCloseJob: () => void;
-  onDuplicate: () => void;
 }
 
 export function JobPostDropdown({
@@ -17,7 +16,6 @@ export function JobPostDropdown({
   onClose,
   onEdit,
   onCloseJob,
-  onDuplicate,
 }: JobPostDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -50,11 +48,6 @@ export function JobPostDropdown({
       icon: <X className="w-4 h-4" />,
       label: "Close Job",
       onClick: onCloseJob,
-    },
-    {
-      icon: <Copy className="w-4 h-4" />,
-      label: "Duplicate Job",
-      onClick: onDuplicate,
     },
   ];
 

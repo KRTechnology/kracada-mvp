@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar, Upload, X, Plus, Folder, CheckCircle } from "lucide-react";
+import { Calendar, Upload, X, Plus, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/common/select";
-import { createJobAction } from "@/app/(dashboard)/actions/job-actions";
+import { updateJobAction } from "@/app/(dashboard)/actions/job-actions";
 import { toast } from "sonner";
 import {
   uploadCompanyLogo,
@@ -30,8 +30,8 @@ import {
 } from "@/app/(dashboard)/actions/upload-actions";
 import { useSession } from "next-auth/react";
 
-// Zod schema for form validation
-const createJobPostSchema = z.object({
+// Zod schema for form validation (same as create)
+const editJobPostSchema = z.object({
   jobTitle: z
     .string()
     .min(1, "Job title is required")
@@ -49,21 +49,41 @@ const createJobPostSchema = z.object({
   jobType: z.string().min(1, "Job type is required"),
   companyName: z.string().min(1, "Company name is required"),
   companyLogo: z.instanceof(File).optional().or(z.literal("")),
-
   requiredSkills: z.array(z.string()).min(1, "At least one skill is required"),
 });
 
-type CreateJobPostFormData = z.infer<typeof createJobPostSchema>;
+type EditJobPostFormData = z.infer<typeof editJobPostSchema>;
 
-interface CreateJobPostDialogProps {
+interface EditJobPostDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  jobData: {
+    id: string;
+    title: string;
+    description: string;
+    location: string;
+    locationType: "remote" | "onsite" | "hybrid";
+    industry: string;
+    jobType:
+      | "full-time"
+      | "part-time"
+      | "contract"
+      | "internship"
+      | "freelance";
+    salaryRange: string;
+    currency: string;
+    deadline: Date;
+    companyName: string;
+    companyLogo?: string | null;
+    requiredSkills: string;
+  };
 }
 
-export function CreateJobPostDialog({
+export function EditJobPostDialog({
   open,
   onOpenChange,
-}: CreateJobPostDialogProps) {
+  jobData,
+}: EditJobPostDialogProps) {
   const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,7 +91,9 @@ export function CreateJobPostDialog({
   const [newSkill, setNewSkill] = useState("");
 
   // File upload states
-  const [companyLogoUrl, setCompanyLogoUrl] = useState<string | null>(null);
+  const [companyLogoUrl, setCompanyLogoUrl] = useState<string | null>(
+    jobData.companyLogo || null
+  );
   const [companyLogoKey, setCompanyLogoKey] = useState<string | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
@@ -117,25 +139,38 @@ export function CreateJobPostDialog({
     reset,
     setValue,
     watch,
-  } = useForm<CreateJobPostFormData>({
-    resolver: zodResolver(createJobPostSchema),
+  } = useForm<EditJobPostFormData>({
+    resolver: zodResolver(editJobPostSchema),
     mode: "onChange",
     defaultValues: {
-      jobTitle: "",
-      deadline: "01/04/2025",
-      jobDescription: "",
-      jobLocation: "",
-      locationType: "onsite",
-      industry: "",
-      salaryRange: "",
-      currency: "NGN",
-      jobType: "",
-      companyName: "",
+      jobTitle: jobData.title,
+      deadline: jobData.deadline.toISOString().split("T")[0], // Convert Date to YYYY-MM-DD
+      jobDescription: jobData.description,
+      jobLocation: jobData.location,
+      locationType: jobData.locationType,
+      industry: jobData.industry,
+      salaryRange: jobData.salaryRange,
+      currency: jobData.currency,
+      jobType: jobData.jobType,
+      companyName: jobData.companyName,
       companyLogo: undefined,
-
       requiredSkills: [],
     },
   });
+
+  // Initialize skills from job data
+  useEffect(() => {
+    try {
+      const parsedSkills = JSON.parse(jobData.requiredSkills);
+      if (Array.isArray(parsedSkills)) {
+        setSkills(parsedSkills);
+        setValue("requiredSkills", parsedSkills, { shouldValidate: true });
+      }
+    } catch (error) {
+      console.error("Error parsing skills:", error);
+      setSkills([]);
+    }
+  }, [jobData.requiredSkills, setValue]);
 
   // Sync skills state with form validation
   useEffect(() => {
@@ -144,11 +179,12 @@ export function CreateJobPostDialog({
     }
   }, [skills, setValue]);
 
-  const onSubmit = async (data: CreateJobPostFormData) => {
+  const onSubmit = async (data: EditJobPostFormData) => {
     setIsSubmitting(true);
     try {
       // Prepare data for server action
-      const jobData = {
+      const updateData = {
+        id: jobData.id,
         title: data.jobTitle,
         description: data.jobDescription,
         location: data.jobLocation,
@@ -165,34 +201,23 @@ export function CreateJobPostDialog({
         deadline: data.deadline,
         companyName: data.companyName,
         companyLogo: companyLogoUrl || undefined,
-        companyWebsite: undefined, // TODO: Add to form if needed
-        companyEmail: undefined, // TODO: Add to form if needed
         requiredSkills: data.requiredSkills,
       };
 
-      const result = await createJobAction(jobData);
+      const result = await updateJobAction(updateData);
 
       if (result.success) {
-        toast.success("Job post created successfully!");
-        reset();
-        setSkills([]);
-        setCompanyLogoUrl(null);
-        setCompanyLogoKey(null);
+        toast.success("Job post updated successfully!");
         onOpenChange(false);
       } else {
-        toast.error(result.message || "Failed to create job post");
+        toast.error(result.message || "Failed to update job post");
       }
     } catch (error) {
-      console.error("Error creating job post:", error);
+      console.error("Error updating job post:", error);
       toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handlePreview = () => {
-    // TODO: Implement preview functionality
-    console.log("Preview job post");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -202,18 +227,11 @@ export function CreateJobPostDialog({
   };
 
   const handleCancel = () => {
-    reset();
-    setSkills([]);
-    setCompanyLogoUrl(null);
+    // Reset to original values
+    setSkills(JSON.parse(jobData.requiredSkills));
+    setCompanyLogoUrl(jobData.companyLogo || null);
     setCompanyLogoKey(null);
     onOpenChange(false);
-  };
-
-  const handleFileUpload = (
-    field: keyof Pick<CreateJobPostFormData, "companyLogo">,
-    file: File | null
-  ) => {
-    setValue(field, file || undefined);
   };
 
   const addSkill = () => {
@@ -334,7 +352,7 @@ export function CreateJobPostDialog({
       <DialogContent className="w-[719px] max-w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto bg-white dark:bg-dark-container border border-neutral-200 dark:border-[#313337] rounded-2xl mx-4 sm:mx-0">
         <DialogHeader className="pb-4 sm:pb-6">
           <DialogTitle className="text-lg sm:text-xl font-semibold text-neutral-900 dark:text-[#D8DDE7] text-left">
-            Create Job Post
+            Edit Job Post
           </DialogTitle>
         </DialogHeader>
 
@@ -708,7 +726,7 @@ export function CreateJobPostDialog({
               </div>
             </div>
 
-            {/* Row 7: Upload company logo and Multimedia content */}
+            {/* Row 8: Upload company logo */}
             <div className="space-y-2">
               <Label className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-[#D8DDE7]">
                 Upload company logo
@@ -767,7 +785,7 @@ export function CreateJobPostDialog({
                       <Button
                         type="button"
                         variant="outline"
-                        className="border-[#E2E8F0] dark:border-[#18212E] text-neutral-700 dark:text-[#D8DDE7] hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer"
+                        className="border-[#E2E8F0] dark:border-[#18212E] text-neutral-700 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer"
                         disabled={isUploadingLogo}
                         onClick={() => {
                           document
@@ -820,7 +838,7 @@ export function CreateJobPostDialog({
               type="button"
               variant="outline"
               onClick={handleCancel}
-              className="w-full sm:w-auto border-[#E2E8F0] dark:border-[#18212E] text-neutral-700 dark:text-[#D8DDE7] hover:bg-neutral-50 dark:hover:bg-neutral-800"
+              className="w-full sm:w-auto border-[#E2E8F0] dark:border-[#18212E] text-neutral-700 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
             >
               Cancel
             </Button>
@@ -829,7 +847,7 @@ export function CreateJobPostDialog({
               disabled={!isValid || isSubmitting}
               className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 border border-orange-600 dark:border-orange-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Creating..." : "Create Job Post"}
+              {isSubmitting ? "Updating..." : "Update Job Post"}
             </Button>
           </div>
         </form>

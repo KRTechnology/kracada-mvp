@@ -45,12 +45,14 @@ interface TabContentRendererProps {
     description: string | null;
     skills: string[];
   }>;
+  refreshTrigger?: number;
 }
 
 export function TabContentRenderer({
   activeTab,
   userData,
   experiences,
+  refreshTrigger,
 }: TabContentRendererProps) {
   const renderTabContent = () => {
     switch (activeTab) {
@@ -87,7 +89,7 @@ export function TabContentRenderer({
         return <ApplicationsContent />;
 
       case "Job Posts":
-        return <JobPostsContent />;
+        return <JobPostsContent refreshTrigger={refreshTrigger} />;
 
       default:
         return <ProfileContent userData={userData} experiences={experiences} />;

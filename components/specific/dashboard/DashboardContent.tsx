@@ -51,6 +51,12 @@ export function DashboardContent({
   accountType,
 }: DashboardContentProps) {
   const [activeTab, setActiveTab] = useState<TabType>("Profile");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Function to trigger refresh of job posts
+  const triggerJobRefresh = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
@@ -88,6 +94,7 @@ export function DashboardContent({
             activeTab={activeTab}
             userData={enrichedUserData}
             experiences={experiences}
+            refreshTrigger={refreshTrigger}
           />
         </AnimatePresence>
       </div>

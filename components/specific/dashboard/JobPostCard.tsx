@@ -19,16 +19,19 @@ interface JobPostCardProps {
     applicantsCount: number;
     viewsCount: number;
     isRemote?: boolean;
+    companyLogo?: string | null;
   };
+  onEdit?: (jobId: string) => void;
 }
 
-export function JobPostCard({ job }: JobPostCardProps) {
+export function JobPostCard({ job, onEdit }: JobPostCardProps) {
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleEdit = () => {
-    console.log("Edit job:", job.id);
-    // TODO: Implement edit functionality
+    if (onEdit) {
+      onEdit(job.id);
+    }
   };
 
   const handleCloseJob = async () => {
@@ -36,8 +39,7 @@ export function JobPostCard({ job }: JobPostCardProps) {
       const result = await toggleJobStatusAction(job.id);
       if (result.success) {
         toast.success(result.message);
-        // Trigger a page refresh to show the updated status
-        window.location.reload();
+        // The server action will revalidate the dashboard, so no need to reload
       } else {
         toast.error(result.message || "Failed to toggle job status");
       }
@@ -47,11 +49,6 @@ export function JobPostCard({ job }: JobPostCardProps) {
     }
   };
 
-  const handleDuplicate = () => {
-    console.log("Duplicate job:", job.id);
-    // TODO: Implement duplicate functionality
-  };
-
   const handleViewApplications = () => {
     router.push(`/jobs/${job.id}/applications`);
   };
@@ -59,9 +56,21 @@ export function JobPostCard({ job }: JobPostCardProps) {
   return (
     <div className="bg-white dark:bg-dark rounded-xl border border-neutral-50 dark:border-[#232020] p-4 hover:shadow-md transition-shadow relative">
       <div className="flex items-start mb-3">
-        {/* Company Logo Placeholder */}
-        <div className="w-16 h-16 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center mr-2">
-          <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-600 rounded"></div>
+        {/* Company Logo */}
+        <div className="w-16 h-16 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center mr-2 overflow-hidden">
+          {job.companyLogo ? (
+            <img
+              src={job.companyLogo}
+              alt={`${job.company} logo`}
+              className="w-full h-full object-contain rounded-lg"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-600 rounded flex items-center justify-center">
+              <span className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">
+                {job.company.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Job Details Section */}
@@ -93,7 +102,6 @@ export function JobPostCard({ job }: JobPostCardProps) {
             onClose={() => setIsDropdownOpen(false)}
             onEdit={handleEdit}
             onCloseJob={handleCloseJob}
-            onDuplicate={handleDuplicate}
           />
 
           {/* Location */}

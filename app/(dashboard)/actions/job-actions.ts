@@ -41,6 +41,80 @@ export interface UpdateApplicationStatusData {
     | "Offer";
 }
 
+// Fetch jobs by user ID (employer/business owner)
+export async function getEmployerJobsAction() {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, message: "Unauthorized" };
+    }
+
+    const userId = session.user.id;
+
+    // Verify user is an employer or business owner
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (
+      !user.length ||
+      !["Employer", "Business Owner"].includes(user[0].accountType)
+    ) {
+      return {
+        success: false,
+        message: "Only employers and business owners can view job posts",
+      };
+    }
+
+    // Fetch jobs with applicant count
+    const jobsWithCounts = await db
+      .select({
+        id: jobs.id,
+        title: jobs.title,
+        description: jobs.description,
+        location: jobs.location,
+        locationType: jobs.locationType,
+        industry: jobs.industry,
+        jobType: jobs.jobType,
+        salaryRange: jobs.salaryRange,
+        currency: jobs.currency,
+        deadline: jobs.deadline,
+        companyName: jobs.companyName,
+        companyLogo: jobs.companyLogo,
+        companyWebsite: jobs.companyWebsite,
+        companyEmail: jobs.companyEmail,
+        multimediaContent: jobs.multimediaContent,
+        requiredSkills: jobs.requiredSkills,
+        status: jobs.status,
+        employerId: jobs.employerId,
+        createdAt: jobs.createdAt,
+        updatedAt: jobs.updatedAt,
+        applicantsCount: sql<number>`(
+          SELECT COUNT(*)::int 
+          FROM ${jobApplications} 
+          WHERE ${jobApplications.jobId} = ${jobs.id}
+        )`,
+        viewsCount: sql<number>`0`, // For now, set to 0 as requested
+      })
+      .from(jobs)
+      .where(eq(jobs.employerId, userId))
+      .orderBy(desc(jobs.createdAt));
+
+    return {
+      success: true,
+      data: jobsWithCounts,
+    };
+  } catch (error) {
+    console.error("Error fetching employer jobs:", error);
+    return {
+      success: false,
+      message: "Failed to fetch job posts",
+    };
+  }
+}
+
 // Create a new job post
 export async function createJobAction(data: CreateJobData) {
   try {
@@ -103,35 +177,6 @@ export async function createJobAction(data: CreateJobData) {
     return {
       success: false,
       message: "Failed to create job post",
-    };
-  }
-}
-
-// Get jobs by employer
-export async function getEmployerJobsAction() {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, message: "Unauthorized" };
-    }
-
-    const userId = session.user.id;
-
-    const employerJobs = await db
-      .select()
-      .from(jobs)
-      .where(eq(jobs.employerId, userId))
-      .orderBy(desc(jobs.createdAt));
-
-    return {
-      success: true,
-      data: employerJobs,
-    };
-  } catch (error) {
-    console.error("Error fetching employer jobs:", error);
-    return {
-      success: false,
-      message: "Failed to fetch employer jobs",
     };
   }
 }

@@ -1,24 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SubTabSwitcher, JobPostsSubTabType } from "./SubTabSwitcher";
 import { JobPostCard } from "./JobPostCard";
 import { Pagination } from "./Pagination";
-import { jobsData, JobItem } from "@/lib/data/jobs-data";
+import { getEmployerJobsAction } from "@/app/(dashboard)/actions/job-actions";
+import { toast } from "sonner";
+import { EditJobPostDialog } from "./EditJobPostDialog";
 
-// Filter jobs for active and closed (for now, all jobs are considered active)
-const activeJobs = jobsData.filter(
-  (job) => job.applicantsCount && job.viewsCount
-);
-const closedJobs: JobItem[] = []; // Empty for now, can be populated later
+// Types for the job data
+interface JobData {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  locationType: "remote" | "onsite" | "hybrid";
+  industry: string;
+  jobType: "full-time" | "part-time" | "contract" | "internship" | "freelance";
+  salaryRange: string;
+  currency: string;
+  deadline: Date;
+  companyName: string;
+  companyLogo?: string | null;
+  companyWebsite?: string | null;
+  companyEmail?: string | null;
+  multimediaContent?: string | null;
+  requiredSkills: string;
+  status: "active" | "closed";
+  employerId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  applicantsCount: number;
+  viewsCount: number;
+}
 
 const ITEMS_PER_PAGE = 5;
 
-export function JobPostsContent() {
+interface JobPostsContentProps {
+  refreshTrigger?: number;
+}
+
+export function JobPostsContent({ refreshTrigger = 0 }: JobPostsContentProps) {
   const [activeSubTab, setActiveSubTab] =
     useState<JobPostsSubTabType>("Active Jobs");
   const [currentPage, setCurrentPage] = useState(1);
+  const [jobs, setJobs] = useState<JobData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Edit modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedJobForEdit, setSelectedJobForEdit] = useState<JobData | null>(
+    null
+  );
+
+  // Fetch jobs on component mount and when refreshTrigger changes
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setIsLoading(true);
+        const result = await getEmployerJobsAction();
+        if (result.success && result.data) {
+          setJobs(result.data);
+        } else {
+          toast.error(result.message || "Failed to fetch jobs");
+        }
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+        toast.error("Failed to fetch jobs");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, [refreshTrigger]);
+
+  // Filter jobs for active and closed
+  const activeJobs = jobs.filter((job) => job.status === "active");
+  const closedJobs = jobs.filter((job) => job.status === "closed");
 
   // Job post tabs with counts
   const jobPostTabs = [
@@ -48,6 +108,14 @@ export function JobPostsContent() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleEditJob = (jobId: string) => {
+    const job = jobs.find((j) => j.id === jobId);
+    if (job) {
+      setSelectedJobForEdit(job);
+      setIsEditModalOpen(true);
+    }
   };
 
   const getDataForTab = (tab: JobPostsSubTabType) => {
@@ -99,6 +167,17 @@ export function JobPostsContent() {
   };
 
   const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-orange-500 border-t-transparent mb-4"></div>
+          <p className="text-neutral-600 dark:text-neutral-400">
+            Loading jobs...
+          </p>
+        </div>
+      );
+    }
+
     if (currentData.length === 0) {
       return renderEmptyState(activeSubTab);
     }
@@ -117,12 +196,14 @@ export function JobPostsContent() {
               job={{
                 id: job.id.toString(),
                 jobTitle: job.title,
-                company: job.company,
+                company: job.companyName,
                 location: job.location,
                 applicantsCount: job.applicantsCount || 0,
                 viewsCount: job.viewsCount || 0,
-                isRemote: job.isRemote,
+                isRemote: job.locationType === "remote",
+                companyLogo: job.companyLogo,
               }}
+              onEdit={handleEditJob}
             />
           </motion.div>
         ))}
@@ -161,6 +242,29 @@ export function JobPostsContent() {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
+        />
+      )}
+
+      {/* Edit Job Modal */}
+      {selectedJobForEdit && (
+        <EditJobPostDialog
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          jobData={{
+            id: selectedJobForEdit.id,
+            title: selectedJobForEdit.title,
+            description: selectedJobForEdit.description,
+            location: selectedJobForEdit.location,
+            locationType: selectedJobForEdit.locationType,
+            industry: selectedJobForEdit.industry,
+            jobType: selectedJobForEdit.jobType,
+            salaryRange: selectedJobForEdit.salaryRange,
+            currency: selectedJobForEdit.currency,
+            deadline: selectedJobForEdit.deadline,
+            companyName: selectedJobForEdit.companyName,
+            companyLogo: selectedJobForEdit.companyLogo,
+            requiredSkills: selectedJobForEdit.requiredSkills,
+          }}
         />
       )}
     </div>
