@@ -4,6 +4,8 @@ import { useAccountTypeStyles } from "@/lib/hooks/useAccountTypeStyles";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { CreateJobPostDialog } from "./CreateJobPostDialog";
 
 interface ProfileBannerProps {
   firstName?: string;
@@ -22,13 +24,14 @@ export function ProfileBanner({
 }: ProfileBannerProps) {
   const router = useRouter();
   const { pillStyles, statusColor } = useAccountTypeStyles(accountType);
+  const [isCreateJobPostOpen, setIsCreateJobPostOpen] = useState(false);
 
   const handleEditProfile = () => {
     router.push("/dashboard/edit");
   };
 
   const handleCreateJobPost = () => {
-    // router.push("/jobs/create");
+    setIsCreateJobPostOpen(true);
   };
 
   // Check if user can create job posts
@@ -141,6 +144,12 @@ export function ProfileBanner({
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Create Job Post Dialog */}
+      <CreateJobPostDialog
+        open={isCreateJobPostOpen}
+        onOpenChange={setIsCreateJobPostOpen}
+      />
     </div>
   );
 }
