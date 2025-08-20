@@ -3,8 +3,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 import JobCard from "./JobCard";
+import { HomePageJob } from "@/app/actions/home-actions";
 
-const JobsSection = () => {
+interface JobsSectionProps {
+  latestJobs: HomePageJob[];
+}
+
+const JobsSection = ({ latestJobs }: JobsSectionProps) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -27,71 +32,6 @@ const JobsSection = () => {
       },
     },
   };
-
-  // Sample job data
-  const jobsData: Array<{
-    id: number;
-    title: string;
-    company: string;
-    location: string;
-    description: string;
-    skills: string[];
-  }> = [
-    {
-      id: 1,
-      title: "Frontend Developer",
-      company: "TechCorp Inc",
-      location: "Lagos, Nigeria",
-      description:
-        "We are looking for a skilled Frontend Developer to join our dynamic team. You will be responsible for building user-facing features and ensuring seamless user experiences across multiple platforms.",
-      skills: ["React", "TypeScript"],
-    },
-    {
-      id: 2,
-      title: "UI/UX Designer",
-      company: "Design Studio",
-      location: "Abuja, Nigeria",
-      description:
-        "Creative UI/UX Designer needed to design intuitive and engaging user interfaces. Experience with Figma and user research methodologies required for this exciting role.",
-      skills: ["Figma", "Prototyping"],
-    },
-    {
-      id: 3,
-      title: "Backend Engineer",
-      company: "StartupXYZ",
-      location: "Remote, Nigeria",
-      description:
-        "Backend Engineer position available for building scalable server-side applications. Strong knowledge of Node.js and database management systems required.",
-      skills: ["Node.js", "MongoDB"],
-    },
-    {
-      id: 4,
-      title: "Product Manager",
-      company: "Growth Labs",
-      location: "Port Harcourt, Nigeria",
-      description:
-        "Product Manager role focusing on strategy and roadmap development. Experience in agile methodologies and cross-functional team leadership preferred.",
-      skills: ["Strategy", "Analytics"],
-    },
-    {
-      id: 5,
-      title: "DevOps Engineer",
-      company: "CloudTech",
-      location: "Lagos, Nigeria",
-      description:
-        "DevOps Engineer to manage cloud infrastructure and deployment pipelines. AWS/Azure experience and containerization knowledge essential for success.",
-      skills: ["AWS", "Docker"],
-    },
-    {
-      id: 6,
-      title: "Data Scientist",
-      company: "DataFlow Inc",
-      location: "Ibadan, Nigeria",
-      description:
-        "Data Scientist position for analyzing complex datasets and building predictive models. Python and machine learning experience required for this analytical role.",
-      skills: ["Python", "Machine Learning"],
-    },
-  ];
 
   return (
     <section className="py-16 lg:py-24 bg-[#EBE9E9] dark:bg-neutral-800">
@@ -126,14 +66,25 @@ const JobsSection = () => {
           </div>
 
           {/* Jobs Cards Grid */}
-          <motion.div
-            variants={itemVariants}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
-          >
-            {jobsData.map((job, index) => (
-              <JobCard key={job.id} job={job} index={index} />
-            ))}
-          </motion.div>
+          {latestJobs.length > 0 ? (
+            <motion.div
+              variants={itemVariants}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
+            >
+              {latestJobs.map((job, index) => (
+                <JobCard key={job.id} job={job} index={index} />
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div variants={itemVariants} className="text-center py-12">
+              <p className="text-neutral-600 dark:text-neutral-400 text-lg">
+                No active job posts available at the moment.
+              </p>
+              <p className="text-neutral-500 dark:text-neutral-500 text-sm mt-2">
+                Check back later for new opportunities!
+              </p>
+            </motion.div>
+          )}
 
           {/* Mobile View All Button */}
           <motion.div variants={itemVariants} className="lg:hidden mt-8">

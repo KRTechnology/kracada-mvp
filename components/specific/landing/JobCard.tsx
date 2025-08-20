@@ -5,17 +5,20 @@ import { motion } from "framer-motion";
 import { MapPin, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-interface JobItem {
-  id: number;
+// Flexible interface that can handle both HomePageJob and JobItem
+interface FlexibleJobItem {
+  id: string | number;
   title: string;
   company: string;
   location: string;
   description: string;
   skills: string[];
+  locationType?: "remote" | "onsite" | "hybrid";
+  companyLogo?: string | null;
 }
 
 interface JobCardProps {
-  job: JobItem;
+  job: FlexibleJobItem;
   index: number;
 }
 
@@ -65,9 +68,21 @@ const JobCard = ({ job, index }: JobCardProps) => {
         transition={{ duration: 0.3 }}
         className="h-full"
       >
-        {/* Company Logo Placeholder */}
-        <div className="w-12 h-12 mb-4 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center">
-          <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-600 rounded" />
+        {/* Company Logo */}
+        <div className="w-12 h-12 mb-4 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center overflow-hidden">
+          {job.companyLogo ? (
+            <img
+              src={job.companyLogo}
+              alt={`${job.company} logo`}
+              className="w-full h-full object-contain rounded-lg"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-600 rounded flex items-center justify-center">
+              <span className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">
+                {job.company.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Job Title */}
