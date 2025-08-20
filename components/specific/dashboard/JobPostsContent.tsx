@@ -202,6 +202,7 @@ export function JobPostsContent({ refreshTrigger = 0 }: JobPostsContentProps) {
                 viewsCount: job.viewsCount || 0,
                 isRemote: job.locationType === "remote",
                 companyLogo: job.companyLogo,
+                status: job.status,
               }}
               onEdit={handleEditJob}
             />

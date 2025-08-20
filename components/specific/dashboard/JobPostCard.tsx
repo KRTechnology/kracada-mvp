@@ -20,6 +20,7 @@ interface JobPostCardProps {
     viewsCount: number;
     isRemote?: boolean;
     companyLogo?: string | null;
+    status: "active" | "closed";
   };
   onEdit?: (jobId: string) => void;
 }
@@ -135,13 +136,22 @@ export function JobPostCard({ job, onEdit }: JobPostCardProps) {
           </div>
         </div>
 
-        {/* View Applications Button */}
-        <button
-          onClick={handleViewApplications}
-          className="px-4 py-2 bg-viewButton-light-bg dark:bg-viewButton-dark-bg border border-viewButton-light-border dark:border-viewButton-dark-border rounded-lg text-viewButton-light-text dark:text-viewButton-dark-text text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-        >
-          View Applications
-        </button>
+        {/* Conditional Button based on Job Status */}
+        {job.status === "active" ? (
+          <button
+            onClick={handleViewApplications}
+            className="px-4 py-2 bg-viewButton-light-bg dark:bg-viewButton-dark-bg border border-viewButton-light-border dark:border-viewButton-dark-border rounded-lg text-viewButton-light-text dark:text-viewButton-dark-text text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+          >
+            View Applications
+          </button>
+        ) : (
+          <button
+            onClick={handleCloseJob}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 border border-green-600 text-white text-sm font-medium transition-colors rounded-lg"
+          >
+            Make Active
+          </button>
+        )}
       </div>
     </div>
   );

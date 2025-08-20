@@ -144,6 +144,7 @@ export function BookmarksContent() {
                     applicantsCount: 0,
                     viewsCount: 0,
                     isRemote: false,
+                    status: "active",
                   }}
                 />
               )}
