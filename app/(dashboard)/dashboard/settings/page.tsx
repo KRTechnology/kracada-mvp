@@ -83,7 +83,7 @@ export default async function SettingsPage() {
       />
     );
   } else if (
-    finalAccountType === "Employer" ||
+    finalAccountType === "Recruiter" ||
     finalAccountType === "Business Owner"
   ) {
     return (

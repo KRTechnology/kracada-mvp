@@ -107,7 +107,7 @@ export function JobSeekerSetupClient({
     userData.bio &&
     userData.profilePicture && // Profile picture is required
     userData.cv && // CV is required
-    (userData.accountType === "Employer" ||
+    (userData.accountType === "Recruiter" ||
     userData.accountType === "Business Owner"
       ? userData.yearsOfExperience
       : true);

@@ -68,7 +68,7 @@ export function TabContentRenderer({
             />
           );
         } else if (
-          accountType === "Employer" ||
+          accountType === "Recruiter" ||
           accountType === "Business Owner"
         ) {
           return <EmployerProfileContent userData={userData} />;

@@ -71,7 +71,7 @@ export default async function EditProfilePage() {
       />
     );
   } else if (
-    finalAccountType === "Employer" ||
+    finalAccountType === "Recruiter" ||
     finalAccountType === "Business Owner"
   ) {
     return (

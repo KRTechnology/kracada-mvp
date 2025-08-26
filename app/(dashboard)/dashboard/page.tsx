@@ -51,7 +51,10 @@ export default async function ProfilePage() {
           experiences={experiences}
         />
       );
-    } else if (accountType === "Employer" || accountType === "Business Owner") {
+    } else if (
+      accountType === "Recruiter" ||
+      accountType === "Business Owner"
+    ) {
       return <EmployerProfileContent userData={userData} />;
     } else {
       // Fallback to the original ProfileContent for unknown account types

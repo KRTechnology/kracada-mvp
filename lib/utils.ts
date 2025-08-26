@@ -16,7 +16,7 @@ export const lineClamp = (lines: number) => ({
 // Account type utilities
 export const ACCOUNT_TYPES = {
   JOB_SEEKER: "Job Seeker",
-  EMPLOYER: "Employer",
+  RECRUITER: "Recruiter",
   BUSINESS_OWNER: "Business Owner",
   CONTRIBUTOR: "Contributor",
 } as const;
@@ -26,14 +26,14 @@ export type AccountType = (typeof ACCOUNT_TYPES)[keyof typeof ACCOUNT_TYPES];
 // Check if account type should show recruiter experience field
 export const shouldShowRecruiterExperience = (accountType: string): boolean => {
   return (
-    accountType === ACCOUNT_TYPES.EMPLOYER ||
+    accountType === ACCOUNT_TYPES.RECRUITER ||
     accountType === ACCOUNT_TYPES.BUSINESS_OWNER
   );
 };
 
 // Get account types that should show recruiter experience
 export const getRecruiterAccountTypes = (): AccountType[] => {
-  return [ACCOUNT_TYPES.EMPLOYER, ACCOUNT_TYPES.BUSINESS_OWNER];
+  return [ACCOUNT_TYPES.RECRUITER, ACCOUNT_TYPES.BUSINESS_OWNER];
 };
 
 // Get all account types

@@ -18,7 +18,7 @@ const signupSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   email: z.string().email("Invalid email address"),
   accountType: z.enum(
-    ["Job Seeker", "Employer", "Business Owner", "Contributor"],
+    ["Job Seeker", "Recruiter", "Business Owner", "Contributor"],
     { required_error: "Account type is required" }
   ),
   password: z

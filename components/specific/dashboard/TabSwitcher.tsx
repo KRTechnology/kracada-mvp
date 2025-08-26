@@ -31,7 +31,7 @@ const getTabsForAccountType = (accountType?: string): TabItem[] => {
   ];
 
   // Add account-specific tab
-  if (accountType === "Employer" || accountType === "Business Owner") {
+  if (accountType === "Recruiter" || accountType === "Business Owner") {
     return [...baseTabs, { id: "Job Posts" as TabType, label: "Job Posts" }];
   } else {
     return [

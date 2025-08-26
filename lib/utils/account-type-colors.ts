@@ -28,20 +28,7 @@ export const accountTypeColorMap: Record<string, AccountTypeColors> = {
       status: "#F97316", // orange-500
     },
   },
-  Employer: {
-    light: {
-      background: "#EFF8FF",
-      border: "#B2DDFF",
-      text: "#175CD3",
-      status: "#2E90FA",
-    },
-    dark: {
-      background: "#151515",
-      border: "#003A66",
-      text: "#175CD3",
-      status: "#2E90FA",
-    },
-  },
+
   "Business Owner": {
     light: {
       background: "#F0FDF4",

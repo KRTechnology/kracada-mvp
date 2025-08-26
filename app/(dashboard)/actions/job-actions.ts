@@ -60,11 +60,11 @@ export async function getEmployerJobsAction() {
 
     if (
       !user.length ||
-      !["Employer", "Business Owner"].includes(user[0].accountType)
+      !["Recruiter", "Business Owner"].includes(user[0].accountType)
     ) {
       return {
         success: false,
-        message: "Only employers and business owners can view job posts",
+        message: "Only recruiters and business owners can view job posts",
       };
     }
 
@@ -133,11 +133,11 @@ export async function createJobAction(data: CreateJobData) {
       .limit(1);
     if (
       !user.length ||
-      !["Employer", "Business Owner"].includes(user[0].accountType)
+      !["Recruiter", "Business Owner"].includes(user[0].accountType)
     ) {
       return {
         success: false,
-        message: "Only employers and business owners can create job posts",
+        message: "Only recruiters and business owners can create job posts",
       };
     }
 

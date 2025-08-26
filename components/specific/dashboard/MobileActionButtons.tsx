@@ -23,7 +23,7 @@ export function MobileActionButtons({ accountType }: MobileActionButtonsProps) {
 
   // Check if user can create job posts
   const canCreateJobPost =
-    accountType === "Employer" || accountType === "Business Owner";
+    accountType === "Recruiter" || accountType === "Business Owner";
 
   return (
     <>

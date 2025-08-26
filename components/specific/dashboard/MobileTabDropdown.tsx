@@ -25,7 +25,7 @@ const getTabOptionsForAccountType = (accountType?: string): TabOption[] => {
   ];
 
   // Add account-specific tab
-  if (accountType === "Employer" || accountType === "Business Owner") {
+  if (accountType === "Recruiter" || accountType === "Business Owner") {
     return [
       ...baseTabs,
       { value: "Job Posts" as TabType, label: "Job Posts", count: 0 },

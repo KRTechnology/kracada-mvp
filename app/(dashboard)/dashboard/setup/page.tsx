@@ -31,7 +31,7 @@ export default async function SetupPage() {
   switch (finalAccountType) {
     case "Job Seeker":
       return <JobSeekerSetupClient profileData={profileData} />;
-    case "Employer":
+    case "Recruiter":
       return <EmployerSetupClient profileData={profileData} />;
     case "Business Owner":
       return <BusinessOwnerSetupClient profileData={profileData} />;

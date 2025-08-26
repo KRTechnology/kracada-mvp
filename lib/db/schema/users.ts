@@ -13,7 +13,7 @@ import {
 // Define account type enum
 export const accountTypeEnum = pgEnum("account_type", [
   "Job Seeker",
-  "Employer",
+  "Recruiter",
   "Business Owner",
   "Contributor",
 ]);
