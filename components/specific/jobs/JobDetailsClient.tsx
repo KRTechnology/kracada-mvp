@@ -1,11 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { JobDetailsData } from "@/app/actions/home-actions";
 import { JobApplicationDialog } from "@/components/specific/jobs/JobApplicationDialog";
+import { AuthRequiredAlert } from "@/components/common/AuthRequiredAlert";
+import {
+  getJobApplicationStatusAction,
+  withdrawJobApplicationAction,
+  JobApplicationStatus,
+} from "@/app/(dashboard)/actions/job-application-actions";
+import { Loader } from "@/components/common/Loader";
+import { toast } from "sonner";
 
 interface JobDetailsClientProps {
   job: JobDetailsData;
@@ -13,15 +22,93 @@ interface JobDetailsClientProps {
 
 export function JobDetailsClient({ job }: JobDetailsClientProps) {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [isSaved, setIsSaved] = useState(false);
   const [isApplicationDialogOpen, setIsApplicationDialogOpen] = useState(false);
+  const [isAuthAlertOpen, setIsAuthAlertOpen] = useState(false);
+  const [applicationStatus, setApplicationStatus] =
+    useState<JobApplicationStatus | null>(null);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+
+  // Check application status when user is authenticated
+  useEffect(() => {
+    const checkApplicationStatus = async () => {
+      if (status === "loading") return;
+
+      if (session?.user?.id) {
+        try {
+          const result = await getJobApplicationStatusAction(job.id);
+          if (result.success && result.data) {
+            setApplicationStatus(result.data);
+          }
+        } catch (error) {
+          console.error("Error checking application status:", error);
+        }
+      }
+      setIsLoadingStatus(false);
+    };
+
+    checkApplicationStatus();
+  }, [job.id, session, status]);
 
   const handleGoBack = () => {
     router.back();
   };
 
   const handleApply = () => {
+    // Check if user is authenticated
+    if (status === "loading") return;
+
+    if (!session) {
+      setIsAuthAlertOpen(true);
+      return;
+    }
+
+    // Check if user is trying to apply to their own job
+    if (session.user?.id === job.employerId) {
+      toast.error("You cannot apply to your own job posting");
+      return;
+    }
+
     setIsApplicationDialogOpen(true);
+  };
+
+  const handleWithdrawApplication = async () => {
+    if (!session?.user?.id || !applicationStatus?.canWithdraw) return;
+
+    setIsWithdrawing(true);
+    try {
+      const result = await withdrawJobApplicationAction(job.id);
+
+      if (result.success) {
+        toast.success(result.message);
+        // Refresh application status
+        const statusResult = await getJobApplicationStatusAction(job.id);
+        if (statusResult.success && statusResult.data) {
+          setApplicationStatus(statusResult.data);
+        }
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error withdrawing application:", error);
+      toast.error("Failed to withdraw application");
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
+
+  const handleApplicationSuccess = async () => {
+    // Refresh application status after successful application
+    try {
+      const result = await getJobApplicationStatusAction(job.id);
+      if (result.success && result.data) {
+        setApplicationStatus(result.data);
+      }
+    } catch (error) {
+      console.error("Error refreshing application status:", error);
+    }
   };
 
   const handleSave = () => {
@@ -211,14 +298,66 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
             {/* Action Buttons */}
             <div className="pt-4">
               <div className="flex flex-col sm:flex-row gap-4">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleApply}
-                  className="bg-warm-200 hover:bg-warm-300 text-white py-2 px-4 rounded-lg font-medium transition-colors shadow-sm"
-                >
-                  Apply Now
-                </motion.button>
+                {isLoadingStatus ? (
+                  <div className="flex items-center justify-center py-2">
+                    <Loader size="sm" />
+                  </div>
+                ) : (
+                  <>
+                    {/* Application Button Logic */}
+                    {!session ? (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleApply}
+                        className="bg-warm-200 hover:bg-warm-300 text-white py-2 px-4 rounded-lg font-medium transition-colors shadow-sm"
+                      >
+                        Apply Now
+                      </motion.button>
+                    ) : session.user?.id === job.employerId ? (
+                      <div className="py-2 px-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded-lg font-medium text-center">
+                        This is your job posting
+                      </div>
+                    ) : applicationStatus?.hasApplied ? (
+                      <>
+                        {applicationStatus.canWithdraw ? (
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleWithdrawApplication}
+                            disabled={isWithdrawing}
+                            className="bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white py-2 px-4 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2"
+                          >
+                            {isWithdrawing ? (
+                              <>
+                                <Loader size="sm" color="border-white" />
+                                Withdrawing...
+                              </>
+                            ) : (
+                              "Withdraw Application"
+                            )}
+                          </motion.button>
+                        ) : (
+                          <div className="py-2 px-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-lg font-medium text-center border border-green-200 dark:border-green-800">
+                            Application {applicationStatus.status} - Cannot
+                            withdraw
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleApply}
+                        className="bg-warm-200 hover:bg-warm-300 text-white py-2 px-4 rounded-lg font-medium transition-colors shadow-sm"
+                      >
+                        Apply Now
+                      </motion.button>
+                    )}
+                  </>
+                )}
+
+                {/* Save Button */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -235,12 +374,53 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
             </div>
           </div>
         </motion.div>
+
+        {/* Disclaimer */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+          className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 max-w-4xl mx-auto mt-6"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-white"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-orange-800 dark:text-orange-200 leading-relaxed">
+                <strong className="font-semibold">Disclaimer:</strong> Kracada
+                is not responsible for user-generated content. Posts are not
+                pre-screened, and all responsibility lies with the original
+                poster. Please report any content that violates our guidelines.
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
       <JobApplicationDialog
         isOpen={isApplicationDialogOpen}
         onClose={() => setIsApplicationDialogOpen(false)}
+        jobId={job.id}
         jobTitle={job.title}
         companyName={job.company}
+        onApplicationSuccess={handleApplicationSuccess}
+      />
+
+      <AuthRequiredAlert
+        isOpen={isAuthAlertOpen}
+        onClose={() => setIsAuthAlertOpen(false)}
       />
     </div>
   );

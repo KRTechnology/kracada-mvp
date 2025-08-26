@@ -21,12 +21,13 @@ interface JobData {
   salaryRange: string;
   currency: string;
   deadline: Date;
-  companyName: string;
+  companyName: string | null;
   companyLogo?: string | null;
   companyWebsite?: string | null;
   companyEmail?: string | null;
   multimediaContent?: string | null;
   requiredSkills: string;
+  requirements: string;
   status: "active" | "closed";
   employerId: string;
   createdAt: Date;

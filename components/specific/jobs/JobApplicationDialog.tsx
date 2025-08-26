@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Upload, X, FileText, Linkedin, Award, Globe } from "lucide-react";
+import { Upload, X, FileText, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Dialog,
   DialogContent,
@@ -11,37 +12,78 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/common/dialog";
+import { createJobApplicationAction } from "@/app/(dashboard)/actions/job-application-actions";
+import {
+  uploadCoverLetter,
+  deleteUploadedFile,
+} from "@/app/(dashboard)/actions/upload-actions";
+import { Loader } from "@/components/common/Loader";
+import { toast } from "sonner";
 
 interface JobApplicationDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  jobId: string;
   jobTitle: string;
   companyName: string;
+  onApplicationSuccess?: () => void;
 }
 
 export function JobApplicationDialog({
   isOpen,
   onClose,
+  jobId,
   jobTitle,
   companyName,
+  onApplicationSuccess,
 }: JobApplicationDialogProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
+  const [coverLetterUrl, setCoverLetterUrl] = useState<string | null>(null);
+  const [coverLetterKey, setCoverLetterKey] = useState<string | null>(null);
+  const [isUploadingCoverLetter, setIsUploadingCoverLetter] = useState(false);
   const [portfolioLink, setPortfolioLink] = useState("");
   const [certification, setCertification] = useState("");
   const [linkedinProfile, setLinkedinProfile] = useState("");
 
-  const handleSubmit = () => {
-    // TODO: Implement actual submission logic
-    setIsSubmitted(true);
+  const handleSubmit = async () => {
+    if (!session?.user?.id) {
+      toast.error("You must be logged in to apply");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await createJobApplicationAction({
+        jobId,
+        coverLetterUrl: coverLetterUrl || undefined,
+      });
+
+      if (result.success) {
+        setIsSubmitted(true);
+        toast.success(result.message);
+        onApplicationSuccess?.();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      toast.error("Failed to submit application");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
     setIsSubmitted(false);
-    setCvFile(null);
+    setIsSubmitting(false);
     setCoverLetterFile(null);
+    setCoverLetterUrl(null);
+    setCoverLetterKey(null);
     setPortfolioLink("");
     setCertification("");
     setLinkedinProfile("");
@@ -53,87 +95,161 @@ export function JobApplicationDialog({
     router.push("/jobs/applications");
   };
 
-  const handleFileUpload = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    setFile: (file: File | null) => void
+  const handleCoverLetterUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
-    if (
-      file &&
-      file.type === "application/pdf" &&
-      file.size <= 5 * 1024 * 1024
-    ) {
-      setFile(file);
+    if (!file) return;
+
+    // Client-side validation
+    const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(
+        "Cover letter size exceeds 1MB limit. Please choose a smaller file."
+      );
+      event.target.value = "";
+      return;
+    }
+
+    // Validate file type (PDF only)
+    if (file.type !== "application/pdf") {
+      toast.error("Invalid file type. Please upload a PDF file.");
+      event.target.value = "";
+      return;
+    }
+
+    if (!session?.user?.id) {
+      toast.error("You must be logged in to upload files");
+      return;
+    }
+
+    setIsUploadingCoverLetter(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("userId", session.user.id);
+      formData.append("fullName", session.user.name || "User");
+
+      const result = await uploadCoverLetter(formData);
+
+      if (result.success && result.url) {
+        setCoverLetterUrl(result.url);
+        setCoverLetterKey(result.key || null);
+        setCoverLetterFile(file);
+        toast.success("Cover letter uploaded successfully!");
+      } else {
+        toast.error(result.error || "Failed to upload cover letter");
+      }
+    } catch (error) {
+      console.error("Cover letter upload error:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsUploadingCoverLetter(false);
+    }
+
+    // Reset input
+    event.target.value = "";
+  };
+
+  const handleRemoveCoverLetter = async () => {
+    if (coverLetterKey) {
+      try {
+        const result = await deleteUploadedFile(coverLetterKey);
+        if (result.success) {
+          setCoverLetterUrl(null);
+          setCoverLetterKey(null);
+          setCoverLetterFile(null);
+          toast.success("Cover letter removed successfully");
+        } else {
+          toast.error("Failed to remove cover letter from storage");
+        }
+      } catch (error) {
+        console.error("Delete error:", error);
+        toast.error("An error occurred while removing the file");
+      }
+    } else {
+      setCoverLetterUrl(null);
+      setCoverLetterKey(null);
+      setCoverLetterFile(null);
+      toast.success("Cover letter removed");
     }
   };
 
-  const handleDragOver = (event: React.DragEvent) => {
-    event.preventDefault();
-  };
-
-  const handleDrop = (
-    event: React.DragEvent,
-    setFile: (file: File | null) => void
-  ) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files[0];
-    if (
-      file &&
-      file.type === "application/pdf" &&
-      file.size <= 5 * 1024 * 1024
-    ) {
-      setFile(file);
-    }
-  };
-
-  const UploadArea = ({
-    label,
-    file,
-    setFile,
-    isRequired = false,
-  }: {
-    label: string;
-    file: File | null;
-    setFile: (file: File | null) => void;
-    isRequired?: boolean;
-  }) => (
+  const CoverLetterUploadArea = () => (
     <div className="space-y-2">
       <label className="text-sm font-semibold text-[#363231]">
-        {label} {isRequired && <span className="text-red-500">*</span>}
+        Upload your cover letter (optional)
       </label>
       <div
         className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          file
+          coverLetterUrl
             ? "border-warm-200 bg-warm-50 dark:bg-warm-900/20"
             : "border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500"
         }`}
-        onDragOver={handleDragOver}
-        onDrop={(e) => handleDrop(e, setFile)}
       >
-        <input
-          type="file"
-          accept=".pdf"
-          onChange={(e) => handleFileUpload(e, setFile)}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        />
-        {file ? (
-          <div className="space-y-2">
-            <FileText className="w-8 h-8 mx-auto text-warm-200" />
-            <p className="text-sm font-medium text-neutral-900 dark:text-white">
-              {file.name}
-            </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {(file.size / 1024 / 1024).toFixed(2)} MB
-            </p>
+        {coverLetterUrl ? (
+          /* Cover Letter Uploaded State */
+          <div className="space-y-4">
+            <div className="w-16 h-16 rounded-xl bg-green-100 dark:bg-green-900 flex items-center justify-center mx-auto">
+              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-neutral-900 dark:text-white mb-1">
+                Cover Letter Uploaded Successfully
+              </p>
+              {coverLetterFile && (
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {coverLetterFile.name} •{" "}
+                  {(coverLetterFile.size / 1024 / 1024).toFixed(2)} MB
+                </p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleRemoveCoverLetter}
+              className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 text-sm font-medium transition-colors"
+            >
+              <X className="w-4 h-4 inline mr-1" />
+              Remove
+            </button>
           </div>
         ) : (
-          <div className="space-y-2">
-            <Upload className="w-8 h-8 mx-auto text-neutral-400 dark:text-neutral-500" />
-            <p className="text-sm text-neutral-700 dark:text-neutral-300">
-              <span className="text-warm-200 font-medium">Click to upload</span>{" "}
-              <span className="text-[#535862]">or drag and drop</span>
-            </p>
-            <p className="text-xs text-[#535862]">PDF. (Maximum 5mb)</p>
+          /* Cover Letter Upload State */
+          <div className="space-y-4">
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleCoverLetterUpload}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              disabled={isUploadingCoverLetter}
+            />
+
+            {isUploadingCoverLetter ? (
+              <div className="flex flex-col items-center space-y-2">
+                <Loader size="sm" />
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  Uploading cover letter...
+                </p>
+              </div>
+            ) : (
+              <>
+                <Upload className="w-8 h-8 mx-auto text-neutral-400 dark:text-neutral-500" />
+                <div className="space-y-2">
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                    <span className="text-warm-200 font-medium">
+                      Click to upload
+                    </span>{" "}
+                    <span className="text-[#535862]">or drag and drop</span>
+                  </p>
+                  <p className="text-xs text-[#535862]">
+                    PDF only (Maximum 1MB)
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -155,20 +271,20 @@ export function JobApplicationDialog({
         {!isSubmitted ? (
           // Unsubmitted State
           <div className="space-y-6">
-            {/* Upload CV */}
-            <UploadArea
-              label="Upload your CV"
-              file={cvFile}
-              setFile={setCvFile}
-              isRequired={true}
-            />
+            {/* CV Notice */}
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                CV Information
+              </h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Your current CV from your profile will be used for this
+                application. Please ensure your CV is up to date before
+                applying.
+              </p>
+            </div>
 
             {/* Upload Cover Letter */}
-            <UploadArea
-              label="Upload your cover letter (optional)"
-              file={coverLetterFile}
-              setFile={setCoverLetterFile}
-            />
+            <CoverLetterUploadArea />
 
             {/* Additional Information */}
             <div className="space-y-4">
@@ -263,10 +379,17 @@ export function JobApplicationDialog({
             {!isSubmitted ? (
               <button
                 onClick={handleSubmit}
-                disabled={!cvFile}
-                className="px-4 py-2 bg-warm-200 hover:bg-warm-300 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors h-10"
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-warm-200 hover:bg-warm-300 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors h-10 flex items-center justify-center gap-2"
               >
-                Submit application
+                {isSubmitting ? (
+                  <>
+                    <Loader size="sm" color="border-white" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit application"
+                )}
               </button>
             ) : (
               <button

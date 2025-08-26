@@ -17,6 +17,11 @@ const cvUploadSchema = z.object({
   userId: z.string().min(1),
 });
 
+const coverLetterUploadSchema = z.object({
+  file: z.instanceof(File),
+  userId: z.string().min(1),
+});
+
 // Types for client-side usage
 export type ProfilePictureUploadResult = {
   success: boolean;
@@ -40,6 +45,13 @@ export type CompanyLogoUploadResult = {
 };
 
 export type MultimediaContentUploadResult = {
+  success: boolean;
+  url?: string;
+  error?: string;
+  key?: string;
+};
+
+export type CoverLetterUploadResult = {
   success: boolean;
   url?: string;
   error?: string;
@@ -415,6 +427,98 @@ export async function uploadMultimediaContent(
     };
   } catch (error) {
     console.error("Multimedia content upload error:", error);
+
+    // Check if it's an environment variable error
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload cover letter for job application
+ */
+export async function uploadCoverLetter(
+  formData: FormData
+): Promise<CoverLetterUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const fullName = formData.get("fullName") as string;
+
+    // Validate file existence
+    if (!file || file.size === 0) {
+      return {
+        success: false,
+        error: "No file provided",
+      };
+    }
+
+    // Validate file type (PDF only)
+    if (file.type !== "application/pdf") {
+      return {
+        success: false,
+        error: "Only PDF files are allowed for cover letters",
+      };
+    }
+
+    // Validate file size (1MB max)
+    const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        success: false,
+        error: "Cover letter file size exceeds 1MB limit",
+      };
+    }
+
+    // Validate input data
+    const validation = coverLetterUploadSchema.safeParse({
+      file,
+      userId,
+    });
+
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Create custom path
+    const customPath = `users/${userId}/cover-letters`;
+
+    const result = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `cover-letter-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Cover letter upload error:", error);
 
     // Check if it's an environment variable error
     if (

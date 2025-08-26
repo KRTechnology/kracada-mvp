@@ -81,6 +81,7 @@ export interface JobDetailsData {
   salaryRange: string;
   currency: string;
   deadline: Date;
+  employerId: string;
   companyLogo?: string | null;
   companyWebsite?: string | null;
   companyEmail?: string | null;
@@ -113,6 +114,7 @@ export async function getJobByIdAction(jobId: string): Promise<{
         salaryRange: jobs.salaryRange,
         currency: jobs.currency,
         deadline: jobs.deadline,
+        employerId: jobs.employerId,
         companyLogo: users.companyLogo,
         companyWebsite: users.companyWebsite,
         companyEmail: users.companyEmail,
@@ -148,6 +150,7 @@ export async function getJobByIdAction(jobId: string): Promise<{
       salaryRange: job.salaryRange,
       currency: job.currency,
       deadline: job.deadline,
+      employerId: job.employerId,
       companyLogo: job.companyLogo,
       companyWebsite: job.companyWebsite,
       companyEmail: job.companyEmail,
