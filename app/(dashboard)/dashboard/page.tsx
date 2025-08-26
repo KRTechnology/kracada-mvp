@@ -3,6 +3,9 @@ import { ProfileContent } from "@/components/specific/dashboard/ProfileContent";
 import { JobSeekerProfileContent } from "@/components/specific/dashboard/JobSeekerProfileContent";
 import { EmployerProfileContent } from "@/components/specific/dashboard/EmployerProfileContent";
 
+// Force dynamic rendering since we need to access user session
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage() {
   // Get profile data
   const profileResult = await getUserProfileWithExperiencesAction();

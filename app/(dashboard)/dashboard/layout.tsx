@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   description: "Manage your profile and settings",
 };
 
+// Force dynamic rendering since we need to access user session
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPageLayout({
   children,
 }: {

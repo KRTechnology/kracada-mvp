@@ -2,6 +2,9 @@ import { ClosedJobPostsContent } from "@/components/specific/dashboard/ClosedJob
 import { getEmployerJobsAction } from "@/app/(dashboard)/actions/job-actions";
 import { Loader } from "@/components/common/Loader";
 
+// Force dynamic rendering since we need to access user session
+export const dynamic = "force-dynamic";
+
 export default async function ClosedJobPostsPage() {
   const result = await getEmployerJobsAction();
 
