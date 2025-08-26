@@ -13,28 +13,24 @@ import {
   Mail,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { JobItem } from "@/lib/data/jobs-data";
 import { Pagination } from "@/components/specific/dashboard/Pagination";
-
-interface Application {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  status:
-    | "Submitted"
-    | "Under review"
-    | "Shortlisted"
-    | "Rejected"
-    | "Interviewed"
-    | "Offer";
-  avatar: string;
-  hasAvatar: boolean;
-}
+import { EmptyApplicationsState } from "./EmptyApplicationsState";
+import { updateApplicationStatusAction } from "@/app/(dashboard)/actions/job-application-management-actions";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/common/dropdown-menu";
+import type {
+  JobWithCompany,
+  JobApplicationWithUser,
+} from "@/app/(dashboard)/actions/job-application-management-actions";
 
 interface JobApplicationsPageClientProps {
-  job: JobItem;
-  applications: Application[];
+  job: JobWithCompany;
+  applications: JobApplicationWithUser[];
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -57,9 +53,6 @@ export function JobApplicationsPageClient({
   const [activeFilter, setActiveFilter] = useState<
     "all" | "interviewed" | "reject" | "shortlist"
   >("all");
-  const [openStatusDropdown, setOpenStatusDropdown] = useState<string | null>(
-    null
-  );
 
   const totalPages = Math.ceil(applications.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -89,19 +82,31 @@ export function JobApplicationsPageClient({
     );
   };
 
-  const handleStatusClick = (id: string) => {
-    setOpenStatusDropdown(openStatusDropdown === id ? null : id);
-  };
+  const handleStatusChange = async (
+    id: string,
+    newStatus: JobApplicationWithUser["status"]
+  ) => {
+    try {
+      // Show loading toast
+      const loadingToast = toast.loading("Updating application status...");
 
-  const handleStatusChange = (id: string, newStatus: Application["status"]) => {
-    // Here you would typically update the application status in your backend
-    console.log(`Changing status for application ${id} to ${newStatus}`);
+      // Update status via server action
+      const result = await updateApplicationStatusAction(id, newStatus);
 
-    // Close the dropdown
-    setOpenStatusDropdown(null);
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
 
-    // For now, we'll just log the change
-    // In a real implementation, you'd update the applications array or make an API call
+      if (result.success) {
+        toast.success("Application status updated successfully");
+        // Refresh the page to get updated data
+        window.location.reload();
+      } else {
+        toast.error(result.message || "Failed to update application status");
+      }
+    } catch (error) {
+      console.error("Error updating application status:", error);
+      toast.error("Failed to update application status");
+    }
   };
 
   // Reset to first page when applications change
@@ -109,7 +114,7 @@ export function JobApplicationsPageClient({
     setCurrentPage(1);
   }, [applications]);
 
-  const getStatusColor = (status: Application["status"]) => {
+  const getStatusColor = (status: JobApplicationWithUser["status"]) => {
     switch (status) {
       case "Submitted":
         return "bg-white dark:bg-dark border-tab-light-border dark:border-tab-dark-border text-neutral-700 dark:text-neutral-300";
@@ -128,7 +133,7 @@ export function JobApplicationsPageClient({
     }
   };
 
-  const getStatusBgColor = (status: Application["status"]) => {
+  const getStatusBgColor = (status: JobApplicationWithUser["status"]) => {
     switch (status) {
       case "Submitted":
         return "bg-white dark:bg-dark";
@@ -187,9 +192,17 @@ export function JobApplicationsPageClient({
           <div className="px-6 mb-6">
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-4">
-                {/* Company Logo Placeholder */}
-                <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-700 rounded-lg flex items-center justify-center">
-                  <div className="w-10 h-10 bg-neutral-200 dark:bg-neutral-600 rounded"></div>
+                {/* Company Logo */}
+                <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-700 rounded-lg flex items-center justify-center overflow-hidden">
+                  {job.companyLogo ? (
+                    <img
+                      src={job.companyLogo}
+                      alt={`${job.companyName || "Company"} logo`}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 bg-neutral-200 dark:bg-neutral-600 rounded"></div>
+                  )}
                 </div>
 
                 {/* Job Info */}
@@ -198,12 +211,13 @@ export function JobApplicationsPageClient({
                     {job.title}
                   </h1>
                   <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-2">
-                    {job.company}
+                    {job.companyName || "Company Not Specified"}
                   </p>
                   <div className="flex items-center text-neutral-500 dark:text-neutral-400">
                     <MapPin className="w-4 h-4 mr-2" />
                     <span>
-                      {job.isRemote ? "Remote - " : ""}Based in {job.location}
+                      {job.locationType === "remote" ? "Remote - " : ""}Based in{" "}
+                      {job.location}
                     </span>
                   </div>
                 </div>
@@ -255,7 +269,7 @@ export function JobApplicationsPageClient({
                   <select
                     value={selectedExperience}
                     onChange={(e) => setSelectedExperience(e.target.value)}
-                    className="appearance-none pl-4 pr-10 py-2 bg-white dark:bg-neutral-700 border border-skillPill-light-bg dark:border-skillPill-dark-bg rounded-lg text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-warm-200 focus:ring-warm-200 focus:border-transparent w-40"
+                    className="appearance-none pl-4 pr-10 py-2 bg-white dark:bg-neutral-700 border border-skillPill-light-bg dark:border-skillPill-dark-bg rounded-lg text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-warm-200 focus:border-transparent w-40"
                   >
                     <option>All Experience</option>
                     <option>Entry Level</option>
@@ -318,272 +332,328 @@ export function JobApplicationsPageClient({
 
           {/* Applications Section */}
           <div className="px-6 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-              <div className="flex items-center space-x-3 mb-4 sm:mb-0">
-                <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
-                  Applications
-                </h2>
-                <span className="px-3 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-full text-sm font-medium">
-                  {applications.length}
-                </span>
-              </div>
+            {applications.length === 0 ? (
+              <EmptyApplicationsState jobTitle={job.title} />
+            ) : (
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+                  <div className="flex items-center space-x-3 mb-4 sm:mb-0">
+                    <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
+                      Applications
+                    </h2>
+                    <span className="px-3 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-full text-sm font-medium">
+                      {applications.length}
+                    </span>
+                  </div>
 
-              {/* Action Buttons */}
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => setActiveFilter("interviewed")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    activeFilter === "interviewed"
-                      ? "bg-warm-200 text-white"
-                      : "bg-white dark:bg-neutral-700 border border-skillPill-light-bg dark:border-skillPill-dark-bg text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-600"
-                  }`}
-                >
-                  Interviewed
-                </button>
-                <button
-                  onClick={() => setActiveFilter("reject")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    activeFilter === "reject"
-                      ? "bg-warm-200 text-white"
-                      : "bg-white dark:bg-neutral-700 border border-skillPill-light-bg dark:border-skillPill-dark-bg text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-600"
-                  }`}
-                >
-                  Rejected
-                </button>
-                <button
-                  onClick={() => setActiveFilter("shortlist")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    activeFilter === "shortlist"
-                      ? "bg-warm-200 text-white"
-                      : "bg-white dark:bg-neutral-700 border border-skillPill-light-bg dark:border-skillPill-dark-bg text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-600"
-                  }`}
-                >
-                  Shortlist
-                </button>
-              </div>
-            </div>
-
-            {/* Applications Table */}
-            <div className="bg-white dark:bg-neutral-800 rounded-lg border border-skillPill-light-bg dark:border-tab-dark-border overflow-hidden">
-              {/* Table Header */}
-              <div className="grid grid-cols-12 gap-2 px-6 py-4 bg-tab-light-bg dark:bg-neutral-700 border-b border-skillPill-light-bg dark:border-tab-dark-border">
-                <div className="col-span-1">
-                  <input
-                    type="checkbox"
-                    checked={
-                      selectedApplications.length === currentApplications.length
-                    }
-                    onChange={handleSelectAll}
-                    className="w-4 h-4 text-warm-200 bg-white dark:bg-neutral-600 border-neutral-300 dark:border-neutral-500 rounded focus:ring-warm-200 focus:ring-2"
-                  />
+                  {/* Action Buttons */}
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => setActiveFilter("interviewed")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        activeFilter === "interviewed"
+                          ? "bg-warm-200 text-white"
+                          : "bg-white dark:bg-neutral-700 border border-skillPill-light-bg dark:border-skillPill-dark-bg text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-600"
+                      }`}
+                    >
+                      Interviewed
+                    </button>
+                    <button
+                      onClick={() => setActiveFilter("reject")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        activeFilter === "reject"
+                          ? "bg-warm-200 text-white"
+                          : "bg-white dark:bg-neutral-700 border border-skillPill-light-bg dark:border-skillPill-dark-bg text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-600"
+                      }`}
+                    >
+                      Rejected
+                    </button>
+                    <button
+                      onClick={() => setActiveFilter("shortlist")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        activeFilter === "shortlist"
+                          ? "bg-warm-200 text-white"
+                          : "bg-white dark:bg-neutral-700 border border-skillPill-light-bg dark:border-skillPill-dark-bg text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-600"
+                      }`}
+                    >
+                      Shortlist
+                    </button>
+                  </div>
                 </div>
-                <div className="col-span-2">
-                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Name
-                  </span>
-                </div>
-                <div className="col-span-2 flex items-center">
-                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Role
-                  </span>
-                  <Info className="w-4 h-4 ml-2 text-neutral-400" />
-                </div>
-                <div className="col-span-2">
-                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Status
-                  </span>
-                </div>
-                <div className="col-span-2">{/* Download Cover Letter */}</div>
-                <div className="col-span-2">
-                  {/* Download CV - increased from 1 to 2 */}
-                </div>
-                <div className="col-span-1">{/* Send Email */}</div>
-              </div>
 
-              {/* Applications List */}
-              <div className="divide-y divide-skillPill-light-bg dark:divide-tab-dark-border">
-                {currentApplications.map((application, index) => (
-                  <motion.div
-                    key={application.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="grid grid-cols-12 gap-2 px-6 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
-                  >
-                    {/* Checkbox */}
-                    <div className="col-span-1">
-                      <input
-                        type="checkbox"
-                        checked={selectedApplications.includes(application.id)}
-                        onChange={() => handleSelectApplication(application.id)}
-                        className="w-4 h-4 text-warm-200 bg-white dark:bg-neutral-600 border-neutral-300 dark:border-neutral-500 rounded focus:ring-warm-200 focus:ring-2"
-                      />
-                    </div>
-
-                    {/* Name and Email */}
-                    <div className="col-span-2">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-neutral-200 dark:bg-neutral-600 rounded-full flex items-center justify-center text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          {application.avatar}
-                        </div>
-                        <div>
-                          <p className="font-medium text-neutral-900 dark:text-white">
-                            {application.name}
-                          </p>
-                          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                            {application.email}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Role */}
-                    <div className="col-span-2">
-                      <p className="text-neutral-900 dark:text-white">
-                        {application.role}
-                      </p>
-                    </div>
-
-                    {/* Status */}
-                    <div className="col-span-2">
-                      <div className="relative group">
-                        <button
-                          onClick={() => handleStatusClick(application.id)}
-                          className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full border hover:shadow-sm transition-all cursor-pointer ${getStatusColor(application.status)}`}
-                        >
-                          <span>{application.status}</span>
-                          <ChevronDown className="w-3 h-3 ml-1 opacity-60 group-hover:opacity-100 transition-opacity" />
-                        </button>
-
-                        {/* Status Dropdown */}
-                        {openStatusDropdown === application.id && (
-                          <div
-                            ref={(el) => {
-                              if (el) {
-                                const rect = el.getBoundingClientRect();
-                                const viewportHeight = window.innerHeight;
-                                const shouldShowAbove =
-                                  rect.bottom > viewportHeight - 100;
-
-                                if (shouldShowAbove) {
-                                  el.style.top = "auto";
-                                  el.style.bottom = "100%";
-                                  el.style.marginBottom = "0.25rem";
-                                  el.style.marginTop = "0";
-                                } else {
-                                  el.style.top = "100%";
-                                  el.style.bottom = "auto";
-                                  el.style.marginTop = "0.25rem";
-                                  el.style.marginBottom = "0";
-                                }
+                {/* Applications Table */}
+                <div className="bg-white dark:bg-neutral-800 rounded-lg border border-skillPill-light-bg dark:border-tab-dark-border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      {/* Table Header */}
+                      <thead className="bg-tab-light-bg dark:bg-neutral-700 border-b border-skillPill-light-bg dark:border-tab-dark-border">
+                        <tr>
+                          <th className="w-12 px-4 py-4 text-left">
+                            <input
+                              type="checkbox"
+                              checked={
+                                selectedApplications.length ===
+                                  currentApplications.length &&
+                                currentApplications.length > 0
                               }
-                            }}
-                            className="absolute z-[9999] min-w-[140px] bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-600 shadow-lg py-1 top-full mt-1 left-0"
+                              onChange={handleSelectAll}
+                              className="w-4 h-4 text-warm-200 bg-white dark:bg-neutral-600 border-neutral-300 dark:border-neutral-500 rounded focus:ring-warm-200 focus:ring-2"
+                            />
+                          </th>
+                          <th className="px-4 py-4 text-left min-w-[280px]">
+                            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                              Applicant
+                            </span>
+                          </th>
+                          <th className="px-4 py-4 text-left min-w-[200px]">
+                            <div className="flex items-center">
+                              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                Recent Position
+                              </span>
+                              <Info className="w-4 h-4 ml-2 text-neutral-400" />
+                            </div>
+                          </th>
+                          <th className="px-4 py-4 text-left min-w-[140px]">
+                            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                              Status
+                            </span>
+                          </th>
+                          <th className="px-4 py-4 text-center min-w-[120px]">
+                            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                              Cover Letter
+                            </span>
+                          </th>
+                          <th className="px-4 py-4 text-center min-w-[100px]">
+                            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                              CV
+                            </span>
+                          </th>
+                          <th className="px-4 py-4 text-center min-w-[100px]">
+                            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                              Contact
+                            </span>
+                          </th>
+                        </tr>
+                      </thead>
+
+                      {/* Table Body */}
+                      <tbody className="divide-y divide-skillPill-light-bg dark:divide-tab-dark-border">
+                        {currentApplications.map((application, index) => (
+                          <motion.tr
+                            key={application.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
                           >
-                            {[
-                              "Submitted",
-                              "Under review",
-                              "Shortlisted",
-                              "Interviewed",
-                              "Rejected",
-                              "Offer",
-                            ].map((status) => (
-                              <button
-                                key={status}
-                                onClick={() =>
-                                  handleStatusChange(
-                                    application.id,
-                                    status as Application["status"]
-                                  )
+                            {/* Checkbox */}
+                            <td className="px-4 py-4">
+                              <input
+                                type="checkbox"
+                                checked={selectedApplications.includes(
+                                  application.id
+                                )}
+                                onChange={() =>
+                                  handleSelectApplication(application.id)
                                 }
-                                className={`w-full text-left px-3 py-2 text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors flex items-center space-x-2 ${
-                                  application.status === status
-                                    ? "text-warm-200 font-medium"
-                                    : "text-neutral-700 dark:text-neutral-300"
-                                }`}
+                                className="w-4 h-4 text-warm-200 bg-white dark:bg-neutral-600 border-neutral-300 dark:border-neutral-500 rounded focus:ring-warm-200 focus:ring-2"
+                              />
+                            </td>
+
+                            {/* Applicant Info */}
+                            <td className="px-4 py-4">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex-shrink-0">
+                                  <div className="w-14 h-14 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-700 border-2 border-neutral-200 dark:border-neutral-600">
+                                    {application.avatar ? (
+                                      <img
+                                        src={application.avatar}
+                                        alt={`${application.name} avatar`}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          const target =
+                                            e.target as HTMLImageElement;
+                                          target.style.display = "none";
+                                          const fallback =
+                                            target.parentElement?.querySelector(
+                                              ".avatar-fallback"
+                                            ) as HTMLElement;
+                                          if (fallback)
+                                            fallback.style.display = "flex";
+                                        }}
+                                      />
+                                    ) : null}
+                                    <div
+                                      className={`avatar-fallback w-full h-full flex items-center justify-center ${application.avatar ? "hidden" : "flex"}`}
+                                      style={{
+                                        display: application.avatar
+                                          ? "none"
+                                          : "flex",
+                                      }}
+                                    >
+                                      <span className="text-lg font-semibold text-neutral-600 dark:text-neutral-300">
+                                        {application.name
+                                          ?.charAt(0)
+                                          ?.toUpperCase() || "?"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-semibold text-neutral-900 dark:text-white truncate">
+                                    {application.name}
+                                  </p>
+                                  <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate">
+                                    {application.email}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Recent Position */}
+                            <td className="px-4 py-4">
+                              {application.recentJobTitle ? (
+                                <div>
+                                  <p className="font-medium text-neutral-900 dark:text-white text-sm">
+                                    {application.recentJobTitle}
+                                  </p>
+                                  {application.recentCompany && (
+                                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                                      at {application.recentCompany}
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-neutral-400 dark:text-neutral-500 italic">
+                                  No experience listed
+                                </p>
+                              )}
+                            </td>
+
+                            {/* Status */}
+                            <td className="px-4 py-4">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button
+                                    className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg border hover:shadow-md transition-all cursor-pointer ${getStatusColor(application.status)} hover:scale-105`}
+                                  >
+                                    <span>{application.status}</span>
+                                    <ChevronDown className="w-4 h-4 ml-2 opacity-60 transition-opacity" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  align="start"
+                                  className="min-w-[180px]"
+                                  side="bottom"
+                                  sideOffset={8}
+                                >
+                                  {[
+                                    "Submitted",
+                                    "Under review",
+                                    "Shortlisted",
+                                    "Interviewed",
+                                    "Rejected",
+                                    "Offer",
+                                  ].map((status) => (
+                                    <DropdownMenuItem
+                                      key={status}
+                                      onClick={() =>
+                                        handleStatusChange(
+                                          application.id,
+                                          status as JobApplicationWithUser["status"]
+                                        )
+                                      }
+                                      className={`flex items-center space-x-3 cursor-pointer ${
+                                        application.status === status
+                                          ? "text-warm-200 font-medium bg-warm-50 dark:bg-warm-900/20"
+                                          : ""
+                                      }`}
+                                    >
+                                      <div
+                                        className={`w-2 h-2 rounded-full ${getStatusBgColor(status as JobApplicationWithUser["status"])}`}
+                                      ></div>
+                                      <span>{status}</span>
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+
+                            {/* Cover Letter */}
+                            <td className="px-4 py-4 text-center">
+                              {application.coverLetter ? (
+                                <a
+                                  href={application.coverLetter}
+                                  download
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center justify-center p-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                  title="Download Cover Letter"
+                                >
+                                  <Download className="w-5 h-5" />
+                                </a>
+                              ) : (
+                                <span className="text-neutral-400 dark:text-neutral-500">
+                                  —
+                                </span>
+                              )}
+                            </td>
+
+                            {/* CV */}
+                            <td className="px-4 py-4 text-center">
+                              {application.resumeUrl ? (
+                                <a
+                                  href={application.resumeUrl}
+                                  download
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center justify-center p-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                  title="Download CV"
+                                >
+                                  <Download className="w-5 h-5" />
+                                </a>
+                              ) : (
+                                <span className="text-neutral-400 dark:text-neutral-500">
+                                  —
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Contact */}
+                            <td className="px-4 py-4 text-center">
+                              <a
+                                href={`mailto:${application.email}?subject=Regarding your application for ${job.title}&body=Dear ${application.name},%0A%0A`}
+                                className="inline-flex items-center justify-center p-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                title="Send Email"
                               >
-                                <div
-                                  className={`w-2 h-2 rounded-full border border-neutral-200 dark:border-neutral-600 ${getStatusBgColor(status as Application["status"])}`}
-                                ></div>
-                                <span>{status}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                                <Mail className="w-5 h-5" />
+                              </a>
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
-                    {/* Download Cover Letter */}
-                    <div className="col-span-2">
-                      <button
-                        onClick={() =>
-                          console.log(
-                            "Download cover letter for:",
-                            application.name
-                          )
-                        }
-                        className="flex items-center space-x-2 text-neutral-600 dark:text-neutral-200 hover:text-neutral-900 dark:hover:text-white transition-colors w-full"
-                        title="Download Cover Letter"
-                      >
-                        <span className="text-xs whitespace-nowrap">
-                          Download Cover Letter
-                        </span>
-                        <Download className="w-4 h-4 flex-shrink-0" />
-                      </button>
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="px-6">
+                    <div className="text-center mb-4 text-sm text-neutral-600 dark:text-neutral-400">
+                      Showing {startIndex + 1}-
+                      {Math.min(endIndex, applications.length)} of{" "}
+                      {applications.length} applications
                     </div>
-
-                    {/* Download CV - increased from 1 to 2 columns */}
-                    <div className="col-span-2">
-                      <button
-                        onClick={() =>
-                          console.log("Download CV for:", application.name)
-                        }
-                        className="flex items-center space-x-2 text-neutral-600 dark:text-neutral-200 hover:text-neutral-900 dark:hover:text-white transition-colors w-full"
-                        title="Download CV"
-                      >
-                        <span className="text-xs whitespace-nowrap">
-                          Download CV
-                        </span>
-                        <Download className="w-4 h-4 flex-shrink-0" />
-                      </button>
-                    </div>
-
-                    {/* Send Email */}
-                    <div className="col-span-1">
-                      <button
-                        onClick={() =>
-                          console.log("Send email to:", application.name)
-                        }
-                        className="flex items-center justify-between text-neutral-600 dark:text-neutral-200 hover:text-neutral-900 dark:hover:text-white transition-colors w-full"
-                        title="Send Email"
-                      >
-                        <span className="text-xs whitespace-nowrap">
-                          Send Email
-                        </span>
-                        <Mail className="w-4 h-4 flex-shrink-0" />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
+              </>
+            )}
           </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="px-6">
-              <div className="text-center mb-4 text-sm text-neutral-600 dark:text-neutral-400">
-                Showing {startIndex + 1}-
-                {Math.min(endIndex, applications.length)} of{" "}
-                {applications.length} applications
-              </div>
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            </div>
-          )}
         </motion.div>
       </div>
     </div>

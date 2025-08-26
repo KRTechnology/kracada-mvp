@@ -1,5 +1,8 @@
 import { JobDetailsClient } from "@/components/specific/jobs/JobDetailsClient";
-import { getJobByIdAction } from "@/app/actions/home-actions";
+import {
+  getJobByIdAction,
+  trackJobViewAction,
+} from "@/app/actions/home-actions";
 import { notFound } from "next/navigation";
 
 interface JobDetailsPageProps {
@@ -17,6 +20,13 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   if (!jobResult.success || !jobResult.data) {
     notFound();
   }
+
+  // Track job view (only counts if viewer is not the job owner)
+  // This runs on the server side and doesn't affect page loading
+  trackJobViewAction(id).catch((error) => {
+    console.error("Failed to track job view:", error);
+    // Don't throw error - view tracking shouldn't break the page
+  });
 
   return <JobDetailsClient job={jobResult.data} />;
 }

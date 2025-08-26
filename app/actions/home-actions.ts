@@ -3,6 +3,8 @@
 import { db } from "@/lib/db/drizzle";
 import { jobs, jobApplications, users } from "@/lib/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
+import { auth } from "@/auth";
+import { revalidatePath } from "next/cache";
 
 // Types for home page job data
 export interface HomePageJob {
@@ -246,6 +248,66 @@ export async function getAllActiveJobsAction(): Promise<{
     return {
       success: false,
       message: "Failed to fetch jobs",
+    };
+  }
+}
+
+// Track job view - increment view count for non-owners
+export async function trackJobViewAction(jobId: string) {
+  try {
+    // Get current session (if any)
+    const session = await auth();
+    const currentUserId = session?.user?.id;
+
+    // Get job details to check the owner
+    const [job] = await db
+      .select({
+        id: jobs.id,
+        employerId: jobs.employerId,
+        viewsCount: jobs.viewsCount,
+      })
+      .from(jobs)
+      .where(eq(jobs.id, jobId))
+      .limit(1);
+
+    if (!job) {
+      return { success: false, message: "Job not found" };
+    }
+
+    // Only increment view count if the viewer is not the job owner
+    // This includes both logged-out users and logged-in users who aren't the owner
+    if (!currentUserId || currentUserId !== job.employerId) {
+      await db
+        .update(jobs)
+        .set({
+          viewsCount: sql`${jobs.viewsCount} + 1`,
+          updatedAt: new Date(),
+        })
+        .where(eq(jobs.id, jobId));
+
+      // Revalidate dashboard pages to show updated view counts
+      revalidatePath("/dashboard/job-posts");
+      revalidatePath("/dashboard/job-posts/closed");
+      revalidatePath("/dashboard");
+
+      return {
+        success: true,
+        message: "View tracked successfully",
+        newViewCount: job.viewsCount + 1,
+      };
+    }
+
+    // Job owner viewing their own job - no view increment
+    return {
+      success: true,
+      message: "Job owner view - not counted",
+      newViewCount: job.viewsCount,
+    };
+  } catch (error) {
+    console.error("Error tracking job view:", error);
+    return {
+      success: false,
+      message: "Failed to track view",
     };
   }
 }

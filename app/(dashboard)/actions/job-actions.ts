@@ -92,7 +92,7 @@ export async function getEmployerJobsAction() {
           FROM ${jobApplications} 
           WHERE ${jobApplications.jobId} = ${jobs.id}
         )`,
-        viewsCount: sql<number>`0`, // For now, set to 0 as requested
+        viewsCount: jobs.viewsCount,
       })
       .from(jobs)
       .innerJoin(users, eq(jobs.employerId, users.id))

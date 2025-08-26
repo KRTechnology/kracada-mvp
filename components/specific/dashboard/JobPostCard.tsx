@@ -128,7 +128,7 @@ export function JobPostCard({ job, onEdit }: JobPostCardProps) {
           <div className="flex items-center px-3 py-2 bg-jobPill-views-light-bg dark:bg-jobPill-views-dark-bg border border-jobPill-views-light-border dark:border-jobPill-views-dark-border rounded-full">
             <div className="w-2 h-2 bg-jobPill-views-light-dot dark:bg-jobPill-views-dark-dot rounded-full mr-2"></div>
             <span className="text-jobPill-views-light-text dark:text-jobPill-views-dark-text text-sm font-medium">
-              {job.viewsCount} views
+              {job.viewsCount} {job.viewsCount === 1 ? "View" : "Views"}
             </span>
           </div>
         </div>
