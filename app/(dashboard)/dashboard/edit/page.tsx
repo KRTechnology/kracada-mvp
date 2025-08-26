@@ -14,7 +14,7 @@ export default async function EditProfilePage() {
   // Check if user has completed profile
   const profileResult = await getUserProfileWithExperiencesAction();
   if (!profileResult.success || !profileResult.data?.hasCompletedProfile) {
-    redirect("/dashboard/setup");
+    redirect("/setup");
   }
 
   const { accountType, ...profileData } = profileResult.data;

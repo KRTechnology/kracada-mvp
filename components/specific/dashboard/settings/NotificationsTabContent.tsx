@@ -223,7 +223,7 @@ export function NotificationsTabContent({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="bg-white dark:bg-dark-container rounded-2xl shadow-sm p-6"
+        className="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm p-6"
       >
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-[#334155] dark:text-neutral-100 mb-2">

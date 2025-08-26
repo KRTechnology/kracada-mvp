@@ -29,7 +29,7 @@ export default async function DashboardPageLayout({
   // Check if user has completed profile and get all profile data
   const profileResult = await getUserProfileWithExperiencesAction();
   if (!profileResult.success || !profileResult.data?.hasCompletedProfile) {
-    redirect("/dashboard/setup");
+    redirect("/setup");
   }
 
   return (

@@ -78,7 +78,7 @@ export default function LoginForm() {
             if (data.hasCompletedProfile) {
               router.push("/dashboard");
             } else {
-              router.push("/dashboard/setup");
+              router.push("/setup");
             }
           } else {
             // Fallback to dashboard if API call fails

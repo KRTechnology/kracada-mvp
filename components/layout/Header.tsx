@@ -151,7 +151,7 @@ const Header = () => {
             <div className="flex items-center space-x-3">
               {/* Settings Icon */}
               <button
-                onClick={() => router.push("/dashboard/settings")}
+                onClick={() => router.push("/settings")}
                 className="w-10 h-10 rounded-full flex items-center justify-center text-[#A4A7AE] hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
               >
                 <Settings className="w-5 h-5" />
@@ -238,7 +238,7 @@ const Header = () => {
                           </Link>
 
                           <Link
-                            href="/dashboard/settings"
+                            href="/settings"
                             className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors"
                             onClick={() => setIsProfileMenuOpen(false)}
                           >
@@ -409,7 +409,7 @@ const Header = () => {
                     <span>Profile</span>
                   </Link>
                   <Link
-                    href="/dashboard/settings"
+                    href="/settings"
                     className="flex items-center space-x-2 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >

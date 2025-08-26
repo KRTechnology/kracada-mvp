@@ -25,9 +25,12 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const isDashboardRoute = pathname.startsWith("/dashboard");
   const isDashboardPage = pathname === "/dashboard";
   const isEditProfilePage = pathname === "/dashboard/edit";
+  const isSetupPage = pathname === "/setup";
+  const isSettingsPage = pathname === "/settings";
 
-  // Show only header for auth and dashboard routes
-  const showFooter = !isAuthRoute && !isDashboardRoute;
+  // Show only header for auth, dashboard, setup, and settings routes
+  const showFooter =
+    !isAuthRoute && !isDashboardRoute && !isSetupPage && !isSettingsPage;
 
   return (
     <div
@@ -41,7 +44,13 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     >
       <Header />
       <main
-        className={`${isDashboardRoute ? "flex-1 pt-[72px]" : isAuthRoute ? "flex-grow flex" : "flex-grow pt-[72px]"}`}
+        className={`${
+          isDashboardRoute || isSetupPage || isSettingsPage
+            ? "flex-1 pt-[72px]"
+            : isAuthRoute
+              ? "flex-grow flex"
+              : "flex-grow pt-[72px]"
+        }`}
       >
         {children}
       </main>

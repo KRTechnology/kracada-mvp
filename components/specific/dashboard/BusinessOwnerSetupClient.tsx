@@ -158,126 +158,99 @@ export function BusinessOwnerSetupClient({
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-900">
-      {/* Top Section - White Background */}
-      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-800">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-[1010px] mx-auto">
-            {/* Page Header */}
-            <div className="mb-8">
-              <h1 className="text-2xl font-semibold text-[#334155] dark:text-neutral-100 mb-2">
-                Complete your profile
-              </h1>
-              <p className="text-[#64748B] dark:text-neutral-100">
-                Let's get to know you better. Complete your profile to get
-                started.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-6">
+      {/* Profile Picture Section */}
+      <EmployerProfilePictureCard
+        userData={userData}
+        onUserDataUpdate={handleUserDataUpdate}
+      />
 
-      {/* Bottom Section - #F1F5F9 Background */}
-      <div className="bg-slate-100 dark:bg-neutral-800 min-h-[calc(100vh-200px)]">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-[1010px] mx-auto">
-            <div className="space-y-6">
-              {/* Profile Picture Section */}
-              <EmployerProfilePictureCard
-                userData={userData}
-                onUserDataUpdate={handleUserDataUpdate}
-              />
+      {/* Profile (Personal Details) Section */}
+      <EmployerPersonalDetailsCard
+        userData={userData}
+        onUserDataUpdate={handleUserDataUpdate}
+      />
 
-              {/* Profile (Personal Details) Section */}
-              <EmployerPersonalDetailsCard
-                userData={userData}
-                onUserDataUpdate={handleUserDataUpdate}
-              />
+      {/* Company Details Section */}
+      <EmployerCompanyLogoCard
+        userData={userData!}
+        onUserDataUpdate={handleCompanyLogoUpdate}
+      />
 
-              {/* Company Details Section */}
-              <EmployerCompanyLogoCard
-                userData={userData!}
-                onUserDataUpdate={handleCompanyLogoUpdate}
-              />
+      <EmployerCompanyDetailsCard
+        companyData={companyData}
+        onCompanyDataUpdate={handleCompanyDataUpdate}
+      />
 
-              <EmployerCompanyDetailsCard
-                companyData={companyData}
-                onCompanyDataUpdate={handleCompanyDataUpdate}
-              />
+      {/* Continue Button */}
+      <motion.div
+        className="flex flex-col items-center pt-8 space-y-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.6 }}
+      >
+        <Button
+          onClick={handleContinue}
+          disabled={!canContinue || isContinuing}
+          className="px-8 py-3 bg-warm-200 hover:bg-warm-300 text-white dark:text-dark text-lg font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isContinuing ? "Completing..." : "Complete Profile"}
+        </Button>
 
-              {/* Continue Button */}
-              <motion.div
-                className="flex flex-col items-center pt-8 space-y-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.6 }}
-              >
-                <Button
-                  onClick={handleContinue}
-                  disabled={!canContinue || isContinuing}
-                  className="px-8 py-3 bg-warm-200 hover:bg-warm-300 text-white dark:text-dark text-lg font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isContinuing ? "Completing..." : "Complete Profile"}
-                </Button>
-
-                {/* Progress Feedback */}
-                {!canContinue && (
-                  <motion.div
-                    className="w-full max-w-md"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.8 }}
-                  >
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                      <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-                        Complete your profile to continue:
-                      </h4>
-                      <div className="space-y-2 text-sm">
-                        {!isProfileComplete && (
-                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span>Fill out all profile information</span>
-                          </div>
-                        )}
-                        {userData && !userData.profilePicture && (
-                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span>Upload a profile picture</span>
-                          </div>
-                        )}
-                        {userData && !userData.recruiterExperience && (
-                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span>Specify years of business experience</span>
-                          </div>
-                        )}
-                        {!isCompanyComplete && (
-                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span>Complete company details</span>
-                          </div>
-                        )}
-                        {companyData && !companyData.companyLogo && (
-                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span>Upload company logo</span>
-                          </div>
-                        )}
-                        {companyData && !companyData.companyDescription && (
-                          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span>Add company description</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
+        {/* Progress Feedback */}
+        {!canContinue && (
+          <motion.div
+            className="w-full max-w-md"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.8 }}
+          >
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                Complete your profile to continue:
+              </h4>
+              <div className="space-y-2 text-sm">
+                {!isProfileComplete && (
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span>Fill out all profile information</span>
+                  </div>
                 )}
-              </motion.div>
+                {userData && !userData.profilePicture && (
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span>Upload a profile picture</span>
+                  </div>
+                )}
+                {userData && !userData.recruiterExperience && (
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span>Specify years of business experience</span>
+                  </div>
+                )}
+                {!isCompanyComplete && (
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span>Complete company details</span>
+                  </div>
+                )}
+                {companyData && !companyData.companyLogo && (
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span>Upload company logo</span>
+                  </div>
+                )}
+                {companyData && !companyData.companyDescription && (
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span>Add company description</span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        )}
+      </motion.div>
     </div>
   );
 }
