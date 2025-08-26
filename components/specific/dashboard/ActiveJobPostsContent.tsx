@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { JobPostCard } from "./JobPostCard";
 import { Pagination } from "./Pagination";
-import { getEmployerJobsAction } from "@/app/(dashboard)/actions/job-actions";
-import { toast } from "sonner";
 import { EditJobPostDialog } from "./EditJobPostDialog";
 
 // Types for the job data
@@ -37,40 +35,15 @@ interface JobData {
 const ITEMS_PER_PAGE = 5;
 
 interface ActiveJobPostsContentProps {
-  refreshTrigger?: number;
+  jobs: JobData[];
 }
 
-export function ActiveJobPostsContent({
-  refreshTrigger = 0,
-}: ActiveJobPostsContentProps) {
+export function ActiveJobPostsContent({ jobs }: ActiveJobPostsContentProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [jobs, setJobs] = useState<JobData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedJobForEdit, setSelectedJobForEdit] = useState<JobData | null>(
     null
   );
-
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        setIsLoading(true);
-        const result = await getEmployerJobsAction();
-        if (result.success && result.data) {
-          setJobs(result.data);
-        } else {
-          toast.error(result.message || "Failed to fetch jobs");
-        }
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-        toast.error("Failed to fetch jobs");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchJobs();
-  }, [refreshTrigger]);
 
   // Filter only active jobs
   const activeJobs = jobs.filter((job) => job.status === "active");
@@ -85,7 +58,7 @@ export function ActiveJobPostsContent({
   };
 
   const handleEditJob = (jobId: string) => {
-    const job = jobs.find((j) => j.id === jobId);
+    const job = activeJobs.find((j) => j.id === jobId);
     if (job) {
       setSelectedJobForEdit(job);
       setIsEditModalOpen(true);
@@ -105,14 +78,6 @@ export function ActiveJobPostsContent({
       </div>
     );
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-      </div>
-    );
-  }
 
   if (currentData.length === 0) {
     return renderEmptyState();
