@@ -1,5 +1,5 @@
-import { JobPostsContent } from "@/components/specific/dashboard/JobPostsContent";
+import { ActiveJobPostsContent } from "@/components/specific/dashboard/ActiveJobPostsContent";
 
-export default function JobPostsPage() {
-  return <JobPostsContent refreshTrigger={0} />;
+export default function ActiveJobPostsPage() {
+  return <ActiveJobPostsContent refreshTrigger={0} />;
 }

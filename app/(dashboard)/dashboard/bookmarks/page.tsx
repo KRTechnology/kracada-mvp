@@ -1,5 +1,5 @@
-import { BookmarksContent } from "@/components/specific/dashboard/BookmarksContent";
+import { BookmarkedJobsContent } from "@/components/specific/dashboard/BookmarkedJobsContent";
 
-export default function BookmarksPage() {
-  return <BookmarksContent />;
+export default function BookmarksJobsPage() {
+  return <BookmarkedJobsContent />;
 }
