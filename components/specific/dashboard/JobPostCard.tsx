@@ -1,20 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { MoreVertical, MapPin } from "lucide-react";
+import { toggleJobStatusAction } from "@/app/(dashboard)/actions/job-actions";
+import { MapPin, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { JobPostDropdown } from "./JobPostDropdown";
-import {
-  deleteJobAction,
-  toggleJobStatusAction,
-} from "@/app/(dashboard)/actions/job-actions";
+import { useState } from "react";
 import { toast } from "sonner";
+import { JobPostDropdown } from "./JobPostDropdown";
 
 interface JobPostCardProps {
   job: {
     id: string;
     jobTitle: string;
-    company: string;
+    company?: string | null;
     location: string;
     applicantsCount: number;
     viewsCount: number;
@@ -62,13 +59,13 @@ export function JobPostCard({ job, onEdit }: JobPostCardProps) {
           {job.companyLogo ? (
             <img
               src={job.companyLogo}
-              alt={`${job.company} logo`}
+              alt={`${job.company || "Company"} logo`}
               className="w-full h-full object-contain rounded-lg"
             />
           ) : (
             <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-600 rounded flex items-center justify-center">
               <span className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">
-                {job.company.charAt(0).toUpperCase()}
+                {(job.company || "C").charAt(0).toUpperCase()}
               </span>
             </div>
           )}
@@ -83,7 +80,7 @@ export function JobPostCard({ job, onEdit }: JobPostCardProps) {
 
           {/* Company Name */}
           <span className="text-neutral-600 dark:text-white text-sm">
-            {job.company}
+            {job.company || "Company Not Specified"}
           </span>
         </div>
 

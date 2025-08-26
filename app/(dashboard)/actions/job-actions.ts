@@ -17,12 +17,9 @@ export interface CreateJobData {
   salaryRange: string;
   currency: string;
   deadline: string;
-  companyName: string;
-  companyLogo?: string;
-  companyWebsite?: string;
-  companyEmail?: string;
   multimediaContent?: string;
   requiredSkills: string[];
+  requirements: string[];
 }
 
 export interface UpdateJobData extends Partial<CreateJobData> {
@@ -68,7 +65,7 @@ export async function getEmployerJobsAction() {
       };
     }
 
-    // Fetch jobs with applicant count
+    // Fetch jobs with applicant count and recruiter company info
     const jobsWithCounts = await db
       .select({
         id: jobs.id,
@@ -81,16 +78,15 @@ export async function getEmployerJobsAction() {
         salaryRange: jobs.salaryRange,
         currency: jobs.currency,
         deadline: jobs.deadline,
-        companyName: jobs.companyName,
-        companyLogo: jobs.companyLogo,
-        companyWebsite: jobs.companyWebsite,
-        companyEmail: jobs.companyEmail,
         multimediaContent: jobs.multimediaContent,
         requiredSkills: jobs.requiredSkills,
+        requirements: jobs.requirements,
         status: jobs.status,
         employerId: jobs.employerId,
         createdAt: jobs.createdAt,
         updatedAt: jobs.updatedAt,
+        companyName: users.companyName,
+        companyLogo: users.companyLogo,
         applicantsCount: sql<number>`(
           SELECT COUNT(*)::int 
           FROM ${jobApplications} 
@@ -99,6 +95,7 @@ export async function getEmployerJobsAction() {
         viewsCount: sql<number>`0`, // For now, set to 0 as requested
       })
       .from(jobs)
+      .innerJoin(users, eq(jobs.employerId, users.id))
       .where(eq(jobs.employerId, userId))
       .orderBy(desc(jobs.createdAt));
 
@@ -154,12 +151,9 @@ export async function createJobAction(data: CreateJobData) {
         salaryRange: data.salaryRange,
         currency: data.currency,
         deadline: new Date(data.deadline),
-        companyName: data.companyName,
-        companyLogo: data.companyLogo || null,
-        companyWebsite: data.companyWebsite || null,
-        companyEmail: data.companyEmail || null,
         multimediaContent: data.multimediaContent || null,
         requiredSkills: JSON.stringify(data.requiredSkills),
+        requirements: JSON.stringify(data.requirements),
         employerId: userId,
       })
       .returning();
@@ -216,17 +210,12 @@ export async function updateJobAction(data: UpdateJobData) {
     if (data.salaryRange) updateData.salaryRange = data.salaryRange;
     if (data.currency) updateData.currency = data.currency;
     if (data.deadline) updateData.deadline = new Date(data.deadline);
-    if (data.companyName) updateData.companyName = data.companyName;
-    if (data.companyLogo !== undefined)
-      updateData.companyLogo = data.companyLogo;
-    if (data.companyWebsite !== undefined)
-      updateData.companyWebsite = data.companyWebsite;
-    if (data.companyEmail !== undefined)
-      updateData.companyEmail = data.companyEmail;
     if (data.multimediaContent !== undefined)
       updateData.multimediaContent = data.multimediaContent;
     if (data.requiredSkills)
       updateData.requiredSkills = JSON.stringify(data.requiredSkills);
+    if (data.requirements)
+      updateData.requirements = JSON.stringify(data.requirements);
     if (data.status) updateData.status = data.status;
 
     const [updatedJob] = await db

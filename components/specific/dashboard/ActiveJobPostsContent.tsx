@@ -99,7 +99,7 @@ export function ActiveJobPostsContent({ jobs }: ActiveJobPostsContentProps) {
                 job={{
                   id: job.id,
                   jobTitle: job.title,
-                  company: job.companyName,
+                  company: job.companyName || "Company Not Specified",
                   location: job.location,
                   applicantsCount: job.applicantsCount,
                   viewsCount: job.viewsCount,

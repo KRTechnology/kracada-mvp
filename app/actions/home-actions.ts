@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db/drizzle";
-import { jobs, jobApplications } from "@/lib/db/schema";
+import { jobs, jobApplications, users } from "@/lib/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 
 // Types for home page job data
@@ -23,19 +23,20 @@ export async function getLatestJobsAction(): Promise<{
   message?: string;
 }> {
   try {
-    // Fetch latest 6 active jobs, ordered by creation date
+    // Fetch latest 6 active jobs with recruiter company info, ordered by creation date
     const latestJobs = await db
       .select({
         id: jobs.id,
         title: jobs.title,
-        company: jobs.companyName,
+        company: users.companyName,
         location: jobs.location,
         description: jobs.description,
         skills: jobs.requiredSkills,
         locationType: jobs.locationType,
-        companyLogo: jobs.companyLogo,
+        companyLogo: users.companyLogo,
       })
       .from(jobs)
+      .innerJoin(users, eq(jobs.employerId, users.id))
       .where(eq(jobs.status, "active"))
       .orderBy(desc(jobs.createdAt))
       .limit(6);
@@ -44,7 +45,7 @@ export async function getLatestJobsAction(): Promise<{
     const transformedJobs: HomePageJob[] = latestJobs.map((job) => ({
       id: job.id,
       title: job.title,
-      company: job.company,
+      company: job.company || "Company Not Specified",
       location: job.location,
       description: job.description,
       skills: job.skills ? JSON.parse(job.skills) : [],
@@ -73,6 +74,7 @@ export interface JobDetailsData {
   location: string;
   description: string;
   skills: string[];
+  requirements: string[];
   locationType: "remote" | "onsite" | "hybrid";
   industry: string;
   jobType: "full-time" | "part-time" | "contract" | "internship" | "freelance";
@@ -82,6 +84,7 @@ export interface JobDetailsData {
   companyLogo?: string | null;
   companyWebsite?: string | null;
   companyEmail?: string | null;
+  companyDescription?: string | null;
   status: "active" | "closed";
   createdAt: Date;
   updatedAt: Date;
@@ -94,29 +97,32 @@ export async function getJobByIdAction(jobId: string): Promise<{
   message?: string;
 }> {
   try {
-    // Fetch the specific job by ID
+    // Fetch the specific job by ID with recruiter company info
     const [job] = await db
       .select({
         id: jobs.id,
         title: jobs.title,
-        company: jobs.companyName,
+        company: users.companyName,
         location: jobs.location,
         description: jobs.description,
         skills: jobs.requiredSkills,
+        requirements: jobs.requirements,
         locationType: jobs.locationType,
         industry: jobs.industry,
         jobType: jobs.jobType,
         salaryRange: jobs.salaryRange,
         currency: jobs.currency,
         deadline: jobs.deadline,
-        companyLogo: jobs.companyLogo,
-        companyWebsite: jobs.companyWebsite,
-        companyEmail: jobs.companyEmail,
+        companyLogo: users.companyLogo,
+        companyWebsite: users.companyWebsite,
+        companyEmail: users.companyEmail,
+        companyDescription: users.companyDescription,
         status: jobs.status,
         createdAt: jobs.createdAt,
         updatedAt: jobs.updatedAt,
       })
       .from(jobs)
+      .innerJoin(users, eq(jobs.employerId, users.id))
       .where(eq(jobs.id, jobId))
       .limit(1);
 
@@ -131,10 +137,11 @@ export async function getJobByIdAction(jobId: string): Promise<{
     const transformedJob: JobDetailsData = {
       id: job.id,
       title: job.title,
-      company: job.company,
+      company: job.company || "Company Not Specified",
       location: job.location,
       description: job.description,
       skills: job.skills ? JSON.parse(job.skills) : [],
+      requirements: job.requirements ? JSON.parse(job.requirements) : [],
       locationType: job.locationType,
       industry: job.industry,
       jobType: job.jobType,
@@ -144,6 +151,7 @@ export async function getJobByIdAction(jobId: string): Promise<{
       companyLogo: job.companyLogo,
       companyWebsite: job.companyWebsite,
       companyEmail: job.companyEmail,
+      companyDescription: job.companyDescription,
       status: job.status,
       createdAt: job.createdAt,
       updatedAt: job.updatedAt,
@@ -185,17 +193,17 @@ export async function getAllActiveJobsAction(): Promise<{
   message?: string;
 }> {
   try {
-    // Fetch all active jobs, ordered by creation date (newest first)
+    // Fetch all active jobs with recruiter company info, ordered by creation date (newest first)
     const allJobs = await db
       .select({
         id: jobs.id,
         title: jobs.title,
-        company: jobs.companyName,
+        company: users.companyName,
         location: jobs.location,
         description: jobs.description,
         skills: jobs.requiredSkills,
         locationType: jobs.locationType,
-        companyLogo: jobs.companyLogo,
+        companyLogo: users.companyLogo,
         status: jobs.status,
         createdAt: jobs.createdAt,
         applicantsCount: sql<number>`(
@@ -206,6 +214,7 @@ export async function getAllActiveJobsAction(): Promise<{
         viewsCount: sql<number>`0`, // For now, set to 0 as requested
       })
       .from(jobs)
+      .innerJoin(users, eq(jobs.employerId, users.id))
       .where(eq(jobs.status, "active"))
       .orderBy(desc(jobs.createdAt));
 
@@ -213,7 +222,7 @@ export async function getAllActiveJobsAction(): Promise<{
     const transformedJobs: AllJobsData[] = allJobs.map((job) => ({
       id: job.id,
       title: job.title,
-      company: job.company,
+      company: job.company || "Company Not Specified",
       location: job.location,
       description: job.description,
       skills: job.skills ? JSON.parse(job.skills) : [],

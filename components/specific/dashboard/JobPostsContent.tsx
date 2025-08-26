@@ -196,7 +196,7 @@ export function JobPostsContent({ refreshTrigger = 0 }: JobPostsContentProps) {
               job={{
                 id: job.id.toString(),
                 jobTitle: job.title,
-                company: job.companyName,
+                company: job.companyName || "Company Not Specified",
                 location: job.location,
                 applicantsCount: job.applicantsCount || 0,
                 viewsCount: job.viewsCount || 0,
@@ -262,9 +262,8 @@ export function JobPostsContent({ refreshTrigger = 0 }: JobPostsContentProps) {
             salaryRange: selectedJobForEdit.salaryRange,
             currency: selectedJobForEdit.currency,
             deadline: selectedJobForEdit.deadline,
-            companyName: selectedJobForEdit.companyName,
-            companyLogo: selectedJobForEdit.companyLogo,
             requiredSkills: selectedJobForEdit.requiredSkills,
+            requirements: selectedJobForEdit.requirements,
           }}
         />
       )}

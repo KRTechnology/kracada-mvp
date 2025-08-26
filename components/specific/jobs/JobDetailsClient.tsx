@@ -156,29 +156,17 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
               </p>
             </div>
 
-            {/* Requirements - Commented out for now, will implement with real data later */}
-            {/* <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
+            {/* Requirements */}
+            <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-3">
                 Requirements
               </h2>
               <ul className="text-neutral-700 dark:text-white space-y-2 list-disc list-inside">
-                <li>
-                  4+ years of experience in frontend development (React, Vue.js,
-                  or Angular preferred).
-                </li>
-                <li>Strong understanding of HTML5, CSS3, JavaScript (ES6+).</li>
-                <li>
-                  Familiarity with RESTful APIs and modern authorization
-                  mechanisms.
-                </li>
-                <li>Experience with version control systems like Git.</li>
-                <li>Excellent problem-solving and communication skills.</li>
-                <li>
-                  Bachelor's degree in Computer Science or related field is
-                  preferred.
-                </li>
+                {job.requirements.map((requirement, index) => (
+                  <li key={index}>{requirement}</li>
+                ))}
               </ul>
-            </div> */}
+            </div>
 
             {/* Application Deadline */}
             <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
@@ -194,18 +182,17 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
               </p>
             </div>
 
-            {/* Company Information - Commented out for now, will implement with real data later */}
-            {/* <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-3">
-                Company Information
-              </h2>
-              <p className="text-neutral-700 dark:text-white">
-                {job.company} is an award-winning technology company focused on
-                delivering innovative IT solutions for businesses across Africa.
-                Our team is passionate about creating products that make a real
-                difference in the lives of users.
-              </p>
-            </div> */}
+            {/* Company Information */}
+            {job.companyDescription && (
+              <div className="p-4 border border-sectionBorder-light dark:border-sectionBorder-darkSecondary rounded-[10px]">
+                <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-3">
+                  Company Information
+                </h2>
+                <p className="text-neutral-700 dark:text-white">
+                  {job.companyDescription}
+                </p>
+              </div>
+            )}
 
             {/* Job Skills */}
             <div>

@@ -51,17 +51,14 @@ export const jobs = pgTable("jobs", {
   deadline: timestamp("deadline").notNull(),
   status: jobStatusEnum("status").notNull().default("active"),
 
-  // Company information
-  companyName: varchar("company_name", { length: 255 }).notNull(),
-  companyLogo: varchar("company_logo", { length: 500 }),
-  companyWebsite: varchar("company_website", { length: 255 }),
-  companyEmail: varchar("company_email", { length: 255 }),
-
   // Additional content
   multimediaContent: varchar("multimedia_content", { length: 500 }),
 
   // Skills required for the job (stored as JSON array)
   requiredSkills: text("required_skills").notNull(), // JSON array of strings
+
+  // Job requirements (stored as JSON array)
+  requirements: text("requirements").notNull(), // JSON array of strings
 
   // Tracking metrics
   viewsCount: integer("views_count").default(0).notNull(),
