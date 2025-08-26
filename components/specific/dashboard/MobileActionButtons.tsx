@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { CreateJobPostDialog } from "./CreateJobPostDialog";
 
 interface MobileActionButtonsProps {
   accountType?: string;
@@ -9,13 +11,14 @@ interface MobileActionButtonsProps {
 
 export function MobileActionButtons({ accountType }: MobileActionButtonsProps) {
   const router = useRouter();
+  const [isCreateJobPostOpen, setIsCreateJobPostOpen] = useState(false);
 
   const handleEditProfile = () => {
     router.push("/dashboard/edit");
   };
 
   const handleCreateJobPost = () => {
-    router.push("/jobs/create");
+    setIsCreateJobPostOpen(true);
   };
 
   // Check if user can create job posts
@@ -23,26 +26,34 @@ export function MobileActionButtons({ accountType }: MobileActionButtonsProps) {
     accountType === "Employer" || accountType === "Business Owner";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.8 }}
-      className="flex gap-3 px-6 py-4 md:hidden"
-    >
-      <button
-        onClick={handleEditProfile}
-        className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-[#D8DDE7] rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.8 }}
+        className="flex gap-3 px-6 py-4 md:hidden"
       >
-        Edit Profile
-      </button>
-      {canCreateJobPost && (
         <button
-          onClick={handleCreateJobPost}
-          className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          onClick={handleEditProfile}
+          className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-[#D8DDE7] rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
         >
-          Create job post
+          Edit Profile
         </button>
-      )}
-    </motion.div>
+        {canCreateJobPost && (
+          <button
+            onClick={handleCreateJobPost}
+            className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            Create job post
+          </button>
+        )}
+      </motion.div>
+
+      {/* Create Job Post Dialog */}
+      <CreateJobPostDialog
+        open={isCreateJobPostOpen}
+        onOpenChange={setIsCreateJobPostOpen}
+      />
+    </>
   );
 }

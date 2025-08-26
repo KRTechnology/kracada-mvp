@@ -3,13 +3,13 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, ChevronDown } from "lucide-react";
-import { JobItem } from "@/lib/data/jobs-data";
+import { AllJobsData } from "@/app/actions/home-actions";
 import JobCard from "@/components/specific/landing/JobCard";
 import { Toggle } from "@/components/common/Toggle";
 import { Pagination } from "@/components/specific/dashboard/Pagination";
 
 interface JobsClientProps {
-  initialJobs: JobItem[];
+  initialJobs: AllJobsData[];
   locations: string[];
 }
 

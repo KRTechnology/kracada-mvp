@@ -1,8 +1,15 @@
 import { JobsClient } from "@/components/specific/jobs/JobsClient";
-import { jobsData, getUniqueLocations } from "@/lib/data/jobs-data";
+import { getAllActiveJobsAction } from "@/app/actions/home-actions";
 
-export default function JobsPage() {
-  const locations = getUniqueLocations();
+export default async function JobsPage() {
+  // Fetch all active jobs from the database
+  const jobsResult = await getAllActiveJobsAction();
+  const allJobs = jobsResult.success ? jobsResult.data || [] : [];
 
-  return <JobsClient initialJobs={jobsData} locations={locations} />;
+  // Extract unique locations from the real job data
+  const locations = Array.from(
+    new Set(allJobs.map((job) => job.location))
+  ).sort();
+
+  return <JobsClient initialJobs={allJobs} locations={locations} />;
 }

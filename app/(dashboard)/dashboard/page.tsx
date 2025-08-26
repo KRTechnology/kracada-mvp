@@ -1,24 +1,17 @@
 import { getUserProfileWithExperiencesAction } from "@/app/(dashboard)/actions/profile-actions";
-import { auth } from "@/auth";
-import { DashboardContent } from "@/components/specific/dashboard/DashboardContent";
-import { MobileActionButtons } from "@/components/specific/dashboard/MobileActionButtons";
-import { ProfileBanner } from "@/components/specific/dashboard/ProfileBanner";
-import { redirect } from "next/navigation";
+import { ProfileContent } from "@/components/specific/dashboard/ProfileContent";
+import { JobSeekerProfileContent } from "@/components/specific/dashboard/JobSeekerProfileContent";
+import { EmployerProfileContent } from "@/components/specific/dashboard/EmployerProfileContent";
 
-export default async function DashboardPage() {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
-  // Check if user has completed profile and get all profile data
+export default async function ProfilePage() {
+  // Get profile data
   const profileResult = await getUserProfileWithExperiencesAction();
-  if (!profileResult.success || !profileResult.data?.hasCompletedProfile) {
-    redirect("/dashboard/setup");
+
+  if (!profileResult.success || !profileResult.data) {
+    return <div>Error loading profile data</div>;
   }
 
-  // Prepare complete user data for the dashboard
+  // Prepare complete user data
   const userData = {
     firstName: profileResult.data.firstName,
     lastName: profileResult.data.lastName,
@@ -44,32 +37,24 @@ export default async function DashboardPage() {
 
   // Prepare experiences data
   const experiences = profileResult.data.experiences || [];
+  const accountType = profileResult.data.accountType;
 
-  return (
-    <div className="min-h-screen">
-      {/* Main Content Container */}
-      <div className="mx-4 md:mx-[88px] mt-4 pb-10">
-        {/* White Card Container */}
-        <div className="bg-white dark:bg-dark-container rounded-2xl shadow-sm overflow-hidden">
-          {/* Banner Section */}
-          <ProfileBanner
-            firstName={profileResult.data?.firstName}
-            lastName={profileResult.data?.lastName}
-            accountType={profileResult.data?.accountType}
-            profileImageUrl={profileResult.data?.profilePicture || undefined}
-          />
+  // Render different profile content based on account type
+  const renderProfileContent = () => {
+    if (accountType === "Job Seeker" || accountType === "Contributor") {
+      return (
+        <JobSeekerProfileContent
+          userData={userData}
+          experiences={experiences}
+        />
+      );
+    } else if (accountType === "Employer" || accountType === "Business Owner") {
+      return <EmployerProfileContent userData={userData} />;
+    } else {
+      // Fallback to the original ProfileContent for unknown account types
+      return <ProfileContent userData={userData} experiences={experiences} />;
+    }
+  };
 
-          {/* Mobile Action Buttons */}
-          <MobileActionButtons accountType={profileResult.data?.accountType} />
-
-          {/* Tab Switcher and Content */}
-          <DashboardContent
-            userData={userData}
-            experiences={experiences}
-            accountType={profileResult.data?.accountType}
-          />
-        </div>
-      </div>
-    </div>
-  );
+  return renderProfileContent();
 }

@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/lib/db/drizzle";
-import { jobs } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { jobs, jobApplications } from "@/lib/db/schema";
+import { eq, desc, sql } from "drizzle-orm";
 
 // Types for home page job data
 export interface HomePageJob {
@@ -158,6 +158,82 @@ export async function getJobByIdAction(jobId: string): Promise<{
     return {
       success: false,
       message: "Failed to fetch job details",
+    };
+  }
+}
+
+// Types for all jobs page
+export interface AllJobsData {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  description: string;
+  skills: string[];
+  locationType: "remote" | "onsite" | "hybrid";
+  companyLogo?: string | null;
+  applicantsCount: number;
+  viewsCount: number;
+  status: "active" | "closed";
+  createdAt: Date;
+}
+
+// Fetch all active jobs for the jobs listing page
+export async function getAllActiveJobsAction(): Promise<{
+  success: boolean;
+  data?: AllJobsData[];
+  message?: string;
+}> {
+  try {
+    // Fetch all active jobs, ordered by creation date (newest first)
+    const allJobs = await db
+      .select({
+        id: jobs.id,
+        title: jobs.title,
+        company: jobs.companyName,
+        location: jobs.location,
+        description: jobs.description,
+        skills: jobs.requiredSkills,
+        locationType: jobs.locationType,
+        companyLogo: jobs.companyLogo,
+        status: jobs.status,
+        createdAt: jobs.createdAt,
+        applicantsCount: sql<number>`(
+          SELECT COUNT(*)::int 
+          FROM ${jobApplications} 
+          WHERE ${jobApplications.jobId} = ${jobs.id}
+        )`,
+        viewsCount: sql<number>`0`, // For now, set to 0 as requested
+      })
+      .from(jobs)
+      .where(eq(jobs.status, "active"))
+      .orderBy(desc(jobs.createdAt));
+
+    // Transform the data to match AllJobsData interface
+    const transformedJobs: AllJobsData[] = allJobs.map((job) => ({
+      id: job.id,
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      description: job.description,
+      skills: job.skills ? JSON.parse(job.skills) : [],
+      locationType: job.locationType,
+      companyLogo: job.companyLogo,
+      status: job.status,
+      createdAt: job.createdAt,
+      applicantsCount: job.applicantsCount,
+      viewsCount: job.viewsCount,
+    }));
+
+    return {
+      success: true,
+      data: transformedJobs,
+    };
+  } catch (error) {
+    console.error("Error fetching all active jobs:", error);
+    return {
+      success: false,
+      message: "Failed to fetch jobs",
     };
   }
 }
