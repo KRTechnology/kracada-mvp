@@ -71,6 +71,13 @@
       "when": 1756223365886,
       "tag": "0009_minor_lockheed",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1756287590023,
+      "tag": "0010_tired_elektra",
+      "breakpoints": true
     }
   ]
 }
