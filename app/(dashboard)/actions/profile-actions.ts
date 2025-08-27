@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db/drizzle";
-import { users, experiences } from "@/lib/db/schema";
+import { users, experiences, cvs } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/auth";
@@ -185,7 +185,57 @@ export async function updateFileUploadsAction(data: {
       updateData.cv = data.cv;
     }
 
+    // Update users table
     await db.update(users).set(updateData).where(eq(users.id, userId));
+
+    // Handle CV updates in the cvs table
+    if (data.cv !== undefined) {
+      if (data.cv !== null) {
+        // CV is being uploaded - create/update entry in cvs table
+        // First, get user's full name for the default CV name
+        const user = await db
+          .select({ fullName: users.fullName })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+
+        if (user.length > 0) {
+          const fullName = user[0].fullName;
+          const defaultCvName = `${fullName} Default CV`;
+
+          // Check if user already has a default CV
+          const existingDefaultCv = await db
+            .select()
+            .from(cvs)
+            .where(and(eq(cvs.userId, userId), eq(cvs.isDefault, true)))
+            .limit(1);
+
+          if (existingDefaultCv.length > 0) {
+            // Update existing default CV
+            await db
+              .update(cvs)
+              .set({
+                fileUrl: data.cv,
+                updatedAt: new Date(),
+              })
+              .where(eq(cvs.id, existingDefaultCv[0].id));
+          } else {
+            // Create new default CV entry
+            await db.insert(cvs).values({
+              userId,
+              name: defaultCvName,
+              fileUrl: data.cv,
+              isDefault: true,
+            });
+          }
+        }
+      } else {
+        // CV is being removed (null) - remove the default CV from cvs table
+        await db
+          .delete(cvs)
+          .where(and(eq(cvs.userId, userId), eq(cvs.isDefault, true)));
+      }
+    }
 
     revalidatePath("/dashboard");
     return { success: true, message: "Files updated successfully" };
@@ -494,11 +544,7 @@ export async function getUserProfileWithExperiencesAction() {
 
     // Fetch user profile and experiences in parallel
     const [userResult, experiencesResult] = await Promise.all([
-      db
-        .select()
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1),
+      db.select().from(users).where(eq(users.id, userId)).limit(1),
       db
         .select()
         .from(experiences)
@@ -548,7 +594,10 @@ export async function getUserProfileWithExperiencesAction() {
     };
   } catch (error) {
     console.error("Get user profile with experiences error:", error);
-    return { success: false, message: "Failed to get user profile with experiences" };
+    return {
+      success: false,
+      message: "Failed to get user profile with experiences",
+    };
   }
 }
 
