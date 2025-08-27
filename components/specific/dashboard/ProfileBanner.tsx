@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CreateJobPostDialog } from "./CreateJobPostDialog";
+import { AddCVDialog } from "./AddCVDialog";
 
 interface ProfileBannerProps {
   firstName?: string;
@@ -13,6 +14,8 @@ interface ProfileBannerProps {
   accountType?: string;
   profileImageUrl?: string;
   showEditButton?: boolean;
+  showAddCVButton?: boolean;
+  userId?: string;
 }
 
 export function ProfileBanner({
@@ -21,10 +24,13 @@ export function ProfileBanner({
   accountType = "Job Seeker",
   profileImageUrl,
   showEditButton = true,
+  showAddCVButton = true,
+  userId,
 }: ProfileBannerProps) {
   const router = useRouter();
   const { pillStyles, statusColor } = useAccountTypeStyles(accountType);
   const [isCreateJobPostOpen, setIsCreateJobPostOpen] = useState(false);
+  const [isAddCVOpen, setIsAddCVOpen] = useState(false);
 
   const handleEditProfile = () => {
     router.push("/dashboard/edit");
@@ -34,9 +40,17 @@ export function ProfileBanner({
     setIsCreateJobPostOpen(true);
   };
 
+  const handleAddCV = () => {
+    setIsAddCVOpen(true);
+  };
+
   // Check if user can create job posts
   const canCreateJobPost =
     accountType === "Recruiter" || accountType === "Business Owner";
+
+  // Check if user can add CVs (Job Seekers and Contributors)
+  const canAddCV =
+    accountType === "Job Seeker" || accountType === "Contributor";
 
   return (
     <div className="relative">
@@ -69,7 +83,7 @@ export function ProfileBanner({
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex items-center gap-4"
+          className="flex flex-col md:flex-row items-center md:items-center gap-4 md:gap-6"
         >
           {/* Profile Picture - 160px x 160px, positioned much closer to banner */}
           <motion.div
@@ -99,11 +113,11 @@ export function ProfileBanner({
           </motion.div>
 
           {/* User Info - Centered vertically with profile image */}
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 space-y-2 text-center md:text-left">
             <h1 className="text-xl md:text-2xl font-bold text-neutral-900 dark:text-[#D8DDE7]">
               {firstName} {lastName}
             </h1>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center md:justify-start gap-2">
               <span
                 className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border transition-all duration-200"
                 style={pillStyles}
@@ -122,7 +136,7 @@ export function ProfileBanner({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="hidden md:flex items-center gap-3 flex-shrink-0"
+            className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 flex-shrink-0 w-full md:w-auto"
           >
             {showEditButton && (
               <button
@@ -141,6 +155,15 @@ export function ProfileBanner({
                 Create job post
               </button>
             )}
+
+            {canAddCV && showAddCVButton && (
+              <button
+                onClick={handleAddCV}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 border border-blue-600 dark:border-blue-500 text-white dark:text-white rounded-lg transition-colors shadow-sm font-medium"
+              >
+                Add CV
+              </button>
+            )}
           </motion.div>
         </motion.div>
       </div>
@@ -150,6 +173,23 @@ export function ProfileBanner({
         open={isCreateJobPostOpen}
         onOpenChange={setIsCreateJobPostOpen}
       />
+
+      {/* Add CV Dialog */}
+      {userId && (
+        <AddCVDialog
+          open={isAddCVOpen}
+          onOpenChange={setIsAddCVOpen}
+          userData={{
+            id: userId,
+            firstName: firstName || "",
+            lastName: lastName || "",
+          }}
+          onSuccess={() => {
+            // Optionally refresh data or show success message
+            setIsAddCVOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

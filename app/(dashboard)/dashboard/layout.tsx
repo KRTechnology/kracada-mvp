@@ -44,10 +44,16 @@ export default async function DashboardPageLayout({
             lastName={profileResult.data?.lastName}
             accountType={profileResult.data?.accountType}
             profileImageUrl={profileResult.data?.profilePicture || undefined}
+            userId={session.user.id}
           />
 
           {/* Mobile Action Buttons */}
-          <MobileActionButtons accountType={profileResult.data?.accountType} />
+          <MobileActionButtons
+            accountType={profileResult.data?.accountType}
+            userId={session.user.id}
+            firstName={profileResult.data?.firstName}
+            lastName={profileResult.data?.lastName}
+          />
 
           {/* Dashboard Navigation */}
           <DashboardNavigation accountType={profileResult.data?.accountType} />

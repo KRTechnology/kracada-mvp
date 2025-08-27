@@ -144,6 +144,7 @@ export function JobSeekerEditProfileClient({
             accountType={currentUserData.accountType}
             profileImageUrl={currentUserData.profilePicture || undefined}
             showEditButton={false}
+            showAddCVButton={false}
           />
 
           {/* Edit Profile Content */}

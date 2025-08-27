@@ -698,3 +698,185 @@ export async function markProfileCompletedAction() {
     return { success: false, message: "Failed to mark profile as completed" };
   }
 }
+
+// CV management actions
+
+// Schema for CV validation
+const cvSchema = z.object({
+  name: z
+    .string()
+    .min(1, "CV name is required")
+    .max(255, "CV name is too long"),
+  fileUrl: z.string().url("Invalid file URL"),
+  isDefault: z.boolean().default(false),
+});
+
+export type CVData = z.infer<typeof cvSchema>;
+
+// Add new CV
+export async function addCVAction(data: CVData) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Validate the data
+    const validatedData = cvSchema.parse(data);
+
+    // Check if user has any existing CVs
+    const existingCVs = await db
+      .select()
+      .from(cvs)
+      .where(eq(cvs.userId, userId));
+
+    // If this is the first CV or user explicitly sets it as default, make it default
+    let shouldBeDefault = validatedData.isDefault || existingCVs.length === 0;
+
+    // If this CV should be default, unset all other default CVs for this user
+    if (shouldBeDefault) {
+      await db
+        .update(cvs)
+        .set({ isDefault: false, updatedAt: new Date() })
+        .where(and(eq(cvs.userId, userId), eq(cvs.isDefault, true)));
+    }
+
+    // Create the new CV
+    const [newCV] = await db
+      .insert(cvs)
+      .values({
+        userId,
+        name: validatedData.name,
+        fileUrl: validatedData.fileUrl,
+        isDefault: shouldBeDefault,
+      })
+      .returning();
+
+    // Update the users table CV column if this becomes the default
+    if (shouldBeDefault) {
+      await db
+        .update(users)
+        .set({ cv: validatedData.fileUrl, updatedAt: new Date() })
+        .where(eq(users.id, userId));
+    }
+
+    revalidatePath("/dashboard");
+    return {
+      success: true,
+      message: shouldBeDefault
+        ? "CV added successfully and set as default"
+        : "CV added successfully",
+      data: newCV,
+    };
+  } catch (error) {
+    console.error("Add CV error:", error);
+
+    if (error instanceof z.ZodError) {
+      return { success: false, message: error.errors[0].message };
+    }
+
+    return { success: false, message: "Failed to add CV" };
+  }
+}
+
+// Get user CVs
+export async function getUserCVsAction() {
+  try {
+    const userId = await getCurrentUser();
+
+    const userCVs = await db
+      .select()
+      .from(cvs)
+      .where(eq(cvs.userId, userId))
+      .orderBy(cvs.createdAt);
+
+    return {
+      success: true,
+      data: userCVs,
+    };
+  } catch (error) {
+    console.error("Get user CVs error:", error);
+    return { success: false, message: "Failed to get user CVs" };
+  }
+}
+
+// Update CV
+export async function updateCVAction(cvId: string, data: Partial<CVData>) {
+  try {
+    const userId = await getCurrentUser();
+
+    // If this CV is being set as default, unset all other default CVs
+    if (data.isDefault) {
+      await db
+        .update(cvs)
+        .set({ isDefault: false, updatedAt: new Date() })
+        .where(and(eq(cvs.userId, userId), eq(cvs.isDefault, true)));
+
+      // Update the users table CV column if this becomes the new default
+      if (data.fileUrl) {
+        await db
+          .update(users)
+          .set({ cv: data.fileUrl, updatedAt: new Date() })
+          .where(eq(users.id, userId));
+      }
+    }
+
+    // Update the CV
+    const [updatedCV] = await db
+      .update(cvs)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(cvs.id, cvId), eq(cvs.userId, userId)))
+      .returning();
+
+    if (!updatedCV) {
+      return { success: false, message: "CV not found" };
+    }
+
+    revalidatePath("/dashboard");
+    return {
+      success: true,
+      message: "CV updated successfully",
+      data: updatedCV,
+    };
+  } catch (error) {
+    console.error("Update CV error:", error);
+    return { success: false, message: "Failed to update CV" };
+  }
+}
+
+// Delete CV
+export async function deleteCVAction(cvId: string) {
+  try {
+    const userId = await getCurrentUser();
+
+    // Get the CV to check if it's the default
+    const cvToDelete = await db
+      .select()
+      .from(cvs)
+      .where(and(eq(cvs.id, cvId), eq(cvs.userId, userId)))
+      .limit(1);
+
+    if (!cvToDelete.length) {
+      return { success: false, message: "CV not found" };
+    }
+
+    const isDefault = cvToDelete[0].isDefault;
+
+    // Delete the CV
+    await db.delete(cvs).where(and(eq(cvs.id, cvId), eq(cvs.userId, userId)));
+
+    // If the deleted CV was the default, clear the users table CV column
+    if (isDefault) {
+      await db
+        .update(users)
+        .set({ cv: null, updatedAt: new Date() })
+        .where(eq(users.id, userId));
+    }
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "CV deleted successfully" };
+  } catch (error) {
+    console.error("Delete CV error:", error);
+    return { success: false, message: "Failed to delete CV" };
+  }
+}
