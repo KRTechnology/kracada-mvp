@@ -2,9 +2,7 @@ import { Metadata } from "next";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getUserProfileWithExperiencesAction } from "@/app/(dashboard)/actions/profile-actions";
-import { ProfileBanner } from "@/components/specific/dashboard/ProfileBanner";
-import { MobileActionButtons } from "@/components/specific/dashboard/MobileActionButtons";
-import { DashboardNavigation } from "@/components/specific/dashboard/DashboardNavigation";
+import { DashboardLayoutClient } from "@/components/specific/dashboard/DashboardLayoutClient";
 
 export const metadata: Metadata = {
   title: "Dashboard | Kracada",
@@ -33,35 +31,11 @@ export default async function DashboardPageLayout({
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Main Content Container */}
-      <div className="mx-4 md:mx-[88px] mt-4 pb-10">
-        {/* White Card Container */}
-        <div className="bg-white dark:bg-dark-container rounded-2xl shadow-sm overflow-hidden">
-          {/* Banner Section */}
-          <ProfileBanner
-            firstName={profileResult.data?.firstName}
-            lastName={profileResult.data?.lastName}
-            accountType={profileResult.data?.accountType}
-            profileImageUrl={profileResult.data?.profilePicture || undefined}
-            userId={session.user.id}
-          />
-
-          {/* Mobile Action Buttons */}
-          <MobileActionButtons
-            accountType={profileResult.data?.accountType}
-            userId={session.user.id}
-            firstName={profileResult.data?.firstName}
-            lastName={profileResult.data?.lastName}
-          />
-
-          {/* Dashboard Navigation */}
-          <DashboardNavigation accountType={profileResult.data?.accountType} />
-
-          {/* Tab Content */}
-          <div className="px-6 pb-6 pt-6">{children}</div>
-        </div>
-      </div>
-    </div>
+    <DashboardLayoutClient
+      profileData={profileResult.data}
+      userId={session.user.id}
+    >
+      {children}
+    </DashboardLayoutClient>
   );
 }

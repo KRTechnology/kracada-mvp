@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { ProfileBanner } from "@/components/specific/dashboard/ProfileBanner";
 import { EmployerProfilePictureCard } from "@/components/specific/dashboard/EmployerProfilePictureCard";
 import {
   EmployerPersonalDetailsCard,
@@ -133,83 +132,64 @@ export function EmployerEditProfileClient({
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-dark-bg">
-      {/* Main Content Container */}
-      <div className="mx-4 md:mx-[88px] mt-4">
-        {/* White Card Container */}
-        <div className="bg-white dark:bg-dark-container rounded-2xl shadow-sm overflow-hidden">
-          {/* Banner Section */}
-          <ProfileBanner
-            firstName={currentUserData.firstName}
-            lastName={currentUserData.lastName}
-            accountType={currentUserData.accountType}
-            profileImageUrl={currentUserData.profilePicture || undefined}
-            showEditButton={false}
-            showAddCVButton={false}
-          />
+    <div className="p-6 space-y-6">
+      {/* Profile Picture Section */}
+      <EmployerProfilePictureCard
+        userData={currentUserData}
+        onUserDataUpdate={handleUserDataUpdate}
+        isEditMode={true}
+      />
 
-          {/* Edit Profile Content */}
-          <div className="p-6 space-y-6">
-            {/* Profile Picture Section */}
-            <EmployerProfilePictureCard
-              userData={currentUserData}
-              onUserDataUpdate={handleUserDataUpdate}
-              isEditMode={true}
-            />
+      {/* Personal Details Section */}
+      <EmployerPersonalDetailsCard
+        userData={currentUserData}
+        onUserDataUpdate={handleUserDataUpdate}
+        isEditMode={true}
+        ref={personalDetailsCardRef}
+      />
 
-            {/* Personal Details Section */}
-            <EmployerPersonalDetailsCard
-              userData={currentUserData}
-              onUserDataUpdate={handleUserDataUpdate}
-              isEditMode={true}
-              ref={personalDetailsCardRef}
-            />
+      {/* Company Logo Section */}
+      <EmployerCompanyLogoCard
+        userData={currentUserData}
+        onUserDataUpdate={handleUserDataUpdate}
+        isEditMode={true}
+      />
 
-            {/* Company Logo Section */}
-            <EmployerCompanyLogoCard
-              userData={currentUserData}
-              onUserDataUpdate={handleUserDataUpdate}
-              isEditMode={true}
-            />
+      {/* Company Details Section */}
+      <EmployerCompanyDetailsCard
+        companyData={{
+          companyName: currentUserData.companyName || "",
+          companyDescription: currentUserData.companyDescription || "",
+          companyWebsite: currentUserData.companyWebsite || "",
+          companyEmail: currentUserData.companyEmail || "",
+        }}
+        onCompanyDataUpdate={handleCompanyDataUpdate}
+        isEditMode={true}
+        ref={companyDetailsCardRef}
+      />
 
-            {/* Company Details Section */}
-            <EmployerCompanyDetailsCard
-              companyData={{
-                companyName: currentUserData.companyName || "",
-                companyDescription: currentUserData.companyDescription || "",
-                companyWebsite: currentUserData.companyWebsite || "",
-                companyEmail: currentUserData.companyEmail || "",
-              }}
-              onCompanyDataUpdate={handleCompanyDataUpdate}
-              isEditMode={true}
-              ref={companyDetailsCardRef}
-            />
-
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.8 }}
-              className="flex justify-end gap-4 pt-6 border-t border-neutral-200 dark:border-neutral-700"
-            >
-              <Button
-                onClick={handleCancel}
-                variant="outline"
-                className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
-              >
-                {isSaving ? "Saving..." : "Save Changes"}
-              </Button>
-            </motion.div>
-          </div>
-        </div>
-      </div>
+      {/* Action Buttons */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.8 }}
+        className="flex justify-end gap-4 pt-6 border-t border-neutral-200 dark:border-neutral-700"
+      >
+        <Button
+          onClick={handleCancel}
+          variant="outline"
+          className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
+        >
+          {isSaving ? "Saving..." : "Save Changes"}
+        </Button>
+      </motion.div>
     </div>
   );
 }
