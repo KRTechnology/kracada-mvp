@@ -1,6 +1,5 @@
-import { ActiveJobPostsContent } from "@/components/specific/dashboard/ActiveJobPostsContent";
 import { getEmployerJobsAction } from "@/app/(dashboard)/actions/job-actions";
-import { Loader } from "@/components/common/Loader";
+import { ActiveJobPostsContent } from "@/components/specific/dashboard/ActiveJobPostsContent";
 
 // Force dynamic rendering since we need to access user session
 export const dynamic = "force-dynamic";

@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { ProfilePictureCard } from "@/components/specific/dashboard/ProfilePictureCard";
+import { CVManagementCard } from "@/components/specific/dashboard/CVManagementCard";
 import {
   ProfileCard,
   ProfileCardRef,
@@ -163,6 +164,16 @@ export function JobSeekerEditProfileClient({
         onUserDataUpdate={handleUserDataUpdate}
         isEditMode={true}
         ref={websitePortfolioCardRef}
+      />
+
+      {/* CV Management Section */}
+      <CVManagementCard
+        userData={{
+          id: currentUserData.id,
+          firstName: currentUserData.firstName,
+          lastName: currentUserData.lastName,
+        }}
+        onUserDataUpdate={handleUserDataUpdate}
       />
 
       {/* Action Buttons */}
