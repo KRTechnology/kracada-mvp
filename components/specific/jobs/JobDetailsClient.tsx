@@ -13,6 +13,10 @@ import {
   withdrawJobApplicationAction,
   JobApplicationStatus,
 } from "@/app/(dashboard)/actions/job-application-actions";
+import {
+  toggleBookmarkAction,
+  checkBookmarkStatusAction,
+} from "@/app/(dashboard)/actions/bookmark-actions";
 import { Loader } from "@/components/common/Loader";
 import { toast } from "sonner";
 
@@ -30,6 +34,8 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
     useState<JobApplicationStatus | null>(null);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [isLoadingBookmarkStatus, setIsLoadingBookmarkStatus] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Check application status when user is authenticated
   useEffect(() => {
@@ -50,6 +56,27 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
     };
 
     checkApplicationStatus();
+  }, [job.id, session, status]);
+
+  // Check bookmark status when user is authenticated
+  useEffect(() => {
+    const checkBookmarkStatus = async () => {
+      if (status === "loading") return;
+
+      if (session?.user?.id) {
+        try {
+          const result = await checkBookmarkStatusAction("job", job.id);
+          if (result.success) {
+            setIsSaved(result.isBookmarked);
+          }
+        } catch (error) {
+          console.error("Error checking bookmark status:", error);
+        }
+      }
+      setIsLoadingBookmarkStatus(false);
+    };
+
+    checkBookmarkStatus();
   }, [job.id, session, status]);
 
   const handleGoBack = () => {
@@ -111,10 +138,34 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
     }
   };
 
-  const handleSave = () => {
-    setIsSaved(!isSaved);
-    // TODO: Implement save functionality
-    console.log("Save job:", job.id, !isSaved);
+  const handleSave = async () => {
+    // Check if user is authenticated
+    if (status === "loading") return;
+
+    if (!session) {
+      setIsAuthAlertOpen(true);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const result = await toggleBookmarkAction({
+        contentType: "job",
+        contentId: job.id,
+      });
+
+      if (result.success) {
+        setIsSaved(result.isBookmarked || false);
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error saving bookmark:", error);
+      toast.error("Failed to save bookmark");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const containerVariants = {
@@ -363,13 +414,32 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleSave}
-                    className={`py-2 px-4 rounded-lg font-medium transition-colors shadow-sm border min-h-[42px] flex items-center justify-center ${
+                    disabled={isSaving || isLoadingBookmarkStatus}
+                    className={`py-2 px-4 rounded-lg font-medium transition-colors shadow-sm border min-h-[42px] flex items-center justify-center gap-2 ${
                       isSaved
                         ? "bg-warm-200 text-white border-warm-200"
                         : "bg-white dark:bg-neutral-700 text-neutral-700 dark:text-white border-neutral-200 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-600"
-                    }`}
+                    } ${isSaving || isLoadingBookmarkStatus ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
-                    {isSaved ? "Saved" : "Save"}
+                    {isSaving ? (
+                      <div className="flex items-center gap-2">
+                        <Loader
+                          size="sm"
+                          color={isSaved ? "border-white" : "border-current"}
+                          inline
+                        />
+                        <span>{isSaved ? "Removing..." : "Saving..."}</span>
+                      </div>
+                    ) : isLoadingBookmarkStatus ? (
+                      <div className="flex items-center gap-2">
+                        <Loader size="sm" color="border-current" inline />
+                        <span>Loading...</span>
+                      </div>
+                    ) : isSaved ? (
+                      "Saved"
+                    ) : (
+                      "Save"
+                    )}
                   </motion.button>
                 )}
               </div>

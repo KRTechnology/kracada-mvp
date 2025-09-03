@@ -4,3 +4,4 @@ export * from "./notification-preferences";
 export * from "./sessions";
 export * from "./jobs";
 export * from "./cvs";
+export * from "./bookmarks";

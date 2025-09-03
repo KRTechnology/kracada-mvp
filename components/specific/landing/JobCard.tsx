@@ -1,9 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { MapPin, MoreVertical } from "lucide-react";
+import { MapPin, MoreVertical, Bookmark, BookmarkCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import {
+  toggleBookmarkAction,
+  checkBookmarkStatusAction,
+} from "@/app/(dashboard)/actions/bookmark-actions";
+import { toast } from "sonner";
 
 // Flexible interface that can handle both HomePageJob and JobItem
 interface FlexibleJobItem {
@@ -20,13 +26,62 @@ interface FlexibleJobItem {
 interface JobCardProps {
   job: FlexibleJobItem;
   index: number;
+  showBookmarkButton?: boolean;
 }
 
-const JobCard = ({ job, index }: JobCardProps) => {
+const JobCard = ({ job, index, showBookmarkButton = true }: JobCardProps) => {
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+
+  // Check bookmark status when component mounts
+  useEffect(() => {
+    const checkBookmarkStatus = async () => {
+      if (status === "loading" || !session?.user?.id || !showBookmarkButton)
+        return;
+
+      try {
+        const result = await checkBookmarkStatusAction("job", String(job.id));
+        if (result.success) {
+          setIsBookmarked(result.isBookmarked);
+        }
+      } catch (error) {
+        console.error("Error checking bookmark status:", error);
+      }
+    };
+
+    checkBookmarkStatus();
+  }, [job.id, session, status, showBookmarkButton]);
 
   const handleCardClick = () => {
     router.push(`/jobs/${job.id}`);
+  };
+
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (status === "loading" || !session?.user?.id) return;
+
+    setIsBookmarkLoading(true);
+    try {
+      const result = await toggleBookmarkAction({
+        contentType: "job",
+        contentId: String(job.id),
+      });
+
+      if (result.success) {
+        setIsBookmarked(result.isBookmarked || false);
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      toast.error("Failed to update bookmark");
+    } finally {
+      setIsBookmarkLoading(false);
+    }
   };
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -50,8 +105,34 @@ const JobCard = ({ job, index }: JobCardProps) => {
       onClick={handleCardClick}
       className="bg-white dark:bg-[#121212] border border-neutral-50 dark:border-[#232020] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative"
     >
-      {/* Three Dots Menu - positioned outside the hover scale container */}
-      <div className="absolute top-6 right-6 z-10">
+      {/* Action Buttons - positioned outside the hover scale container */}
+      <div className="absolute top-6 right-6 z-10 flex items-center gap-2">
+        {/* Bookmark Button */}
+        {showBookmarkButton && session?.user?.id && (
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleBookmarkClick}
+            disabled={isBookmarkLoading}
+            className={`p-1 rounded-full transition-colors flex items-center justify-center ${
+              isBookmarked
+                ? "bg-warm-200 text-white hover:bg-warm-300"
+                : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            } ${isBookmarkLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            style={{ width: "24px", height: "24px" }}
+            title={isBookmarked ? "Remove bookmark" : "Add bookmark"}
+          >
+            {isBookmarkLoading ? (
+              <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+            ) : isBookmarked ? (
+              <BookmarkCheck className="w-4 h-4" />
+            ) : (
+              <Bookmark className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+            )}
+          </motion.button>
+        )}
+
+        {/* Three Dots Menu */}
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}

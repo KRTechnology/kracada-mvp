@@ -2,26 +2,47 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession } from "next-auth/react";
 import JobCard from "@/components/specific/landing/JobCard";
 import { Pagination } from "./Pagination";
-import { jobsBookmarks, JobBookmark } from "@/lib/data/bookmarks-data";
+import { BookmarkedJobItem } from "@/app/(dashboard)/actions/bookmark-actions";
 
 const ITEMS_PER_PAGE = 9;
 
-export function BookmarkedJobsContent() {
+interface BookmarkedJobsContentProps {
+  bookmarkedJobs: BookmarkedJobItem[];
+}
+
+export function BookmarkedJobsContent({
+  bookmarkedJobs,
+}: BookmarkedJobsContentProps) {
+  const { data: session, status } = useSession();
   const [currentPage, setCurrentPage] = useState(1);
 
-  const data = jobsBookmarks;
-  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(bookmarkedJobs.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentData = data.slice(startIndex, endIndex);
+  const currentData = bookmarkedJobs.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
   const renderEmptyState = () => {
+    if (status === "unauthenticated") {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="text-4xl mb-4">🔒</div>
+          <h4 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
+            Sign in to view bookmarks
+          </h4>
+          <p className="text-neutral-600 dark:text-neutral-400 max-w-md">
+            Please sign in to see your saved job bookmarks.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="text-4xl mb-4">💼</div>
@@ -36,7 +57,7 @@ export function BookmarkedJobsContent() {
     );
   };
 
-  if (currentData.length === 0) {
+  if (currentData.length === 0 && bookmarkedJobs.length === 0) {
     return renderEmptyState();
   }
 
@@ -60,9 +81,11 @@ export function BookmarkedJobsContent() {
                   location: item.location,
                   description: item.description,
                   skills: item.skills,
-                  companyLogo: item.logo,
+                  companyLogo: item.companyLogo,
+                  locationType: item.locationType,
                 }}
                 index={index}
+                showBookmarkButton={false}
               />
             </motion.div>
           ))}
