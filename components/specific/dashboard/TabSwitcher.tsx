@@ -95,7 +95,7 @@ export function TabSwitcher({
             >
               <div className="flex items-center gap-2">
                 <span className="font-medium text-sm">{tab.label}</span>
-                {tab.badge && tab.badge > 0 && (
+                {/* {tab.badge && tab.badge > 0 && (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -110,7 +110,7 @@ export function TabSwitcher({
                       {tab.badge}
                     </span>
                   </motion.div>
-                )}
+                )} */}
               </div>
             </button>
           ))}

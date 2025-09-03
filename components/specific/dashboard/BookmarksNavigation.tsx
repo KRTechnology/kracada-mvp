@@ -15,7 +15,7 @@ interface SubTabItem {
 }
 
 const bookmarksSubTabs: SubTabItem[] = [
-  { id: "Jobs", label: "Jobs", path: "/dashboard/bookmarks", count: 20 },
+  { id: "Jobs", label: "Jobs", path: "/dashboard/bookmarks", count: 0 },
   {
     id: "Articles",
     label: "Articles",
@@ -32,7 +32,7 @@ const bookmarksSubTabs: SubTabItem[] = [
     id: "Hotels",
     label: "Hotels",
     path: "/dashboard/bookmarks/hotels",
-    count: 2,
+    count: 0,
   },
 ];
 
@@ -76,11 +76,11 @@ export function BookmarksNavigation({}: BookmarksNavigationProps) {
               >
                 {tab.label}
               </span>
-              {tab.count > 0 && (
+              {/* {tab.count > 0 && (
                 <span className="text-xs text-neutral-500 dark:text-neutral-400">
                   {tab.count}
                 </span>
-              )}
+              )} */}
             </div>
 
             {/* Animated underline */}

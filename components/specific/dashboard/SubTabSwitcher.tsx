@@ -53,11 +53,11 @@ export function SubTabSwitcher({
               >
                 {tab.label}
               </span>
-              {tab.count > 0 && (
+              {/* {tab.count > 0 && (
                 <span className="text-xs text-neutral-500 dark:text-neutral-400">
                   {tab.count}
                 </span>
-              )}
+              )} */}
             </div>
 
             {/* Animated underline */}

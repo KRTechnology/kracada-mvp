@@ -27,10 +27,10 @@ export function BookmarksContent() {
 
   // Default tabs for bookmarks
   const defaultTabs = [
-    { id: "Jobs" as SubTabType, label: "Jobs", count: 20 },
+    { id: "Jobs" as SubTabType, label: "Jobs", count: 0 },
     { id: "Articles" as SubTabType, label: "Articles", count: 0 },
     { id: "Videos" as SubTabType, label: "Videos", count: 0 },
-    { id: "Hotels" as SubTabType, label: "Hotels", count: 2 },
+    { id: "Hotels" as SubTabType, label: "Hotels", count: 0 },
   ];
 
   const getDataForTab = (tab: SubTabType) => {

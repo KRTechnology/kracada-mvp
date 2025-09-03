@@ -135,7 +135,7 @@ export function DashboardNavigation({
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-sm">{tab.label}</span>
-                    {tab.badge && tab.badge > 0 && (
+                    {/* {tab.badge && tab.badge > 0 && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -150,7 +150,7 @@ export function DashboardNavigation({
                           {tab.badge}
                         </span>
                       </motion.div>
-                    )}
+                    )} */}
                   </div>
                 </button>
               ))}
@@ -198,11 +198,11 @@ export function DashboardNavigation({
                 >
                   <div className="flex items-center justify-between">
                     <span>{tab.label}</span>
-                    {tab.badge && tab.badge > 0 && (
+                    {/* {tab.badge && tab.badge > 0 && (
                       <span className="text-xs bg-neutral-200 dark:bg-neutral-600 text-neutral-700 dark:text-neutral-200 px-2 py-1 rounded-full">
                         {tab.badge}
                       </span>
-                    )}
+                    )} */}
                   </div>
                 </button>
               ))}
