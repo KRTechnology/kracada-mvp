@@ -1,11 +1,11 @@
 "use client";
 
 import { MoreVertical, MapPin } from "lucide-react";
-import { JobApplication } from "@/lib/data/applications-data";
+import { JobApplicationWithDetails } from "@/app/(dashboard)/actions/job-application-data-actions";
 
 interface ApplicationCardProps {
-  application: JobApplication;
-  getStatusColor: (status: JobApplication["status"]) => string;
+  application: JobApplicationWithDetails;
+  getStatusColor: (status: JobApplicationWithDetails["status"]) => string;
 }
 
 export function ApplicationCard({

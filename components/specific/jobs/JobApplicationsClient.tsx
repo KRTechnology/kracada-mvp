@@ -4,12 +4,12 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, MoreVertical, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { JobApplication } from "@/lib/data/applications-data";
+import { JobApplicationWithDetails } from "@/app/(dashboard)/actions/job-application-data-actions";
 import { Pagination } from "@/components/specific/dashboard/Pagination";
 import { ApplicationCard } from "./ApplicationCard";
 
 interface JobApplicationsClientProps {
-  applications: JobApplication[];
+  applications: JobApplicationWithDetails[];
 }
 
 const ITEMS_PER_PAGE = 5;
@@ -42,7 +42,7 @@ export function JobApplicationsClient({
     }, 300);
   };
 
-  const getStatusColor = (status: JobApplication["status"]) => {
+  const getStatusColor = (status: JobApplicationWithDetails["status"]) => {
     switch (status) {
       case "Submitted":
         return "bg-neutral-400";
@@ -52,7 +52,7 @@ export function JobApplicationsClient({
         return "bg-green-500";
       case "Rejected":
         return "bg-red-500";
-      case "Interview":
+      case "Interviewed":
         return "bg-purple-500";
       case "Offer":
         return "bg-yellow-500";

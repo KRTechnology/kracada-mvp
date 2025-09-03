@@ -1,16 +1,13 @@
 "use client";
 
 import { MoreVertical, MapPin } from "lucide-react";
-import {
-  JobApplication,
-  ApplicationStatus,
-} from "@/lib/data/applications-data";
+import { JobApplicationWithDetails } from "@/app/(dashboard)/actions/job-application-data-actions";
 
 interface ApplicationCardProps {
-  application: JobApplication;
+  application: JobApplicationWithDetails;
 }
 
-const getStatusColor = (status: ApplicationStatus) => {
+const getStatusColor = (status: JobApplicationWithDetails["status"]) => {
   switch (status) {
     case "Submitted":
       return "bg-neutral-400";
@@ -20,7 +17,7 @@ const getStatusColor = (status: ApplicationStatus) => {
       return "bg-green-500";
     case "Rejected":
       return "bg-red-500";
-    case "Interview":
+    case "Interviewed":
       return "bg-purple-500";
     case "Offer":
       return "bg-yellow-500";
