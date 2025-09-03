@@ -86,12 +86,12 @@ export function JobPostsContent({ refreshTrigger = 0 }: JobPostsContentProps) {
     {
       id: "Active Jobs" as JobPostsSubTabType,
       label: "Active Jobs",
-      count: activeJobs.length,
+      count: 0, // activeJobs.length,
     },
     {
       id: "Closed Jobs" as JobPostsSubTabType,
       label: "Closed Jobs",
-      count: closedJobs.length,
+      count: 0, // closedJobs.length,
     },
   ];
 

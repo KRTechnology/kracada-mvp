@@ -19,7 +19,7 @@ const jobPostsSubTabs: SubTabItem[] = [
     id: "Active Jobs",
     label: "Active Jobs",
     path: "/dashboard/job-posts",
-    count: 20,
+    count: 0,
   },
   {
     id: "Closed Jobs",
@@ -64,11 +64,11 @@ export function JobPostsNavigation({}: JobPostsNavigationProps) {
               >
                 {tab.label}
               </span>
-              {tab.count > 0 && (
+              {/* {tab.count > 0 && (
                 <span className="text-xs text-neutral-500 dark:text-neutral-400">
                   {tab.count}
                 </span>
-              )}
+              )} */}
             </div>
 
             {/* Animated underline */}
