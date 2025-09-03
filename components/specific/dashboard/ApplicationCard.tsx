@@ -2,6 +2,7 @@
 
 import { MoreVertical, MapPin } from "lucide-react";
 import { JobApplicationWithDetails } from "@/app/(dashboard)/actions/job-application-data-actions";
+import { CompanyLogo } from "@/components/common/CompanyLogo";
 
 interface ApplicationCardProps {
   application: JobApplicationWithDetails;
@@ -30,10 +31,13 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
   return (
     <div className="bg-white dark:bg-dark rounded-xl border border-neutral-50 dark:border-[#232020] p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start mb-3">
-        {/* Company Logo Placeholder */}
-        <div className="w-16 h-16 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center mr-2">
-          <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-600 rounded"></div>
-        </div>
+        {/* Company Logo */}
+        <CompanyLogo
+          src={application.logo}
+          companyName={application.company}
+          size="md"
+          className="mr-2"
+        />
 
         {/* Job Details Section */}
         <div className="flex-1">
