@@ -297,9 +297,9 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
 
             {/* Action Buttons */}
             <div className="pt-4">
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-start">
                 {isLoadingStatus ? (
-                  <div className="flex items-center justify-center py-2">
+                  <div className="flex items-center justify-center py-2 min-h-[42px]">
                     <Loader size="sm" />
                   </div>
                 ) : (
@@ -310,12 +310,12 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={handleApply}
-                        className="bg-warm-200 hover:bg-warm-300 text-white py-2 px-4 rounded-lg font-medium transition-colors shadow-sm"
+                        className="bg-warm-200 hover:bg-warm-300 text-white py-2 px-4 rounded-lg font-medium transition-colors shadow-sm min-h-[42px] flex items-center justify-center"
                       >
                         Apply Now
                       </motion.button>
                     ) : session.user?.id === job.employerId ? (
-                      <div className="py-2 px-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded-lg font-medium text-center">
+                      <div className="py-2 px-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded-lg font-medium text-center min-h-[42px] flex items-center justify-center">
                         This is your job posting
                       </div>
                     ) : applicationStatus?.hasApplied ? (
@@ -326,19 +326,19 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
                             whileTap={{ scale: 0.98 }}
                             onClick={handleWithdrawApplication}
                             disabled={isWithdrawing}
-                            className="bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white py-2 px-4 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2"
+                            className="bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white py-2 px-4 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2 min-h-[42px]"
                           >
                             {isWithdrawing ? (
-                              <>
-                                <Loader size="sm" color="border-white" />
-                                Withdrawing...
-                              </>
+                              <div className="flex items-center gap-2">
+                                <Loader size="sm" color="border-white" inline />
+                                <span>Withdrawing...</span>
+                              </div>
                             ) : (
                               "Withdraw Application"
                             )}
                           </motion.button>
                         ) : (
-                          <div className="py-2 px-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-lg font-medium text-center border border-green-200 dark:border-green-800">
+                          <div className="py-2 px-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-lg font-medium text-center border border-green-200 dark:border-green-800 min-h-[42px] flex items-center justify-center">
                             Application {applicationStatus.status} - Cannot
                             withdraw
                           </div>
@@ -349,7 +349,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={handleApply}
-                        className="bg-warm-200 hover:bg-warm-300 text-white py-2 px-4 rounded-lg font-medium transition-colors shadow-sm"
+                        className="bg-warm-200 hover:bg-warm-300 text-white py-2 px-4 rounded-lg font-medium transition-colors shadow-sm min-h-[42px] flex items-center justify-center"
                       >
                         Apply Now
                       </motion.button>
@@ -357,19 +357,21 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
                   </>
                 )}
 
-                {/* Save Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleSave}
-                  className={`py-2 px-4 rounded-lg font-medium transition-colors shadow-sm border ${
-                    isSaved
-                      ? "bg-warm-200 text-white border-warm-200"
-                      : "bg-white dark:bg-neutral-700 text-neutral-700 dark:text-white border-neutral-200 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-600"
-                  }`}
-                >
-                  {isSaved ? "Saved" : "Save"}
-                </motion.button>
+                {/* Save Button - Only show if not the job owner */}
+                {session?.user?.id !== job.employerId && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSave}
+                    className={`py-2 px-4 rounded-lg font-medium transition-colors shadow-sm border min-h-[42px] flex items-center justify-center ${
+                      isSaved
+                        ? "bg-warm-200 text-white border-warm-200"
+                        : "bg-white dark:bg-neutral-700 text-neutral-700 dark:text-white border-neutral-200 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-600"
+                    }`}
+                  >
+                    {isSaved ? "Saved" : "Save"}
+                  </motion.button>
+                )}
               </div>
             </div>
           </div>
