@@ -4,12 +4,14 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db/drizzle";
 import { jobApplications, jobs } from "@/lib/db/schema/jobs";
 import { users } from "@/lib/db/schema/users";
+import { cvs } from "@/lib/db/schema/cvs";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export interface CreateJobApplicationData {
   jobId: string;
   coverLetterUrl?: string;
+  selectedCvId?: string; // Optional: if not provided, uses default CV
 }
 
 export interface JobApplicationStatus {
@@ -146,28 +148,53 @@ export async function createJobApplicationAction(
       };
     }
 
-    // Get user's CV URL
-    const user = await db
-      .select({
-        cv: users.cv,
-      })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
+    // Get the CV URL - either from selected CV or default CV
+    let cvUrl: string;
 
-    if (user.length === 0 || !user[0].cv) {
-      return {
-        success: false,
-        message:
-          "You need to upload a CV to your profile before applying for jobs",
-      };
+    if (data.selectedCvId) {
+      // Use the specific CV selected by the user
+      const selectedCV = await db
+        .select({
+          fileUrl: cvs.fileUrl,
+        })
+        .from(cvs)
+        .where(and(eq(cvs.id, data.selectedCvId), eq(cvs.userId, userId)))
+        .limit(1);
+
+      if (selectedCV.length === 0) {
+        return {
+          success: false,
+          message: "Selected CV not found",
+        };
+      }
+
+      cvUrl = selectedCV[0].fileUrl;
+    } else {
+      // Fall back to default CV from user profile
+      const user = await db
+        .select({
+          cv: users.cv,
+        })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (user.length === 0 || !user[0].cv) {
+        return {
+          success: false,
+          message:
+            "You need to upload a CV to your profile before applying for jobs",
+        };
+      }
+
+      cvUrl = user[0].cv;
     }
 
     // Create the job application
     await db.insert(jobApplications).values({
       jobId: data.jobId,
       applicantId: userId,
-      resumeUrl: user[0].cv,
+      resumeUrl: cvUrl,
       coverLetter: data.coverLetterUrl || null,
       status: "Submitted",
     });

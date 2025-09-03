@@ -18,6 +18,7 @@ import {
   deleteUploadedFile,
 } from "@/app/(dashboard)/actions/upload-actions";
 import { Loader } from "@/components/common/Loader";
+import { CVSelector } from "@/components/specific/jobs/CVSelector";
 import { toast } from "sonner";
 
 interface JobApplicationDialogProps {
@@ -48,10 +49,17 @@ export function JobApplicationDialog({
   const [portfolioLink, setPortfolioLink] = useState("");
   const [certification, setCertification] = useState("");
   const [linkedinProfile, setLinkedinProfile] = useState("");
+  const [selectedCvId, setSelectedCvId] = useState<string | null>(null);
+  const [selectedCvUrl, setSelectedCvUrl] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!session?.user?.id) {
       toast.error("You must be logged in to apply");
+      return;
+    }
+
+    if (!selectedCvId) {
+      toast.error("Please select a CV for your application");
       return;
     }
 
@@ -61,6 +69,7 @@ export function JobApplicationDialog({
       const result = await createJobApplicationAction({
         jobId,
         coverLetterUrl: coverLetterUrl || undefined,
+        selectedCvId,
       });
 
       if (result.success) {
@@ -87,7 +96,14 @@ export function JobApplicationDialog({
     setPortfolioLink("");
     setCertification("");
     setLinkedinProfile("");
+    setSelectedCvId(null);
+    setSelectedCvUrl(null);
     onClose();
+  };
+
+  const handleCVSelect = (cvId: string, cvUrl: string) => {
+    setSelectedCvId(cvId);
+    setSelectedCvUrl(cvUrl);
   };
 
   const handleViewApplicationStatus = () => {
@@ -271,17 +287,19 @@ export function JobApplicationDialog({
         {!isSubmitted ? (
           // Unsubmitted State
           <div className="space-y-6">
-            {/* CV Notice */}
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                CV Information
-              </h3>
-              <p className="text-sm text-blue-700 dark:text-blue-300">
-                Your current CV from your profile will be used for this
-                application. Please ensure your CV is up to date before
-                applying.
-              </p>
-            </div>
+            {/* CV Selection */}
+            {session?.user && (
+              <CVSelector
+                selectedCvId={selectedCvId}
+                onSelectCV={handleCVSelect}
+                userData={{
+                  id: session.user.id || "",
+                  firstName: session.user.name?.split(" ")[0] || "",
+                  lastName:
+                    session.user.name?.split(" ").slice(1).join(" ") || "",
+                }}
+              />
+            )}
 
             {/* Upload Cover Letter */}
             <CoverLetterUploadArea />
@@ -379,7 +397,7 @@ export function JobApplicationDialog({
             {!isSubmitted ? (
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !selectedCvId}
                 className="px-4 py-2 bg-warm-200 hover:bg-warm-300 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors h-10 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
