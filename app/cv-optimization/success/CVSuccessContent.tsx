@@ -118,9 +118,9 @@ export default function CVSuccessContent() {
     deliveryDate.setDate(today.getDate() + deliveryDays);
 
     return deliveryDate.toLocaleDateString("en-US", {
-      weekday: "long",
+      weekday: "short",
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     });
   };
@@ -258,7 +258,7 @@ export default function CVSuccessContent() {
                       <span className="text-sm text-neutral-600 dark:text-neutral-400">
                         Estimated Delivery
                       </span>
-                      <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                      <span className="text-sm font-medium text-neutral-900 dark:text-white text-right">
                         {getEstimatedDeliveryDate(
                           orderDetails.estimatedDeliveryDays
                         )}
@@ -466,7 +466,7 @@ export default function CVSuccessContent() {
                     <span className="text-neutral-600 dark:text-neutral-400">
                       Estimated Delivery
                     </span>
-                    <span className="font-medium text-neutral-900 dark:text-white text-sm">
+                    <span className="font-medium text-neutral-900 dark:text-white text-sm text-right">
                       {getEstimatedDeliveryDate(
                         orderDetails.estimatedDeliveryDays
                       )}
