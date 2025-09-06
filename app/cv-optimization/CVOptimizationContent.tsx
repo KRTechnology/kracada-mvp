@@ -116,39 +116,23 @@ export default function CVOptimizationContent() {
   };
 
   const handlePaymentSuccess = async (reference: any) => {
-    console.log("Payment success callback triggered:", reference);
-    console.log("Reference object full:", JSON.stringify(reference, null, 2));
-
     // Extract package info from the payment reference metadata
     const packageType = reference.metadata?.packageType;
 
-    console.log("Package type from metadata:", packageType);
-    console.log("User session:", session?.user);
-
     if (!packageType || !session?.user) {
       console.error("Missing packageType or user session");
-      console.error("packageType:", packageType);
-      console.error("session?.user:", session?.user);
       toast.error("Missing payment information. Please try again.");
       return;
     }
 
     startTransition(async () => {
       try {
-        console.log(
-          "Creating order for package:",
-          packageType,
-          "with reference:",
-          reference.reference
-        );
 
         // Create order in database
         const result = await createCVOptimizationOrder(
           packageType as "deluxe" | "supreme" | "premium",
           reference.reference
         );
-
-        console.log("Order creation result:", result);
 
         if (result.success) {
           toast.success("Payment successful! Redirecting to upload page...");
@@ -177,7 +161,6 @@ export default function CVOptimizationContent() {
 
     // Create a package-specific success handler
     const handlePackagePaymentSuccess = async (reference: any) => {
-      console.log("Package-specific payment success:", pkg.id, reference);
 
       if (!session?.user) {
         console.error("User session missing");
@@ -187,20 +170,12 @@ export default function CVOptimizationContent() {
 
       startTransition(async () => {
         try {
-          console.log(
-            "Creating order for package:",
-            pkg.id,
-            "with reference:",
-            reference.reference
-          );
 
           // Create order in database
           const result = await createCVOptimizationOrder(
             pkg.id as "deluxe" | "supreme" | "premium",
             reference.reference
           );
-
-          console.log("Order creation result:", result);
 
           if (result.success) {
             toast.success("Payment successful! Redirecting to upload page...");

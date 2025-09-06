@@ -20,7 +20,7 @@ const packages = {
     includesInterviewPrep: false,
   },
   supreme: {
-    name: "Supreme Package", 
+    name: "Supreme Package",
     price: 30000, // Price in naira (₦30,000)
     description: "International Standard",
     maxRevisions: 3,
@@ -206,9 +206,8 @@ export async function verifyPaymentAndUpdateOrder(
             updatedAt: new Date(),
           })
           .where(eq(cvOptimizationOrders.id, orderRecord.id));
-        console.log("Updated order status to payment_verified");
       } else {
-        console.log("Order already marked as successful, skipping update");
+        // Order already marked as successful, skipping update
       }
 
       // Create or update payment transaction record
@@ -236,7 +235,6 @@ export async function verifyPaymentAndUpdateOrder(
           verifiedAt: new Date(),
           verificationStatus: "verified",
         });
-        console.log("Created new payment transaction record");
       } else {
         // Update existing transaction
         await db
@@ -252,7 +250,6 @@ export async function verifyPaymentAndUpdateOrder(
             updatedAt: new Date(),
           })
           .where(eq(cvPaymentTransactions.paystackReference, paymentReference));
-        console.log("Updated existing payment transaction record");
       }
 
       return {
@@ -289,9 +286,7 @@ export async function verifyPaymentAndUpdateOrder(
       error.code === "23505" &&
       error.constraint?.includes("paystack_reference")
     ) {
-      console.log(
-        "Payment transaction already exists, attempting to retrieve order"
-      );
+      // Payment transaction already exists, attempting to retrieve order
 
       // Try to get the order one more time
       try {
@@ -532,7 +527,6 @@ async function verifyPaystackPayment(reference: string): Promise<{
       };
     }
 
-    console.log("Verifying payment with reference:", reference);
 
     const response = await fetch(
       `https://api.paystack.co/transaction/verify/${reference}`,

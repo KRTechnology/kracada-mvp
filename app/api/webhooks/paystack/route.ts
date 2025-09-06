@@ -5,46 +5,32 @@ import { eq } from "drizzle-orm";
 import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
-  console.log("=== PAYSTACK WEBHOOK RECEIVED ===");
 
   try {
     const body = await request.text();
     const signature = request.headers.get("x-paystack-signature");
 
-    console.log("Webhook body length:", body.length);
-    console.log("Signature header:", signature ? "Present" : "Missing");
 
     // Verify webhook signature
     if (!verifyPaystackSignature(body, signature)) {
-      console.log("❌ Webhook signature verification failed");
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
-    console.log("✅ Webhook signature verified");
-
     const event = JSON.parse(body);
-    console.log("Event type:", event.event);
-    console.log("Event data preview:", {
-      reference: event.data?.reference,
-      status: event.data?.status,
-      amount: event.data?.amount,
-    });
 
     // Handle different event types
     switch (event.event) {
       case "charge.success":
-        console.log("Processing charge.success event");
         await handleChargeSuccess(event.data);
         break;
       case "charge.failed":
-        console.log("Processing charge.failed event");
         await handleChargeFailed(event.data);
         break;
       default:
-        console.log("Unhandled webhook event:", event.event);
+        // Unhandled webhook event
+        break;
     }
 
-    console.log("=== WEBHOOK PROCESSING COMPLETE ===");
     return NextResponse.json({ status: "success" });
   } catch (error) {
     console.error("Webhook processing error:", error);
@@ -60,7 +46,6 @@ function verifyPaystackSignature(
   signature: string | null
 ): boolean {
   if (!signature) {
-    console.log("No signature provided in webhook");
     return false;
   }
 
@@ -75,18 +60,13 @@ function verifyPaystackSignature(
     return false;
   }
 
-  console.log("Using secret key:", secretKey.substring(0, 10) + "...");
 
   const hash = crypto
     .createHmac("sha512", secretKey)
     .update(body, "utf8")
     .digest("hex");
 
-  console.log("Generated hash:", hash.substring(0, 10) + "...");
-  console.log("Received signature:", signature.substring(0, 10) + "...");
-
   const isValid = hash === signature;
-  console.log("Signature verification:", isValid ? "VALID" : "INVALID");
 
   return isValid;
 }
@@ -161,7 +141,6 @@ async function handleChargeSuccess(data: any) {
         .where(eq(cvPaymentTransactions.paystackReference, reference));
     }
 
-    console.log("Payment success webhook processed for order:", order.id);
   } catch (error) {
     console.error("Error handling charge success:", error);
   }
@@ -233,7 +212,6 @@ async function handleChargeFailed(data: any) {
         .where(eq(cvPaymentTransactions.paystackReference, reference));
     }
 
-    console.log("Payment failed webhook processed for order:", order.id);
   } catch (error) {
     console.error("Error handling charge failed:", error);
   }
