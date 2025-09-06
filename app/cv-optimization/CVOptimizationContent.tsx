@@ -116,21 +116,34 @@ export default function CVOptimizationContent() {
   };
 
   const handlePaymentSuccess = async (reference: any) => {
-    if (!selectedPackage || !session?.user) return;
+    console.log("Payment success callback triggered:", reference);
+    console.log("Selected package:", selectedPackage);
+    console.log("User session:", session?.user);
+    
+    if (!selectedPackage || !session?.user) {
+      console.error("Missing selectedPackage or user session");
+      toast.error("Missing payment information. Please try again.");
+      return;
+    }
 
     startTransition(async () => {
       try {
+        console.log("Creating order for package:", selectedPackage, "with reference:", reference.reference);
+        
         // Create order in database
         const result = await createCVOptimizationOrder(
           selectedPackage as "deluxe" | "supreme" | "premium",
           reference.reference
         );
 
+        console.log("Order creation result:", result);
+
         if (result.success) {
           toast.success("Payment successful! Redirecting to upload page...");
           // Navigate to upload page with payment reference
           router.push(`/cv-optimization/upload?ref=${reference.reference}`);
         } else {
+          console.error("Order creation failed:", result.error);
           toast.error(result.error || "Failed to create order");
         }
       } catch (error) {

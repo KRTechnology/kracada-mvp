@@ -5,29 +5,46 @@ import { eq } from "drizzle-orm";
 import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
+  console.log("=== PAYSTACK WEBHOOK RECEIVED ===");
+  
   try {
     const body = await request.text();
     const signature = request.headers.get("x-paystack-signature");
+    
+    console.log("Webhook body length:", body.length);
+    console.log("Signature header:", signature ? "Present" : "Missing");
 
     // Verify webhook signature
     if (!verifyPaystackSignature(body, signature)) {
+      console.log("❌ Webhook signature verification failed");
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
+    console.log("✅ Webhook signature verified");
+
     const event = JSON.parse(body);
+    console.log("Event type:", event.event);
+    console.log("Event data preview:", {
+      reference: event.data?.reference,
+      status: event.data?.status,
+      amount: event.data?.amount,
+    });
 
     // Handle different event types
     switch (event.event) {
       case "charge.success":
+        console.log("Processing charge.success event");
         await handleChargeSuccess(event.data);
         break;
       case "charge.failed":
+        console.log("Processing charge.failed event");
         await handleChargeFailed(event.data);
         break;
       default:
         console.log("Unhandled webhook event:", event.event);
     }
 
+    console.log("=== WEBHOOK PROCESSING COMPLETE ===");
     return NextResponse.json({ status: "success" });
   } catch (error) {
     console.error("Webhook processing error:", error);
@@ -42,20 +59,32 @@ function verifyPaystackSignature(
   body: string,
   signature: string | null
 ): boolean {
-  if (!signature) return false;
-
-  const secretKey = process.env.PAYSTACK_SECRET_KEY;
-  if (!secretKey) {
-    console.error("Paystack secret key not configured");
+  if (!signature) {
+    console.log("No signature provided in webhook");
     return false;
   }
+
+  // Try both possible environment variable names
+  const secretKey = process.env.PAYSTACK_SECRET_KEY || process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
+  if (!secretKey) {
+    console.error("Paystack secret key not configured. Checked PAYSTACK_SECRET_KEY and NEXT_PUBLIC_PAYSTACK_SECRET_KEY");
+    return false;
+  }
+
+  console.log("Using secret key:", secretKey.substring(0, 10) + "...");
 
   const hash = crypto
     .createHmac("sha512", secretKey)
     .update(body, "utf8")
     .digest("hex");
 
-  return hash === signature;
+  console.log("Generated hash:", hash.substring(0, 10) + "...");
+  console.log("Received signature:", signature.substring(0, 10) + "...");
+
+  const isValid = hash === signature;
+  console.log("Signature verification:", isValid ? "VALID" : "INVALID");
+
+  return isValid;
 }
 
 async function handleChargeSuccess(data: any) {
