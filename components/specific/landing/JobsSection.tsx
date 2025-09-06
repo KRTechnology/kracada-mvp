@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import JobCard from "./JobCard";
 import { HomePageJob } from "@/app/actions/home-actions";
 
@@ -55,13 +56,15 @@ const JobsSection = ({ latestJobs }: JobsSectionProps) => {
 
             {/* View All Button - Desktop Only */}
             <motion.div variants={itemVariants} className="hidden lg:block">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark px-6 py-3 rounded-xl font-semibold transition-all duration-300"
-              >
-                View all job posts
-              </motion.button>
+              <Link href="/jobs">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark px-6 py-3 rounded-xl font-semibold transition-all duration-300"
+                >
+                  View all job posts
+                </motion.button>
+              </Link>
             </motion.div>
           </div>
 
@@ -88,13 +91,15 @@ const JobsSection = ({ latestJobs }: JobsSectionProps) => {
 
           {/* Mobile View All Button */}
           <motion.div variants={itemVariants} className="lg:hidden mt-8">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full bg-warm-200 hover:bg-warm-300 text-white dark:text-dark py-4 rounded-xl font-semibold transition-all duration-300"
-            >
-              View all job posts
-            </motion.button>
+            <Link href="/jobs">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full bg-warm-200 hover:bg-warm-300 text-white dark:text-dark py-4 rounded-xl font-semibold transition-all duration-300"
+              >
+                View all job posts
+              </motion.button>
+            </Link>
           </motion.div>
         </motion.div>
       </div>
