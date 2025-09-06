@@ -2,6 +2,9 @@ import { JobApplicationsPageClient } from "@/components/specific/jobs/JobApplica
 import { getJobApplicationsAction } from "@/app/(dashboard)/actions/job-application-management-actions";
 import { notFound } from "next/navigation";
 
+// Force dynamic rendering since this page uses auth() which calls headers()
+export const dynamic = "force-dynamic";
+
 interface JobApplicationsPageProps {
   params: Promise<{
     id: string;

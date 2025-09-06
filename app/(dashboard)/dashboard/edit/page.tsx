@@ -4,6 +4,9 @@ import { getUserProfileWithExperiencesAction } from "@/app/(dashboard)/actions/p
 import { JobSeekerEditProfileClient } from "@/components/specific/dashboard/JobSeekerEditProfileClient";
 import { EmployerEditProfileClient } from "@/components/specific/dashboard/EmployerEditProfileClient";
 
+// Force dynamic rendering since this page uses auth() which calls headers()
+export const dynamic = "force-dynamic";
+
 export default async function EditProfilePage() {
   const session = await auth();
 

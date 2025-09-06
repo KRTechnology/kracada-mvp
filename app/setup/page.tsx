@@ -6,6 +6,9 @@ import { EmployerSetupClient } from "@/components/specific/dashboard/EmployerSet
 import { BusinessOwnerSetupClient } from "@/components/specific/dashboard/BusinessOwnerSetupClient";
 import { ContributorSetupClient } from "@/components/specific/dashboard/ContributorSetupClient";
 
+// Force dynamic rendering since this page uses auth() which calls headers()
+export const dynamic = "force-dynamic";
+
 export default async function SetupPage() {
   const session = await auth();
 

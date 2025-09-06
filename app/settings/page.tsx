@@ -5,6 +5,9 @@ import { getUserNotificationPreferencesAction } from "@/app/(dashboard)/actions/
 import { JobSeekerSettingsClient } from "@/components/specific/dashboard/JobSeekerSettingsClient";
 import { EmployerSettingsClient } from "@/components/specific/dashboard/EmployerSettingsClient";
 
+// Force dynamic rendering since this page uses auth() which calls headers()
+export const dynamic = "force-dynamic";
+
 export default async function SettingsPage() {
   const session = await auth();
 
