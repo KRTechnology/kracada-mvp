@@ -117,11 +117,18 @@ export default function CVOptimizationContent() {
 
   const handlePaymentSuccess = async (reference: any) => {
     console.log("Payment success callback triggered:", reference);
-    console.log("Selected package:", selectedPackage);
+    console.log("Reference object full:", JSON.stringify(reference, null, 2));
+    
+    // Extract package info from the payment reference metadata
+    const packageType = reference.metadata?.packageType;
+    
+    console.log("Package type from metadata:", packageType);
     console.log("User session:", session?.user);
-
-    if (!selectedPackage || !session?.user) {
-      console.error("Missing selectedPackage or user session");
+    
+    if (!packageType || !session?.user) {
+      console.error("Missing packageType or user session");
+      console.error("packageType:", packageType);
+      console.error("session?.user:", session?.user);
       toast.error("Missing payment information. Please try again.");
       return;
     }
@@ -130,14 +137,14 @@ export default function CVOptimizationContent() {
       try {
         console.log(
           "Creating order for package:",
-          selectedPackage,
+          packageType,
           "with reference:",
           reference.reference
         );
 
         // Create order in database
         const result = await createCVOptimizationOrder(
-          selectedPackage as "deluxe" | "supreme" | "premium",
+          packageType as "deluxe" | "supreme" | "premium",
           reference.reference
         );
 
@@ -145,6 +152,8 @@ export default function CVOptimizationContent() {
 
         if (result.success) {
           toast.success("Payment successful! Redirecting to upload page...");
+          // Clear selected package state
+          setSelectedPackage(null);
           // Navigate to upload page with payment reference
           router.push(`/cv-optimization/upload?ref=${reference.reference}`);
         } else {
@@ -166,14 +175,53 @@ export default function CVOptimizationContent() {
   const getPaystackConfig = (pkg: PricingPackage) => {
     if (!session?.user?.email || !publicKey) return null;
 
+    // Create a package-specific success handler
+    const handlePackagePaymentSuccess = async (reference: any) => {
+      console.log("Package-specific payment success:", pkg.id, reference);
+      
+      if (!session?.user) {
+        console.error("User session missing");
+        toast.error("User session expired. Please login again.");
+        return;
+      }
+
+      startTransition(async () => {
+        try {
+          console.log("Creating order for package:", pkg.id, "with reference:", reference.reference);
+          
+          // Create order in database
+          const result = await createCVOptimizationOrder(
+            pkg.id as "deluxe" | "supreme" | "premium",
+            reference.reference
+          );
+
+          console.log("Order creation result:", result);
+
+          if (result.success) {
+            toast.success("Payment successful! Redirecting to upload page...");
+            // Clear selected package state
+            setSelectedPackage(null);
+            // Navigate to upload page with payment reference
+            router.push(`/cv-optimization/upload?ref=${reference.reference}`);
+          } else {
+            console.error("Order creation failed:", result.error);
+            toast.error(result.error || "Failed to create order");
+          }
+        } catch (error) {
+          console.error("Payment success handler error:", error);
+          toast.error("An error occurred while processing your payment");
+        }
+      });
+    };
+
     return {
-      reference: `cv_opt_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+      reference: `cv_opt_${pkg.id}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
       email: session.user.email,
       amount: pkg.priceInKobo,
       currency: "NGN" as const,
       publicKey,
       text: "Pay Now",
-      onSuccess: handlePaymentSuccess,
+      onSuccess: handlePackagePaymentSuccess,
       onClose: handlePaymentClose,
       metadata: {
         userId: session.user.id,
@@ -290,7 +338,12 @@ export default function CVOptimizationContent() {
                       className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
                       disabled={!isMounted}
                     >
-                      {!isMounted ? "Loading..." : "Get started"}
+                      {!isMounted 
+                        ? "Loading..." 
+                        : session?.user 
+                        ? "Pay Now" 
+                        : "Get started"
+                      }
                     </motion.button>
                   )}
                 </div>
@@ -398,7 +451,12 @@ export default function CVOptimizationContent() {
                       className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
                       disabled={!isMounted}
                     >
-                      {!isMounted ? "Loading..." : "Get started"}
+                      {!isMounted 
+                        ? "Loading..." 
+                        : session?.user 
+                        ? "Pay Now" 
+                        : "Get started"
+                      }
                     </motion.button>
                   )}
                 </div>
