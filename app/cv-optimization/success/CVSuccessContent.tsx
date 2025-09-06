@@ -1,64 +1,92 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle, FileText, Clock, ArrowRight, Home } from "lucide-react";
+import {
+  CheckCircle,
+  FileText,
+  Clock,
+  ArrowRight,
+  Home,
+  AlertCircle,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { getOrderById } from "@/app/(dashboard)/actions/cv-optimization-actions";
 
-interface PackageInfo {
+interface OrderDetails {
   id: string;
-  name: string;
-  price: string;
-  turnaroundTime: string;
-  revisions: string;
+  packageName: string;
+  packagePrice: string;
+  packageDescription?: string;
+  orderStatus: string;
+  paymentStatus: string;
+  paymentReference: string;
+  estimatedDeliveryDays?: number;
+  maxRevisions?: number;
+  includesCoverLetter?: boolean;
+  includesLinkedInProfile?: boolean;
+  includesInterviewPrep?: boolean;
+  customerNotes?: string;
+  createdAt: Date;
 }
 
-const packageDetails: Record<string, PackageInfo> = {
-  deluxe: {
-    id: "deluxe",
-    name: "Deluxe Package",
-    price: "₦20,000",
-    turnaroundTime: "3 working days",
-    revisions: "Up to 2 revisions",
-  },
-  supreme: {
-    id: "supreme",
-    name: "Supreme Package",
-    price: "₦30,000",
-    turnaroundTime: "5 working days",
-    revisions: "Up to 3 revisions",
-  },
-  premium: {
-    id: "premium",
-    name: "Premium Package",
-    price: "₦45,000",
-    turnaroundTime: "7 working days",
-    revisions: "Up to 5 revisions",
-  },
-};
-
 export default function CVSuccessContent() {
-  const [selectedPackage, setSelectedPackage] = useState<PackageInfo | null>(
-    null
-  );
-  const [submissionId, setSubmissionId] = useState<string>("");
+  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session } = useSession();
+
+  const orderId = searchParams.get("orderId");
 
   useEffect(() => {
-    // Get selected package from localStorage
-    const packageId = localStorage.getItem("selectedPackage");
-    if (packageId && packageDetails[packageId]) {
-      setSelectedPackage(packageDetails[packageId]);
-    } else {
-      // Fallback to deluxe if no package selected
-      setSelectedPackage(packageDetails.deluxe);
+    async function fetchOrderDetails() {
+      if (!orderId || !session?.user?.id) {
+        setError("Missing order information or user not authenticated");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Fetch order details using server action
+        const result = await getOrderById(orderId);
+
+        if (!result.success) {
+          setError(result.error || "Order not found");
+          setIsLoading(false);
+          return;
+        }
+
+        const order = result.order!;
+        setOrderDetails({
+          id: order.id,
+          packageName: order.packageName,
+          packagePrice: `₦${parseFloat(order.packagePrice).toLocaleString()}`,
+          packageDescription: order.packageDescription || undefined,
+          orderStatus: order.orderStatus,
+          paymentStatus: order.paymentStatus,
+          paymentReference: order.paymentReference || "",
+          estimatedDeliveryDays: order.estimatedDeliveryDays || undefined,
+          maxRevisions: order.maxRevisions || undefined,
+          includesCoverLetter: order.includesCoverLetter || false,
+          includesLinkedInProfile: order.includesLinkedInProfile || false,
+          includesInterviewPrep: order.includesInterviewPrep || false,
+          customerNotes: order.customerNotes || undefined,
+          createdAt: order.createdAt,
+        });
+      } catch (error) {
+        console.error("Error fetching order details:", error);
+        setError("Failed to load order details");
+      } finally {
+        setIsLoading(false);
+      }
     }
 
-    // Generate submission ID
-    const id = `CV-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-    setSubmissionId(id);
-  }, []);
+    fetchOrderDetails();
+  }, [orderId, session]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -82,10 +110,83 @@ export default function CVSuccessContent() {
     },
   };
 
-  if (!selectedPackage) {
+  const getEstimatedDeliveryDate = (deliveryDays?: number) => {
+    if (!deliveryDays) return "TBD";
+
+    const today = new Date();
+    const deliveryDate = new Date(today);
+    deliveryDate.setDate(today.getDate() + deliveryDays);
+
+    return deliveryDate.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const getIncludedServices = (order: OrderDetails) => {
+    const services = ["Professional CV Writing"];
+
+    if (order.includesCoverLetter) {
+      services.push("Cover Letter");
+    }
+
+    if (order.includesLinkedInProfile) {
+      services.push("LinkedIn Profile Writing");
+    }
+
+    if (order.includesInterviewPrep) {
+      services.push("Interview Preparation Session");
+    }
+
+    return services;
+  };
+
+  // Loading state
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-warm-700 via-warm-800 to-warm-900 dark:from-neutral-900 dark:via-neutral-900 dark:to-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl p-8 shadow-xl max-w-md mx-auto text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-warm-200 border-t-transparent mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+            Loading Order Details
+          </h2>
+          <p className="text-neutral-600 dark:text-neutral-400">
+            Please wait while we fetch your order information...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !orderDetails) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-warm-700 via-warm-800 to-warm-900 dark:from-neutral-900 dark:via-neutral-900 dark:to-black flex items-center justify-center">
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl p-8 shadow-xl max-w-md mx-auto text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+            Order Not Found
+          </h2>
+          <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+            {error || "We couldn't find your order details."}
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={() => router.push("/cv-optimization")}
+              className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+            >
+              Back to CV Optimization
+            </button>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="w-full bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-semibold py-3 px-6 rounded-xl transition-colors"
+            >
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -115,19 +216,19 @@ export default function CVSuccessContent() {
               </p>
             </motion.div>
 
-            {/* Submission Details Card */}
+            {/* Order Details Card */}
             <motion.div
               variants={itemVariants}
               className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-xl mb-6"
             >
               <div className="space-y-4">
-                {/* Submission ID */}
+                {/* Order ID */}
                 <div className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
                   <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                    Submission ID
+                    Order ID
                   </span>
                   <span className="text-sm font-mono font-bold text-neutral-900 dark:text-white">
-                    {submissionId}
+                    {orderDetails.id.slice(-8).toUpperCase()}
                   </span>
                 </div>
 
@@ -142,7 +243,7 @@ export default function CVSuccessContent() {
                         Package
                       </span>
                       <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                        {selectedPackage.name}
+                        {orderDetails.packageName}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -150,15 +251,17 @@ export default function CVSuccessContent() {
                         Price
                       </span>
                       <span className="text-sm font-medium text-warm-200">
-                        {selectedPackage.price}
+                        {orderDetails.packagePrice}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                        Turnaround
+                        Estimated Delivery
                       </span>
                       <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                        {selectedPackage.turnaroundTime}
+                        {getEstimatedDeliveryDate(
+                          orderDetails.estimatedDeliveryDays
+                        )}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -166,11 +269,40 @@ export default function CVSuccessContent() {
                         Revisions
                       </span>
                       <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                        {selectedPackage.revisions}
+                        Up to {orderDetails.maxRevisions || 0}
                       </span>
                     </div>
                   </div>
                 </div>
+
+                {/* Included Services */}
+                <div className="border-t border-neutral-200 dark:border-neutral-600 pt-4">
+                  <h3 className="font-semibold text-neutral-900 dark:text-white mb-3">
+                    Included Services
+                  </h3>
+                  <div className="space-y-2">
+                    {getIncludedServices(orderDetails).map((service, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                          {service}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Customer Notes */}
+                {orderDetails.customerNotes && (
+                  <div className="border-t border-neutral-200 dark:border-neutral-600 pt-4">
+                    <h3 className="font-semibold text-neutral-900 dark:text-white mb-2">
+                      Your Notes
+                    </h3>
+                    <p className="text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-700 p-3 rounded-lg">
+                      {orderDetails.customerNotes}
+                    </p>
+                  </div>
+                )}
               </div>
             </motion.div>
 
@@ -201,8 +333,8 @@ export default function CVSuccessContent() {
                     </span>
                   </div>
                   <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                    You'll receive the first draft within{" "}
-                    {selectedPackage.turnaroundTime}
+                    You'll receive the first draft via email within{" "}
+                    {orderDetails.estimatedDeliveryDays || "7"} working days
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -246,7 +378,7 @@ export default function CVSuccessContent() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="max-w-2xl mx-auto"
+            className="max-w-4xl mx-auto"
           >
             {/* Success Icon */}
             <motion.div variants={itemVariants} className="text-center mb-12">
@@ -262,79 +394,111 @@ export default function CVSuccessContent() {
               </p>
             </motion.div>
 
-            {/* Submission Details Card */}
+            {/* Order Details Grid */}
             <motion.div
               variants={itemVariants}
-              className="bg-white dark:bg-neutral-800 rounded-3xl p-8 shadow-xl mb-8"
+              className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Left Column - Submission Info */}
-                <div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white mb-4 text-lg">
-                    Submission Details
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
-                      <span className="font-medium text-neutral-600 dark:text-neutral-400">
-                        Submission ID
-                      </span>
-                      <span className="font-mono font-bold text-neutral-900 dark:text-white">
-                        {submissionId}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3 p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
-                      <FileText className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                      <span className="text-neutral-700 dark:text-neutral-300">
-                        CV file uploaded successfully
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3 p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
-                      <Clock className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                      <span className="text-neutral-700 dark:text-neutral-300">
-                        Submitted on {new Date().toLocaleDateString()}
-                      </span>
-                    </div>
+              {/* Left Column - Order Info */}
+              <div className="bg-white dark:bg-neutral-800 rounded-3xl p-8 shadow-xl">
+                <h3 className="font-semibold text-neutral-900 dark:text-white mb-6 text-xl">
+                  Order Information
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
+                    <span className="font-medium text-neutral-600 dark:text-neutral-400">
+                      Order ID
+                    </span>
+                    <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                      {orderDetails.id.slice(-8).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
+                    <FileText className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                    <span className="text-neutral-700 dark:text-neutral-300">
+                      CV file uploaded successfully
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
+                    <Clock className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                    <span className="text-neutral-700 dark:text-neutral-300">
+                      Submitted on {orderDetails.createdAt.toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
 
-                {/* Right Column - Package Details */}
-                <div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white mb-4 text-lg">
-                    Package Details
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
-                      <span className="text-neutral-600 dark:text-neutral-400">
-                        Package
-                      </span>
-                      <span className="font-medium text-neutral-900 dark:text-white">
-                        {selectedPackage.name}
-                      </span>
-                    </div>
-                    <div className="flex justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
-                      <span className="text-neutral-600 dark:text-neutral-400">
-                        Price
-                      </span>
-                      <span className="font-medium text-warm-200">
-                        {selectedPackage.price}
-                      </span>
-                    </div>
-                    <div className="flex justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
-                      <span className="text-neutral-600 dark:text-neutral-400">
-                        Turnaround
-                      </span>
-                      <span className="font-medium text-neutral-900 dark:text-white">
-                        {selectedPackage.turnaroundTime}
-                      </span>
-                    </div>
-                    <div className="flex justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
-                      <span className="text-neutral-600 dark:text-neutral-400">
-                        Revisions
-                      </span>
-                      <span className="font-medium text-neutral-900 dark:text-white">
-                        {selectedPackage.revisions}
-                      </span>
-                    </div>
+                {/* Customer Notes */}
+                {orderDetails.customerNotes && (
+                  <div className="mt-6">
+                    <h4 className="font-semibold text-neutral-900 dark:text-white mb-3">
+                      Your Notes
+                    </h4>
+                    <p className="text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-700 p-4 rounded-xl">
+                      {orderDetails.customerNotes}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column - Package Details */}
+              <div className="bg-white dark:bg-neutral-800 rounded-3xl p-8 shadow-xl">
+                <h3 className="font-semibold text-neutral-900 dark:text-white mb-6 text-xl">
+                  Package Details
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
+                    <span className="text-neutral-600 dark:text-neutral-400">
+                      Package
+                    </span>
+                    <span className="font-medium text-neutral-900 dark:text-white">
+                      {orderDetails.packageName}
+                    </span>
+                  </div>
+                  <div className="flex justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
+                    <span className="text-neutral-600 dark:text-neutral-400">
+                      Price
+                    </span>
+                    <span className="font-medium text-warm-200">
+                      {orderDetails.packagePrice}
+                    </span>
+                  </div>
+                  <div className="flex justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
+                    <span className="text-neutral-600 dark:text-neutral-400">
+                      Estimated Delivery
+                    </span>
+                    <span className="font-medium text-neutral-900 dark:text-white text-sm">
+                      {getEstimatedDeliveryDate(
+                        orderDetails.estimatedDeliveryDays
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
+                    <span className="text-neutral-600 dark:text-neutral-400">
+                      Revisions
+                    </span>
+                    <span className="font-medium text-neutral-900 dark:text-white">
+                      Up to {orderDetails.maxRevisions || 0}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Included Services */}
+                <div className="mt-6">
+                  <h4 className="font-semibold text-neutral-900 dark:text-white mb-3">
+                    Included Services
+                  </h4>
+                  <div className="space-y-2">
+                    {getIncludedServices(orderDetails).map((service, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center space-x-3 p-2"
+                      >
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                          {service}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -345,40 +509,50 @@ export default function CVSuccessContent() {
               variants={itemVariants}
               className="bg-white dark:bg-neutral-800 rounded-3xl p-8 shadow-xl mb-8"
             >
-              <h3 className="font-semibold text-neutral-900 dark:text-white mb-6 text-lg">
+              <h3 className="font-semibold text-neutral-900 dark:text-white mb-6 text-xl text-center">
                 What happens next?
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-warm-100 dark:bg-warm-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 bg-warm-100 dark:bg-warm-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-lg font-bold text-warm-600 dark:text-warm-400">
                       1
                     </span>
                   </div>
+                  <h4 className="font-semibold text-neutral-900 dark:text-white mb-2">
+                    Review & Analysis
+                  </h4>
                   <p className="text-sm text-neutral-700 dark:text-neutral-300">
                     Our team will review your CV and begin the optimization
-                    process
+                    process based on your selected package
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-warm-100 dark:bg-warm-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 bg-warm-100 dark:bg-warm-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-lg font-bold text-warm-600 dark:text-warm-400">
                       2
                     </span>
                   </div>
+                  <h4 className="font-semibold text-neutral-900 dark:text-white mb-2">
+                    First Draft Delivery
+                  </h4>
                   <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                    You'll receive the first draft within{" "}
-                    {selectedPackage.turnaroundTime}
+                    You'll receive the first draft via email within{" "}
+                    {orderDetails.estimatedDeliveryDays || "7"} working days
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-warm-100 dark:bg-warm-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 bg-warm-100 dark:bg-warm-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-lg font-bold text-warm-600 dark:text-warm-400">
                       3
                     </span>
                   </div>
+                  <h4 className="font-semibold text-neutral-900 dark:text-white mb-2">
+                    Revisions & Finalization
+                  </h4>
                   <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                    Provide feedback and we'll make revisions as needed
+                    Provide feedback and we'll make revisions until you're
+                    completely satisfied
                   </p>
                 </div>
               </div>
@@ -387,7 +561,7 @@ export default function CVSuccessContent() {
             {/* Action Buttons */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row gap-4"
+              className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto"
             >
               <Link
                 href="/dashboard"

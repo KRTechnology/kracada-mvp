@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import CVSuccessContent from "@/app/cv-optimization/success/CVSuccessContent";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "CV Submitted Successfully - CV Optimization",
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function CVSuccessPage() {
-  return <CVSuccessContent />;
+  return (
+    <Suspense>
+      <CVSuccessContent />
+    </Suspense>
+  );
 }

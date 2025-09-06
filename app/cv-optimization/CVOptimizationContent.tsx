@@ -2,13 +2,31 @@
 
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+import { createCVOptimizationOrder } from "@/app/(dashboard)/actions/cv-optimization-actions";
+import dynamic from "next/dynamic";
+
+// Dynamically import PaystackButton to avoid SSR issues
+const PaystackButton = dynamic(
+  () => import("react-paystack").then((mod) => mod.PaystackButton),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full bg-neutral-300 dark:bg-neutral-600 text-neutral-500 dark:text-neutral-400 font-semibold py-3 px-6 rounded-xl">
+        Loading...
+      </div>
+    ),
+  }
+);
 
 interface PricingPackage {
   id: string;
   name: string;
   price: string;
+  priceInKobo: number; // Price in kobo for Paystack
   description: string;
   features: string[];
   additionalDescription?: string;
@@ -20,6 +38,7 @@ const packages: PricingPackage[] = [
     id: "deluxe",
     name: "Deluxe Package",
     price: "₦20,000",
+    priceInKobo: 2000000, // ₦20,000 in kobo
     description: "Professional CV Writing.",
     additionalDescription:
       "We will style your CV to Professional Standard acceptable to most organizations and firms in Nigeria",
@@ -34,6 +53,7 @@ const packages: PricingPackage[] = [
     id: "supreme",
     name: "Supreme Package",
     price: "₦30,000",
+    priceInKobo: 3000000, // ₦30,000 in kobo
     description: "International Standard",
     additionalDescription:
       "We will style your CV to International Standard acceptable to most organizations and firms in any country of your choice",
@@ -49,6 +69,7 @@ const packages: PricingPackage[] = [
     id: "premium",
     name: "Premium Package",
     price: "₦45,000",
+    priceInKobo: 4500000, // ₦45,000 in kobo
     description:
       "All features of Supreme plus Standard LinkedIn profile writing and Interview preparatory session",
     features: [
@@ -72,12 +93,83 @@ const containerVariants = {
 
 export default function CVOptimizationContent() {
   const [isAnimated, setIsAnimated] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
-  const handleGetStarted = (packageId: string) => {
-    // Store selected package in localStorage or pass as query param
-    localStorage.setItem("selectedPackage", packageId);
-    router.push("/cv-optimization/upload");
+  const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
+
+  // Handle mounting to avoid hydration mismatches
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const handlePackageSelect = (packageId: string) => {
+    if (!session?.user) {
+      toast.error("Please login to continue");
+      router.push("/login");
+      return;
+    }
+    setSelectedPackage(packageId);
+  };
+
+  const handlePaymentSuccess = async (reference: any) => {
+    if (!selectedPackage || !session?.user) return;
+
+    startTransition(async () => {
+      try {
+        // Create order in database
+        const result = await createCVOptimizationOrder(
+          selectedPackage as "deluxe" | "supreme" | "premium",
+          reference.reference
+        );
+
+        if (result.success) {
+          toast.success("Payment successful! Redirecting to upload page...");
+          // Navigate to upload page with payment reference
+          router.push(`/cv-optimization/upload?ref=${reference.reference}`);
+        } else {
+          toast.error(result.error || "Failed to create order");
+        }
+      } catch (error) {
+        console.error("Payment success handler error:", error);
+        toast.error("An error occurred while processing your payment");
+      }
+    });
+  };
+
+  const handlePaymentClose = () => {
+    setSelectedPackage(null);
+    toast.info("Payment cancelled");
+  };
+
+  const getPaystackConfig = (pkg: PricingPackage) => {
+    if (!session?.user?.email || !publicKey) return null;
+
+    return {
+      reference: `cv_opt_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+      email: session.user.email,
+      amount: pkg.priceInKobo,
+      currency: "NGN" as const,
+      publicKey,
+      text: "Pay Now",
+      onSuccess: handlePaymentSuccess,
+      onClose: handlePaymentClose,
+      metadata: {
+        userId: session.user.id,
+        packageType: pkg.id,
+        packageName: pkg.name,
+        custom_fields: [
+          {
+            display_name: "Package",
+            variable_name: "package",
+            value: pkg.name,
+          },
+        ],
+      },
+    };
   };
 
   return (
@@ -165,14 +257,25 @@ export default function CVOptimizationContent() {
                 </div>
 
                 {/* CTA Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleGetStarted(pkg.id)}
-                  className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Get started
-                </motion.button>
+                <div className="w-full">
+                  {isMounted && session?.user && getPaystackConfig(pkg) ? (
+                    <PaystackButton
+                      {...getPaystackConfig(pkg)!}
+                      className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl border-0 cursor-pointer disabled:opacity-50"
+                      disabled={isPending}
+                    />
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handlePackageSelect(pkg.id)}
+                      className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
+                      disabled={!isMounted}
+                    >
+                      {!isMounted ? "Loading..." : "Get started"}
+                    </motion.button>
+                  )}
+                </div>
               </div>
             ))}
           </motion.div>
@@ -262,14 +365,25 @@ export default function CVOptimizationContent() {
                 </div>
 
                 {/* CTA Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleGetStarted(pkg.id)}
-                  className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Get started
-                </motion.button>
+                <div className="w-full">
+                  {isMounted && session?.user && getPaystackConfig(pkg) ? (
+                    <PaystackButton
+                      {...getPaystackConfig(pkg)!}
+                      className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl border-0 cursor-pointer disabled:opacity-50"
+                      disabled={isPending}
+                    />
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handlePackageSelect(pkg.id)}
+                      className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
+                      disabled={!isMounted}
+                    >
+                      {!isMounted ? "Loading..." : "Get started"}
+                    </motion.button>
+                  )}
+                </div>
               </div>
             ))}
           </motion.div>
