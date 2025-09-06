@@ -527,7 +527,6 @@ async function verifyPaystackPayment(reference: string): Promise<{
       };
     }
 
-
     const response = await fetch(
       `https://api.paystack.co/transaction/verify/${reference}`,
       {

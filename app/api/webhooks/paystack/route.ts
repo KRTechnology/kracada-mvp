@@ -5,11 +5,9 @@ import { eq } from "drizzle-orm";
 import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
-
   try {
     const body = await request.text();
     const signature = request.headers.get("x-paystack-signature");
-
 
     // Verify webhook signature
     if (!verifyPaystackSignature(body, signature)) {
@@ -59,7 +57,6 @@ function verifyPaystackSignature(
     );
     return false;
   }
-
 
   const hash = crypto
     .createHmac("sha512", secretKey)
@@ -140,7 +137,6 @@ async function handleChargeSuccess(data: any) {
         })
         .where(eq(cvPaymentTransactions.paystackReference, reference));
     }
-
   } catch (error) {
     console.error("Error handling charge success:", error);
   }
@@ -211,7 +207,6 @@ async function handleChargeFailed(data: any) {
         })
         .where(eq(cvPaymentTransactions.paystackReference, reference));
     }
-
   } catch (error) {
     console.error("Error handling charge failed:", error);
   }

@@ -127,7 +127,6 @@ export default function CVOptimizationContent() {
 
     startTransition(async () => {
       try {
-
         // Create order in database
         const result = await createCVOptimizationOrder(
           packageType as "deluxe" | "supreme" | "premium",
@@ -161,7 +160,6 @@ export default function CVOptimizationContent() {
 
     // Create a package-specific success handler
     const handlePackagePaymentSuccess = async (reference: any) => {
-
       if (!session?.user) {
         console.error("User session missing");
         toast.error("User session expired. Please login again.");
@@ -170,7 +168,6 @@ export default function CVOptimizationContent() {
 
       startTransition(async () => {
         try {
-
           // Create order in database
           const result = await createCVOptimizationOrder(
             pkg.id as "deluxe" | "supreme" | "premium",
