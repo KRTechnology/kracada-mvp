@@ -354,14 +354,14 @@ export default function CVSuccessContent() {
             <motion.div variants={itemVariants} className="space-y-3">
               <Link
                 href="/dashboard"
-                className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 whitespace-nowrap"
               >
                 <ArrowRight className="w-4 h-4" />
                 <span>Go to Dashboard</span>
               </Link>
               <Link
                 href="/"
-                className="w-full border border-white/20 text-white hover:bg-white/10 font-semibold py-3 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2"
+                className="w-full border border-white/20 text-white hover:bg-white/10 font-semibold py-3 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2 whitespace-nowrap"
               >
                 <Home className="w-4 h-4" />
                 <span>Back to Home</span>
@@ -565,14 +565,14 @@ export default function CVSuccessContent() {
             >
               <Link
                 href="/dashboard"
-                className="flex-1 bg-warm-200 hover:bg-warm-300 text-white font-semibold py-4 px-8 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                className="flex-1 bg-warm-200 hover:bg-warm-300 text-white font-semibold py-4 px-8 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 whitespace-nowrap"
               >
                 <ArrowRight className="w-5 h-5" />
                 <span>Go to Dashboard</span>
               </Link>
               <Link
                 href="/"
-                className="flex-1 border border-white/20 text-white hover:bg-white/10 font-semibold py-4 px-8 rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2"
+                className="flex-1 border border-white/20 text-white hover:bg-white/10 font-semibold py-4 px-8 rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2 whitespace-nowrap"
               >
                 <Home className="w-5 h-5" />
                 <span>Back to Home</span>

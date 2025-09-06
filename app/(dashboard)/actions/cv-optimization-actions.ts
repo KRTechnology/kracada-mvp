@@ -11,7 +11,7 @@ import { z } from "zod";
 const packages = {
   deluxe: {
     name: "Deluxe Package",
-    price: 20000, // Price in kobo (₦200)
+    price: 20000, // Price in naira (₦20,000)
     description: "Professional CV Writing",
     maxRevisions: 2,
     estimatedDeliveryDays: 3,
@@ -20,8 +20,8 @@ const packages = {
     includesInterviewPrep: false,
   },
   supreme: {
-    name: "Supreme Package",
-    price: 30000, // Price in kobo (₦300)
+    name: "Supreme Package", 
+    price: 30000, // Price in naira (₦30,000)
     description: "International Standard",
     maxRevisions: 3,
     estimatedDeliveryDays: 5,
@@ -31,7 +31,7 @@ const packages = {
   },
   premium: {
     name: "Premium Package",
-    price: 45000, // Price in kobo (₦450)
+    price: 45000, // Price in naira (₦45,000)
     description:
       "All features of Supreme plus Standard LinkedIn profile writing and Interview preparatory session",
     maxRevisions: 5,
@@ -118,10 +118,10 @@ export async function createCVOptimizationOrder(
       userId: session.user.id,
       packageType,
       packageName: packageInfo.name,
-      packagePrice: (packageInfo.price / 100).toString(), // Convert from kobo to naira
+      packagePrice: packageInfo.price.toString(), // Price already in naira
       packageDescription: packageInfo.description,
       paymentReference,
-      paymentAmount: (packageInfo.price / 100).toString(),
+      paymentAmount: packageInfo.price.toString(), // Price already in naira
       paymentCurrency: "NGN",
       maxRevisions: packageInfo.maxRevisions,
       estimatedDeliveryDays: packageInfo.estimatedDeliveryDays,
@@ -283,15 +283,23 @@ export async function verifyPaymentAndUpdateOrder(
     }
   } catch (error: any) {
     console.error("Verify payment error:", error);
-    
+
     // Handle specific database constraint errors
-    if (error.code === "23505" && error.constraint?.includes("paystack_reference")) {
-      console.log("Payment transaction already exists, attempting to retrieve order");
-      
+    if (
+      error.code === "23505" &&
+      error.constraint?.includes("paystack_reference")
+    ) {
+      console.log(
+        "Payment transaction already exists, attempting to retrieve order"
+      );
+
       // Try to get the order one more time
       try {
         const orderResult = await getOrderByPaymentReference(paymentReference);
-        if (orderResult.success && orderResult.order?.paymentStatus === "successful") {
+        if (
+          orderResult.success &&
+          orderResult.order?.paymentStatus === "successful"
+        ) {
           return {
             success: true,
             verified: true,
@@ -302,7 +310,7 @@ export async function verifyPaymentAndUpdateOrder(
         console.error("Error during retry:", retryError);
       }
     }
-    
+
     return {
       success: false,
       error: "An unexpected error occurred during verification",
