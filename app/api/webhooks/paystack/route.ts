@@ -6,11 +6,11 @@ import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
   console.log("=== PAYSTACK WEBHOOK RECEIVED ===");
-  
+
   try {
     const body = await request.text();
     const signature = request.headers.get("x-paystack-signature");
-    
+
     console.log("Webhook body length:", body.length);
     console.log("Signature header:", signature ? "Present" : "Missing");
 
@@ -65,9 +65,13 @@ function verifyPaystackSignature(
   }
 
   // Try both possible environment variable names
-  const secretKey = process.env.PAYSTACK_SECRET_KEY || process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
+  const secretKey =
+    process.env.PAYSTACK_SECRET_KEY ||
+    process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
   if (!secretKey) {
-    console.error("Paystack secret key not configured. Checked PAYSTACK_SECRET_KEY and NEXT_PUBLIC_PAYSTACK_SECRET_KEY");
+    console.error(
+      "Paystack secret key not configured. Checked PAYSTACK_SECRET_KEY and NEXT_PUBLIC_PAYSTACK_SECRET_KEY"
+    );
     return false;
   }
 

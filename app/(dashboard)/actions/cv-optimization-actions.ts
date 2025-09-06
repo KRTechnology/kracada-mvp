@@ -459,9 +459,13 @@ async function verifyPaystackPayment(reference: string): Promise<{
 }> {
   try {
     // Try both possible environment variable names
-    const secretKey = process.env.PAYSTACK_SECRET_KEY || process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
+    const secretKey =
+      process.env.PAYSTACK_SECRET_KEY ||
+      process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
     if (!secretKey) {
-      console.error("Paystack secret key not found. Checked PAYSTACK_SECRET_KEY and NEXT_PUBLIC_PAYSTACK_SECRET_KEY");
+      console.error(
+        "Paystack secret key not found. Checked PAYSTACK_SECRET_KEY and NEXT_PUBLIC_PAYSTACK_SECRET_KEY"
+      );
       return {
         success: false,
         error: "Paystack secret key not configured",

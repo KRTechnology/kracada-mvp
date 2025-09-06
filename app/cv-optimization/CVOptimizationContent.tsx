@@ -119,7 +119,7 @@ export default function CVOptimizationContent() {
     console.log("Payment success callback triggered:", reference);
     console.log("Selected package:", selectedPackage);
     console.log("User session:", session?.user);
-    
+
     if (!selectedPackage || !session?.user) {
       console.error("Missing selectedPackage or user session");
       toast.error("Missing payment information. Please try again.");
@@ -128,8 +128,13 @@ export default function CVOptimizationContent() {
 
     startTransition(async () => {
       try {
-        console.log("Creating order for package:", selectedPackage, "with reference:", reference.reference);
-        
+        console.log(
+          "Creating order for package:",
+          selectedPackage,
+          "with reference:",
+          reference.reference
+        );
+
         // Create order in database
         const result = await createCVOptimizationOrder(
           selectedPackage as "deluxe" | "supreme" | "premium",
