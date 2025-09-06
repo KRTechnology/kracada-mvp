@@ -67,24 +67,6 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const cardVariants = {
-  hidden: {
-    opacity: 0,
-    y: 30,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-    },
   },
 };
 
@@ -120,16 +102,15 @@ export default function CVOptimizationContent() {
 
           {/* Mobile Pricing Cards */}
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
             className="space-y-6"
             onAnimationComplete={() => setIsAnimated(true)}
           >
             {packages.map((pkg, index) => (
-              <motion.div
+              <div
                 key={pkg.id}
-                variants={cardVariants}
                 className="relative bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-xl transition-all duration-300"
               >
                 {/* Package Badge */}
@@ -192,7 +173,7 @@ export default function CVOptimizationContent() {
                 >
                   Get started
                 </motion.button>
-              </motion.div>
+              </div>
             ))}
           </motion.div>
         </div>
@@ -218,16 +199,15 @@ export default function CVOptimizationContent() {
 
           {/* Desktop Pricing Cards */}
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
             className="grid grid-cols-3 gap-8 max-w-6xl mx-auto"
             onAnimationComplete={() => setIsAnimated(true)}
           >
             {packages.map((pkg, index) => (
-              <motion.div
+              <div
                 key={pkg.id}
-                variants={cardVariants}
                 className="relative bg-white dark:bg-neutral-800 rounded-3xl p-8 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
               >
                 {/* Package Badge */}
@@ -290,7 +270,7 @@ export default function CVOptimizationContent() {
                 >
                   Get started
                 </motion.button>
-              </motion.div>
+              </div>
             ))}
           </motion.div>
         </div>
