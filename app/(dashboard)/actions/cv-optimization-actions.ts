@@ -195,33 +195,65 @@ export async function verifyPaymentAndUpdateOrder(
 
     // Update order with payment details
     if (paymentData.status === "success") {
-      await db
-        .update(cvOptimizationOrders)
-        .set({
-          paymentStatus: "successful",
-          orderStatus: "payment_verified",
-          paystackTransactionId: paymentData.id?.toString(),
-          updatedAt: new Date(),
-        })
-        .where(eq(cvOptimizationOrders.id, orderRecord.id));
+      // Only update if not already successful to avoid unnecessary updates
+      if (orderRecord.paymentStatus !== "successful") {
+        await db
+          .update(cvOptimizationOrders)
+          .set({
+            paymentStatus: "successful",
+            orderStatus: "payment_verified",
+            paystackTransactionId: paymentData.id?.toString(),
+            updatedAt: new Date(),
+          })
+          .where(eq(cvOptimizationOrders.id, orderRecord.id));
+        console.log("Updated order status to payment_verified");
+      } else {
+        console.log("Order already marked as successful, skipping update");
+      }
 
-      // Create payment transaction record
-      await db.insert(cvPaymentTransactions).values({
-        orderId: orderRecord.id,
-        userId: session.user.id,
-        paystackReference: paymentReference,
-        paystackTransactionId: paymentData.id?.toString(),
-        paystackStatus: paymentData.status,
-        amount: (paymentData.amount / 100).toString(), // Convert from kobo to naira
-        currency: paymentData.currency || "NGN",
-        customerEmail: paymentData.customer?.email || session.user.email,
-        channel: paymentData.channel,
-        gatewayResponse: paymentData.gateway_response,
-        paymentMethod: paymentData.authorization?.brand,
-        webhookData: JSON.stringify(paymentData),
-        verifiedAt: new Date(),
-        verificationStatus: "verified",
-      });
+      // Create or update payment transaction record
+      const existingTransaction = await db
+        .select()
+        .from(cvPaymentTransactions)
+        .where(eq(cvPaymentTransactions.paystackReference, paymentReference))
+        .limit(1);
+
+      if (existingTransaction.length === 0) {
+        // Create new transaction record
+        await db.insert(cvPaymentTransactions).values({
+          orderId: orderRecord.id,
+          userId: session.user.id,
+          paystackReference: paymentReference,
+          paystackTransactionId: paymentData.id?.toString(),
+          paystackStatus: paymentData.status,
+          amount: (paymentData.amount / 100).toString(), // Convert from kobo to naira
+          currency: paymentData.currency || "NGN",
+          customerEmail: paymentData.customer?.email || session.user.email,
+          channel: paymentData.channel,
+          gatewayResponse: paymentData.gateway_response,
+          paymentMethod: paymentData.authorization?.brand,
+          webhookData: JSON.stringify(paymentData),
+          verifiedAt: new Date(),
+          verificationStatus: "verified",
+        });
+        console.log("Created new payment transaction record");
+      } else {
+        // Update existing transaction
+        await db
+          .update(cvPaymentTransactions)
+          .set({
+            paystackTransactionId: paymentData.id?.toString(),
+            paystackStatus: paymentData.status,
+            gatewayResponse: paymentData.gateway_response,
+            paymentMethod: paymentData.authorization?.brand,
+            webhookData: JSON.stringify(paymentData),
+            verifiedAt: new Date(),
+            verificationStatus: "verified",
+            updatedAt: new Date(),
+          })
+          .where(eq(cvPaymentTransactions.paystackReference, paymentReference));
+        console.log("Updated existing payment transaction record");
+      }
 
       return {
         success: true,
@@ -249,8 +281,28 @@ export async function verifyPaymentAndUpdateOrder(
         error: "Payment was not successful",
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Verify payment error:", error);
+    
+    // Handle specific database constraint errors
+    if (error.code === "23505" && error.constraint?.includes("paystack_reference")) {
+      console.log("Payment transaction already exists, attempting to retrieve order");
+      
+      // Try to get the order one more time
+      try {
+        const orderResult = await getOrderByPaymentReference(paymentReference);
+        if (orderResult.success && orderResult.order?.paymentStatus === "successful") {
+          return {
+            success: true,
+            verified: true,
+            order: orderResult.order,
+          };
+        }
+      } catch (retryError) {
+        console.error("Error during retry:", retryError);
+      }
+    }
+    
     return {
       success: false,
       error: "An unexpected error occurred during verification",

@@ -118,13 +118,13 @@ export default function CVOptimizationContent() {
   const handlePaymentSuccess = async (reference: any) => {
     console.log("Payment success callback triggered:", reference);
     console.log("Reference object full:", JSON.stringify(reference, null, 2));
-    
+
     // Extract package info from the payment reference metadata
     const packageType = reference.metadata?.packageType;
-    
+
     console.log("Package type from metadata:", packageType);
     console.log("User session:", session?.user);
-    
+
     if (!packageType || !session?.user) {
       console.error("Missing packageType or user session");
       console.error("packageType:", packageType);
@@ -178,7 +178,7 @@ export default function CVOptimizationContent() {
     // Create a package-specific success handler
     const handlePackagePaymentSuccess = async (reference: any) => {
       console.log("Package-specific payment success:", pkg.id, reference);
-      
+
       if (!session?.user) {
         console.error("User session missing");
         toast.error("User session expired. Please login again.");
@@ -187,8 +187,13 @@ export default function CVOptimizationContent() {
 
       startTransition(async () => {
         try {
-          console.log("Creating order for package:", pkg.id, "with reference:", reference.reference);
-          
+          console.log(
+            "Creating order for package:",
+            pkg.id,
+            "with reference:",
+            reference.reference
+          );
+
           // Create order in database
           const result = await createCVOptimizationOrder(
             pkg.id as "deluxe" | "supreme" | "premium",
@@ -338,12 +343,11 @@ export default function CVOptimizationContent() {
                       className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
                       disabled={!isMounted}
                     >
-                      {!isMounted 
-                        ? "Loading..." 
-                        : session?.user 
-                        ? "Pay Now" 
-                        : "Get started"
-                      }
+                      {!isMounted
+                        ? "Loading..."
+                        : session?.user
+                          ? "Pay Now"
+                          : "Get started"}
                     </motion.button>
                   )}
                 </div>
@@ -451,12 +455,11 @@ export default function CVOptimizationContent() {
                       className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
                       disabled={!isMounted}
                     >
-                      {!isMounted 
-                        ? "Loading..." 
-                        : session?.user 
-                        ? "Pay Now" 
-                        : "Get started"
-                      }
+                      {!isMounted
+                        ? "Loading..."
+                        : session?.user
+                          ? "Pay Now"
+                          : "Get started"}
                     </motion.button>
                   )}
                 </div>
