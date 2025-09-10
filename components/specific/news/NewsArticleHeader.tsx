@@ -23,7 +23,7 @@ export const NewsArticleHeader = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="bg-white dark:bg-[#0D0D0D] border-b border-neutral-200 dark:border-neutral-800"
+      className="bg-white dark:bg-[#0D0D0D] "
     >
       <div className="container mx-auto px-4 py-8">
         {/* Category and Read Time */}
@@ -63,7 +63,7 @@ export const NewsArticleHeader = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8"
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
         >
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
