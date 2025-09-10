@@ -3,28 +3,25 @@
 import { Logo } from "@/components/common/Logo";
 import { Spinner } from "@/components/common/spinner";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import {
+  defaultNavigationConfig,
+  getNavigationClasses,
+} from "@/lib/utils/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  Bell,
+  CircleUserRound,
   LogOut,
   Menu,
   Settings,
   User,
   X,
-  Bell,
-  CircleUserRound,
-  Sun,
-  Moon,
 } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
-import { useSession, signOut } from "next-auth/react";
-import { useTheme } from "next-themes";
-import {
-  defaultNavigationConfig,
-  getNavigationClasses,
-  isNavigationActive,
-} from "@/lib/utils/navigation";
+import { useEffect, useRef, useState } from "react";
 
 const Header = () => {
   const { data: session, status } = useSession();
