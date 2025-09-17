@@ -8,13 +8,17 @@ export type TabType =
   | "Activities"
   | "Bookmarks"
   | "Applications"
-  | "Job Posts";
+  | "Job Posts"
+  | "All posts"
+  | "Videos";
 
 interface TabSwitcherProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
   applicationsCount?: number;
   accountType?: string;
+  customTabs?: TabItem[];
+  removeMargin?: boolean;
 }
 
 interface TabItem {
@@ -46,8 +50,10 @@ export function TabSwitcher({
   onTabChange,
   applicationsCount = 0,
   accountType,
+  customTabs,
+  removeMargin = false,
 }: TabSwitcherProps) {
-  const tabs = getTabsForAccountType(accountType);
+  const tabs = customTabs || getTabsForAccountType(accountType);
 
   const [tabsWithBadge] = useState(() =>
     tabs.map((tab) => {
@@ -64,7 +70,7 @@ export function TabSwitcher({
   const activeTabIndex = tabsWithBadge.findIndex((tab) => tab.id === activeTab);
 
   return (
-    <div className="mx-[30px]">
+    <div className={removeMargin ? "" : "mx-[30px]"}>
       <div className="relative bg-tab-light-bg dark:bg-tab-dark-bg border border-tab-light-border dark:border-tab-dark-border rounded-[10px] p-1">
         {/* Animated Background Slider */}
         <motion.div
