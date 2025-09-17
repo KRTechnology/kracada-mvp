@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import NewsCard from "./NewsCard";
 import NewsPagination from "./NewsPagination";
 
@@ -96,13 +97,15 @@ const NewsSection = () => {
 
             {/* View All Button - Desktop Only */}
             <motion.div variants={itemVariants} className="hidden lg:block">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark px-6 py-3 rounded-xl font-semibold transition-all duration-300"
-              >
-                View all news posts
-              </motion.button>
+              <Link href="/news">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark px-6 py-3 rounded-xl font-semibold transition-all duration-300"
+                >
+                  View all news posts
+                </motion.button>
+              </Link>
             </motion.div>
           </div>
 
@@ -118,13 +121,15 @@ const NewsSection = () => {
 
           {/* Mobile View All Button */}
           <motion.div variants={itemVariants} className="lg:hidden mt-8">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full bg-warm-200 hover:bg-warm-300 text-white dark:text-dark py-4 rounded-xl font-semibold transition-all duration-300"
-            >
-              View all news posts
-            </motion.button>
+            <Link href="/news">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full bg-warm-200 hover:bg-warm-300 text-white dark:text-dark py-4 rounded-xl font-semibold transition-all duration-300"
+              >
+                View all news posts
+              </motion.button>
+            </Link>
           </motion.div>
 
           {/* Mobile Pagination */}
