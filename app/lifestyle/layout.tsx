@@ -1,6 +1,7 @@
 import { LifestyleHeroSection } from "@/components/specific/lifestyle/LifestyleHeroSection";
 import { LifestyleListingHeader } from "@/components/specific/lifestyle/LifestyleListingHeader";
 import { LifestyleHeader } from "@/components/specific/lifestyle/LifestyleHeader";
+import { EntertainmentQuizBanner } from "@/components/specific/entertainment/EntertainmentQuizBanner";
 
 export default function LifestyleLayout({
   children,
@@ -13,6 +14,8 @@ export default function LifestyleLayout({
       <LifestyleListingHeader />
       <LifestyleHeader />
       {children}
+      <EntertainmentQuizBanner />
+
     </div>
   );
 }

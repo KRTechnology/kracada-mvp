@@ -4,6 +4,7 @@ import JobsSection from "@/components/specific/landing/JobsSection";
 import ArticlesSection from "@/components/specific/landing/ArticlesSection";
 import TravelSection from "@/components/specific/landing/TravelSection";
 import { getLatestJobsAction } from "@/app/actions/home-actions";
+import { EntertainmentQuizBanner } from "@/components/specific/entertainment/EntertainmentQuizBanner";
 
 export default async function Home() {
   // Fetch latest jobs data
@@ -14,6 +15,7 @@ export default async function Home() {
     <>
       <HeroSection />
       <NewsSection />
+      <EntertainmentQuizBanner />
       <JobsSection latestJobs={latestJobs} />
       <ArticlesSection />
       <TravelSection />
