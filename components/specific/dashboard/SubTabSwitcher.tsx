@@ -6,12 +6,14 @@ import { motion } from "framer-motion";
 export type SubTabType = "Jobs" | "Articles" | "Videos" | "Hotels";
 export type JobPostsSubTabType = "Active Jobs" | "Closed Jobs";
 export type LifestyleSubTabType = "All posts" | "Videos";
+export type HotelsRestaurantsSubTabType = "Hotels" | "Restaurants";
 
 // Union type for all possible sub-tab types
 export type AllSubTabType =
   | SubTabType
   | JobPostsSubTabType
-  | LifestyleSubTabType;
+  | LifestyleSubTabType
+  | HotelsRestaurantsSubTabType;
 
 interface SubTabSwitcherProps {
   activeTab: AllSubTabType;

@@ -88,9 +88,10 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
               {/* Price */}
               <div className="mb-2">
                 <span className="text-lg font-bold text-neutral-800 dark:text-neutral-200">
-                  ${travel.price}{" "}
+                  {travel.currency === "NGN" ? "₦" : "$"}
+                  {travel.price.toLocaleString()}{" "}
                   <span className="text-sm font-normal text-neutral-600 dark:text-neutral-400">
-                    {travel.currency} total
+                    {travel.currency === "NGN" ? "NGN" : travel.currency} total
                   </span>
                 </span>
               </div>
@@ -162,9 +163,10 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
             {/* Price */}
             <div className="mb-2">
               <span className="text-lg font-bold text-neutral-800 dark:text-neutral-200">
-                ${travel.price}{" "}
+                {travel.currency === "NGN" ? "₦" : "$"}
+                {travel.price.toLocaleString()}{" "}
                 <span className="text-sm font-normal text-neutral-600 dark:text-neutral-400">
-                  {travel.currency} total
+                  {travel.currency === "NGN" ? "NGN" : travel.currency} total
                 </span>
               </span>
             </div>

@@ -64,7 +64,7 @@ export function Pagination({
         whileTap={{ scale: 0.95 }}
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-warm-200 dark:hover:text-warm-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         <ChevronLeft className="w-4 h-4 mr-1" />
         Previous
@@ -81,10 +81,10 @@ export function Pagination({
             disabled={page === "..."}
             className={`px-3 py-2 text-sm font-medium rounded-full transition-colors ${
               page === currentPage
-                ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                ? "bg-gradient-to-r from-warm-200 to-peach-200 text-white shadow-lg"
                 : page === "..."
                   ? "text-neutral-500 dark:text-neutral-400 cursor-default"
-                  : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                  : "text-neutral-600 dark:text-neutral-400 hover:text-warm-200 dark:hover:text-warm-200 hover:bg-warm-50 dark:hover:bg-warm-900/10"
             }`}
           >
             {page}
@@ -98,7 +98,7 @@ export function Pagination({
         whileTap={{ scale: 0.95 }}
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="flex items-center px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-warm-200 dark:hover:text-warm-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         Next
         <ChevronRight className="w-4 h-4 ml-1" />

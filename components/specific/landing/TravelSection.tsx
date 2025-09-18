@@ -110,13 +110,14 @@ const TravelSection = () => {
 
             {/* View All Button - Desktop Only */}
             <motion.div variants={itemVariants} className="hidden lg:block">
-              <motion.button
+              <motion.a
+                href="/travel-tourism"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark px-6 py-3 rounded-xl font-semibold transition-all duration-300"
+                className="inline-block bg-warm-200 hover:bg-warm-300 text-white dark:text-dark px-6 py-3 rounded-xl font-semibold transition-all duration-300"
               >
                 Go to travel & tourism
-              </motion.button>
+              </motion.a>
             </motion.div>
           </div>
 
@@ -132,13 +133,14 @@ const TravelSection = () => {
 
           {/* Mobile View All Button */}
           <motion.div variants={itemVariants} className="lg:hidden mt-8">
-            <motion.button
+            <motion.a
+              href="/travel-tourism"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full bg-warm-200 hover:bg-warm-300 text-white dark:text-dark py-4 rounded-xl font-semibold transition-all duration-300"
+              className="block w-full bg-warm-200 hover:bg-warm-300 text-white dark:text-dark py-4 rounded-xl font-semibold transition-all duration-300 text-center"
             >
               Go to travel & tourism
-            </motion.button>
+            </motion.a>
           </motion.div>
         </motion.div>
       </div>

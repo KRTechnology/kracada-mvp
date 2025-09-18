@@ -13,8 +13,8 @@ export type TabType =
   | "Videos";
 
 interface TabSwitcherProps {
-  activeTab: TabType;
-  onTabChange: (tab: TabType) => void;
+  activeTab: any;
+  onTabChange: (tab: any) => void;
   applicationsCount?: number;
   accountType?: string;
   customTabs?: TabItem[];
@@ -22,7 +22,7 @@ interface TabSwitcherProps {
 }
 
 interface TabItem {
-  id: TabType;
+  id: any;
   label: string;
   badge?: number;
 }

@@ -1,17 +1,12 @@
 "use client";
 
+import { TabType } from "@/components/specific/dashboard/TabSwitcher";
 import { motion } from "framer-motion";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/common/button";
-import {
-  TabSwitcher,
-  TabType,
-} from "@/components/specific/dashboard/TabSwitcher";
 import { LifestyleArticleCard } from "./LifestyleArticleCard";
+import { Pagination } from "@/components/common/Pagination";
 import { LifestyleVideoCard } from "./LifestyleVideoCard";
-import { LifestylePagination } from "./LifestylePagination";
 
 // Types for content items
 interface LifestyleArticle {
@@ -445,7 +440,7 @@ export const LifestyleListingSection = ({
         </motion.div>
 
         {/* Pagination */}
-        <LifestylePagination
+        <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
