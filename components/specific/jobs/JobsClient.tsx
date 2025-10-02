@@ -63,16 +63,6 @@ export function JobsClient({ initialJobs, locations }: JobsClientProps) {
     setIsLocationDropdownOpen(false);
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 pt-20">
       <div className="container mx-auto px-4 py-8 bg-white dark:bg-neutral-900 rounded-lg">
@@ -172,31 +162,38 @@ export function JobsClient({ initialJobs, locations }: JobsClientProps) {
 
         {/* Job Cards Grid */}
         <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
         >
-          <AnimatePresence mode="wait">
-            {currentJobs.length > 0 ? (
-              currentJobs.map((job, index) => (
-                <JobCard key={job.id} job={job} index={index} />
-              ))
-            ) : (
+          {currentJobs.length > 0 ? (
+            currentJobs.map((job, index) => (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="col-span-full text-center py-12"
+                key={job.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="h-full"
               >
-                <div className="text-neutral-500 dark:text-neutral-400 text-lg">
-                  No jobs found matching your criteria.
-                </div>
-                <div className="text-neutral-400 dark:text-neutral-500 text-sm mt-2">
-                  Try adjusting your search terms or location filter.
-                </div>
+                <JobCard job={job} index={index} />
               </motion.div>
-            )}
-          </AnimatePresence>
+            ))
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}
+              className="col-span-full text-center py-12"
+            >
+              <div className="text-neutral-500 dark:text-neutral-400 text-lg">
+                No jobs found matching your criteria.
+              </div>
+              <div className="text-neutral-400 dark:text-neutral-500 text-sm mt-2">
+                Try adjusting your search terms or location filter.
+              </div>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Pagination */}

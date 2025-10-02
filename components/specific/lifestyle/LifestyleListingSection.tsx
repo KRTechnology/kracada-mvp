@@ -424,19 +424,23 @@ export const LifestyleListingSection = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
         >
-          {currentArticles.map((item, index) =>
-            activeTab === "Videos" || item.isVideo ? (
-              <LifestyleVideoCard key={item.id} video={item} index={index} />
-            ) : (
-              <LifestyleArticleCard
-                key={item.id}
-                article={item}
-                index={index}
-              />
-            )
-          )}
+          {currentArticles.map((item, index) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="h-full"
+            >
+              {activeTab === "Videos" || item.isVideo ? (
+                <LifestyleVideoCard video={item} index={index} />
+              ) : (
+                <LifestyleArticleCard article={item} index={index} />
+              )}
+            </motion.div>
+          ))}
         </motion.div>
 
         {/* Pagination */}

@@ -83,27 +83,10 @@ const JobCard = ({ job, index, showBookmarkButton = true }: JobCardProps) => {
       setIsBookmarkLoading(false);
     }
   };
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut",
-        delay: index * 0.1,
-      },
-    },
-  };
-
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
+    <div
       onClick={handleCardClick}
-      className="bg-white dark:bg-[#121212] border border-neutral-50 dark:border-[#232020] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative"
+      className="bg-white dark:bg-[#121212] border border-neutral-50 dark:border-[#232020] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative h-full flex flex-col"
     >
       {/* Action Buttons - positioned outside the hover scale container */}
       <div className="absolute top-6 right-6 z-10 flex items-center gap-2">
@@ -147,7 +130,7 @@ const JobCard = ({ job, index, showBookmarkButton = true }: JobCardProps) => {
       <motion.div
         whileHover={{ scale: 1.02 }}
         transition={{ duration: 0.3 }}
-        className="h-full"
+        className="flex-1 flex flex-col"
       >
         {/* Company Logo */}
         <div className="w-12 h-12 mb-4 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center overflow-hidden">
@@ -183,12 +166,12 @@ const JobCard = ({ job, index, showBookmarkButton = true }: JobCardProps) => {
         </div>
 
         {/* Job Description */}
-        <p className="text-neutral-600 dark:text-white text-sm leading-relaxed mb-6 line-clamp-3">
+        <p className="text-neutral-600 dark:text-white text-sm leading-relaxed mb-6 line-clamp-3 flex-1">
           {job.description}
         </p>
 
         {/* Skills Tags */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mt-auto">
           {job.skills.map((skill, skillIndex) => (
             <span
               key={skillIndex}
@@ -199,7 +182,7 @@ const JobCard = ({ job, index, showBookmarkButton = true }: JobCardProps) => {
           ))}
         </div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 };
 

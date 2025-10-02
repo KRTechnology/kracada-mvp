@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { NewsArticleCard } from "./NewsArticleCard";
-import { NewsPagination } from "./NewsPagination";
+import { Pagination } from "@/components/common/Pagination";
 
 // Sample news data - in a real app, this would come from an API
 const newsData = [
@@ -222,15 +222,23 @@ export const NewsListingSection = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
         >
           {currentArticles.map((article, index) => (
-            <NewsArticleCard key={article.id} article={article} index={index} />
+            <motion.div
+              key={article.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="h-full"
+            >
+              <NewsArticleCard article={article} index={index} />
+            </motion.div>
           ))}
         </motion.div>
 
         {/* Pagination */}
-        <NewsPagination
+        <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}

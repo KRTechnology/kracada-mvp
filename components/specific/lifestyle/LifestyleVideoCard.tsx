@@ -23,13 +23,8 @@ interface LifestyleVideoCardProps {
 
 export function LifestyleVideoCard({ video, index }: LifestyleVideoCardProps) {
   return (
-    <Link href={`/lifestyle/${video.id}`}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: index * 0.1 }}
-        className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer"
-      >
+    <Link href={`/lifestyle/${video.id}`} className="h-full">
+      <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer h-full flex flex-col">
         {/* Video Thumbnail with Play Button */}
         <div className="relative w-full h-48 overflow-hidden">
           <Image
@@ -76,7 +71,7 @@ export function LifestyleVideoCard({ video, index }: LifestyleVideoCardProps) {
         </div>
 
         {/* Video Content */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 flex-1 flex flex-col">
           {/* Author and Date */}
           <div className="flex items-center text-sm">
             <span className="text-orange-500 font-medium">{video.author}</span>
@@ -97,12 +92,12 @@ export function LifestyleVideoCard({ video, index }: LifestyleVideoCardProps) {
           </div>
 
           {/* Description */}
-          <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed">
+          <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed flex-1">
             {video.description}
           </p>
 
           {/* Categories */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mt-auto">
             {video.categories.map((category, categoryIndex) => (
               <span
                 key={categoryIndex}
@@ -117,7 +112,7 @@ export function LifestyleVideoCard({ video, index }: LifestyleVideoCardProps) {
             ))}
           </div>
         </div>
-      </motion.div>
+      </div>
     </Link>
   );
 }

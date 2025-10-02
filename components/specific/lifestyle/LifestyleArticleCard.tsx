@@ -25,13 +25,8 @@ export function LifestyleArticleCard({
   index,
 }: LifestyleArticleCardProps) {
   return (
-    <Link href={`/lifestyle/${article.id}`}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: index * 0.1 }}
-        className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer"
-      >
+    <Link href={`/lifestyle/${article.id}`} className="h-full">
+      <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer h-full flex flex-col">
         {/* Article Image */}
         <div className="relative w-full h-48 overflow-hidden">
           <Image
@@ -43,7 +38,7 @@ export function LifestyleArticleCard({
         </div>
 
         {/* Article Content */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 flex-1 flex flex-col">
           {/* Author and Date */}
           <div className="flex items-center text-sm">
             <span className="text-orange-500 font-medium">
@@ -66,12 +61,12 @@ export function LifestyleArticleCard({
           </div>
 
           {/* Description */}
-          <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed">
+          <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed flex-1">
             {article.description}
           </p>
 
           {/* Categories */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mt-auto">
             {article.categories.map((category, categoryIndex) => (
               <span
                 key={categoryIndex}
@@ -86,7 +81,7 @@ export function LifestyleArticleCard({
             ))}
           </div>
         </div>
-      </motion.div>
+      </div>
     </Link>
   );
 }
