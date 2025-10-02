@@ -24,27 +24,8 @@ interface TravelCardProps {
 }
 
 const TravelCard = ({ travel, index }: TravelCardProps) => {
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut",
-        delay: index * 0.1,
-      },
-    },
-  };
-
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      className="bg-white dark:bg-[#121212] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative"
-    >
+    <div className="bg-white dark:bg-[#121212] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative h-full flex flex-col">
       {/* Heart Icon - positioned on card */}
       <div className="absolute top-4 right-4 z-10">
         <motion.button
@@ -56,11 +37,7 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
         </motion.button>
       </div>
 
-      <motion.div
-        whileHover={{ scale: 1.01 }}
-        transition={{ duration: 0.3 }}
-        className="h-full"
-      >
+      <div className="h-full flex-1 flex flex-col">
         {/* Desktop Layout */}
         <div className="hidden lg:flex">
           {/* Image */}
@@ -83,8 +60,8 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
           </div>
 
           {/* Content */}
-          <div className="flex-1 p-6 pr-12">
-            <div className="h-full flex flex-col">
+          <div className="flex-1 p-6 pr-12 flex flex-col">
+            <div className="h-full flex flex-col flex-1">
               {/* Price */}
               <div className="mb-2">
                 <span className="text-lg font-bold text-neutral-800 dark:text-neutral-200">
@@ -159,7 +136,7 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
           </div>
 
           {/* Content */}
-          <div className="p-6 pr-12">
+          <div className="p-6 pr-12 flex-1 flex flex-col">
             {/* Price */}
             <div className="mb-2">
               <span className="text-lg font-bold text-neutral-800 dark:text-neutral-200">
@@ -204,14 +181,14 @@ const TravelCard = ({ travel, index }: TravelCardProps) => {
             </div>
 
             {/* Location */}
-            <div className="flex items-center text-neutral-600 dark:text-neutral-400">
+            <div className="flex items-center text-neutral-600 dark:text-neutral-400 mt-auto">
               <MapPin className="w-4 h-4 mr-1" />
               <span className="text-sm">{travel.location}</span>
             </div>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 

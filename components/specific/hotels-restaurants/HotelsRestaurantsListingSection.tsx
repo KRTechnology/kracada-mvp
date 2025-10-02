@@ -3,7 +3,7 @@
 import { HotelsRestaurantsSubTabType } from "@/components/specific/dashboard/SubTabSwitcher";
 import { motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { HotelCard } from "./HotelCard";
 import { RestaurantCard } from "./RestaurantCard";
 import { Pagination } from "@/components/common/Pagination";
@@ -579,6 +579,7 @@ export const HotelsRestaurantsListingSection = ({
   const pathname = usePathname();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+  const sectionRef = useRef<HTMLElement>(null);
 
   // Get data based on active tab
   const getData = () => {
@@ -596,7 +597,15 @@ export const HotelsRestaurantsListingSection = ({
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // In a real app, you would fetch new data here
+    // Scroll to the section start instead of top
+    if (sectionRef.current) {
+      const sectionTop = sectionRef.current.offsetTop;
+      const offset = 100; // Add some offset from the top
+      window.scrollTo({
+        top: sectionTop - offset,
+        behavior: "smooth",
+      });
+    }
   };
 
   // Get current page items
@@ -605,7 +614,7 @@ export const HotelsRestaurantsListingSection = ({
   const currentItems = data.slice(startIndex, endIndex);
 
   return (
-    <section className="bg-white dark:bg-dark">
+    <section ref={sectionRef} className="bg-white dark:bg-dark">
       <div className="container mx-auto px-4 py-12">
         {/* Search and Filter Section */}
         <motion.div
@@ -678,19 +687,23 @@ export const HotelsRestaurantsListingSection = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
         >
-          {currentItems.map((item, index) =>
-            activeTab === "Restaurants" ? (
-              <RestaurantCard
-                key={item.id}
-                restaurant={item as Restaurant}
-                index={index}
-              />
-            ) : (
-              <HotelCard key={item.id} hotel={item as Hotel} index={index} />
-            )
-          )}
+          {currentItems.map((item, index) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="h-full"
+            >
+              {activeTab === "Restaurants" ? (
+                <RestaurantCard restaurant={item as Restaurant} index={index} />
+              ) : (
+                <HotelCard hotel={item as Hotel} index={index} />
+              )}
+            </motion.div>
+          ))}
         </motion.div>
 
         {/* Pagination */}

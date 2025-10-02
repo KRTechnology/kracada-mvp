@@ -47,12 +47,9 @@ export const HotelCard = ({ hotel, index }: HotelCardProps) => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
+    <div
       onClick={handleCardClick}
-      className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group cursor-pointer border border-neutral-100 dark:border-neutral-700 hover:-translate-y-1"
+      className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group cursor-pointer border border-neutral-100 dark:border-neutral-700 hover:-translate-y-1 h-full flex flex-col"
     >
       {/* Image Container */}
       <div className="relative h-48 md:h-56 overflow-hidden">
@@ -89,7 +86,7 @@ export const HotelCard = ({ hotel, index }: HotelCardProps) => {
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-6 flex-1 flex flex-col">
         {/* Header */}
         <div className="mb-3">
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1 line-clamp-1">
@@ -144,7 +141,7 @@ export const HotelCard = ({ hotel, index }: HotelCardProps) => {
         </div>
 
         {/* Price */}
-        <div className="flex items-center justify-between pt-4 border-t border-neutral-100 dark:border-neutral-700">
+        <div className="flex items-center justify-between pt-4 border-t border-neutral-100 dark:border-neutral-700 mt-auto">
           <div>
             <span className="text-2xl font-bold bg-gradient-to-r from-warm-200 to-peach-200 bg-clip-text text-transparent">
               {hotel.currency}
@@ -159,6 +156,6 @@ export const HotelCard = ({ hotel, index }: HotelCardProps) => {
           </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

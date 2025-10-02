@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/common/select";
-import { Pagination } from "@/components/specific/dashboard/Pagination";
+import { Pagination } from "@/components/common/Pagination";
 
 // Sample entertainment articles data
 const entertainmentArticlesData = [
@@ -248,13 +248,8 @@ interface ArticleCardProps {
 
 const ArticleCard = ({ article, index }: ArticleCardProps) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      className="group cursor-pointer"
-    >
-      <div className="bg-white dark:bg-neutral-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-neutral-100 dark:border-neutral-700">
+    <div className="group cursor-pointer h-full">
+      <div className="bg-white dark:bg-neutral-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-neutral-100 dark:border-neutral-700 h-full flex flex-col">
         {/* Image */}
         <div className="relative h-48 overflow-hidden">
           <img
@@ -266,7 +261,7 @@ const ArticleCard = ({ article, index }: ArticleCardProps) => {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 flex-1 flex flex-col">
           {/* Author and Date */}
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm font-medium text-orange-500">
@@ -283,12 +278,12 @@ const ArticleCard = ({ article, index }: ArticleCardProps) => {
           </h3>
 
           {/* Description */}
-          <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-4 line-clamp-3">
+          <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-4 line-clamp-3 flex-1">
             {article.description}
           </p>
 
           {/* Categories */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mt-auto">
             {article.categories.slice(0, 2).map((category, index) => (
               <span
                 key={index}
@@ -300,7 +295,7 @@ const ArticleCard = ({ article, index }: ArticleCardProps) => {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -310,6 +305,7 @@ export const EntertainmentTrendingArticles = () => {
   const [sortBy, setSortBy] = useState("date");
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 6;
+  const sectionRef = useRef<HTMLElement>(null);
 
   // Filter and sort articles based on current state
   const filteredArticles = entertainmentArticlesData.filter((article) => {
@@ -332,11 +328,19 @@ export const EntertainmentTrendingArticles = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Scroll to the section start instead of top
+    if (sectionRef.current) {
+      const sectionTop = sectionRef.current.offsetTop;
+      const offset = 100; // Add some offset from the top
+      window.scrollTo({
+        top: sectionTop - offset,
+        behavior: "smooth",
+      });
+    }
   };
 
   return (
-    <section className="py-8 lg:py-12">
+    <section ref={sectionRef} className="py-8 lg:py-12">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -421,10 +425,18 @@ export const EntertainmentTrendingArticles = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
         >
           {currentArticles.map((article, index) => (
-            <ArticleCard key={article.id} article={article} index={index} />
+            <motion.div
+              key={article.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="h-full"
+            >
+              <ArticleCard article={article} index={index} />
+            </motion.div>
           ))}
         </motion.div>
 

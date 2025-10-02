@@ -50,12 +50,9 @@ export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
+    <div
       onClick={handleCardClick}
-      className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group cursor-pointer border border-neutral-100 dark:border-neutral-700 hover:-translate-y-1"
+      className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group cursor-pointer border border-neutral-100 dark:border-neutral-700 hover:-translate-y-1 h-full flex flex-col"
     >
       {/* Image Container */}
       <div className="relative h-48 md:h-56 overflow-hidden">
@@ -92,7 +89,7 @@ export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-6 flex-1 flex flex-col">
         {/* Header */}
         <div className="mb-3">
           <div className="flex items-start justify-between mb-1">
@@ -148,7 +145,7 @@ export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
         </div>
 
         {/* Details */}
-        <div className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-700">
+        <div className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-700 mt-auto">
           <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
             <Clock className="w-4 h-4 text-warm-200" />
             <span>{restaurant.openingHours}</span>
@@ -167,6 +164,6 @@ export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
