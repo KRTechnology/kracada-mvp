@@ -359,10 +359,10 @@ export const LifestyleAuthorSidebar = ({
                       {[1, 2, 3].map((i) => (
                         <div
                           key={i}
-                          className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 animate-pulse"
+                          className="p-4 rounded-xl bg-gradient-to-br from-orange-50 to-purple-50 dark:from-orange-900/10 dark:to-purple-900/10 border border-orange-100 dark:border-orange-900/20 animate-pulse"
                         >
-                          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded mb-2" />
-                          <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2" />
+                          <div className="h-4 bg-gradient-to-r from-orange-200 to-purple-200 dark:from-orange-800/50 dark:to-purple-800/50 rounded-lg mb-3 shadow-sm" />
+                          <div className="h-3 bg-gradient-to-r from-orange-100 to-purple-100 dark:from-orange-900/30 dark:to-purple-900/30 rounded-lg w-2/3" />
                         </div>
                       ))}
                     </div>
