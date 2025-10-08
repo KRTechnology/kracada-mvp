@@ -36,6 +36,7 @@ const Header = () => {
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const user = session?.user;
+  const isAdmin = (session?.user as any)?.isAdmin === true;
   const isLoading = status === "loading";
 
   const isLoginPage = pathname === "/login";
@@ -80,7 +81,9 @@ const Header = () => {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
-      await signOut({ callbackUrl: "/" });
+      // Redirect admins to admin login, regular users to home
+      const callbackUrl = isAdmin ? "/admin/login" : "/";
+      await signOut({ callbackUrl });
 
       // Close menus
       setIsProfileMenuOpen(false);
@@ -225,14 +228,25 @@ const Header = () => {
 
                         {/* Menu Items */}
                         <div className="space-y-1">
-                          <Link
-                            href="/dashboard"
-                            className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors"
-                            onClick={() => setIsProfileMenuOpen(false)}
-                          >
-                            <CircleUserRound className="w-5 h-5" />
-                            <span>View profile</span>
-                          </Link>
+                          {isAdmin ? (
+                            <Link
+                              href="/admin/dashboard"
+                              className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors"
+                              onClick={() => setIsProfileMenuOpen(false)}
+                            >
+                              <CircleUserRound className="w-5 h-5" />
+                              <span>Admin Dashboard</span>
+                            </Link>
+                          ) : (
+                            <Link
+                              href="/dashboard"
+                              className="flex items-center space-x-3 px-3 py-3 text-neutral-700 dark:text-neutral-300 hover:text-warm-200 dark:hover:text-warm-200 rounded-xl transition-colors"
+                              onClick={() => setIsProfileMenuOpen(false)}
+                            >
+                              <CircleUserRound className="w-5 h-5" />
+                              <span>View profile</span>
+                            </Link>
+                          )}
 
                           <Link
                             href="/settings"
@@ -397,14 +411,25 @@ const Header = () => {
                       </p>
                     </div>
                   </div>
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center space-x-2 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User className="w-5 h-5" />
-                    <span>Profile</span>
-                  </Link>
+                  {isAdmin ? (
+                    <Link
+                      href="/admin/dashboard"
+                      className="flex items-center space-x-2 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <User className="w-5 h-5" />
+                      <span>Admin Dashboard</span>
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center space-x-2 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <User className="w-5 h-5" />
+                      <span>Profile</span>
+                    </Link>
+                  )}
                   <Link
                     href="/settings"
                     className="flex items-center space-x-2 px-4 py-3 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"

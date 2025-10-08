@@ -1,4 +1,5 @@
 export * from "./users";
+export * from "./admins";
 export * from "./experiences";
 export * from "./notification-preferences";
 export * from "./sessions";

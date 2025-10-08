@@ -6,15 +6,17 @@ import { Moon, Sun, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 
 interface ThemeToggleProps {
-  variant?: "icon-only" | "dropdown" | "inline";
+  variant?: "icon-only" | "dropdown" | "inline" | "toggle";
   size?: "sm" | "md" | "lg";
   className?: string;
+  label?: string;
 }
 
 export function ThemeToggle({
   variant = "icon-only",
   size = "md",
   className = "",
+  label = "Dark Mode",
 }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -74,6 +76,31 @@ export function ThemeToggle({
         return "text-sm";
     }
   };
+
+  if (variant === "toggle") {
+    const isDark = theme === "dark";
+    return (
+      <div className={`flex items-center justify-between ${className}`}>
+        <span className="text-sm text-neutral-700 dark:text-neutral-300">
+          {label}
+        </span>
+        <button
+          onClick={() => handleThemeChange(isDark ? "light" : "dark")}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-warm-200 focus:ring-offset-2 ${
+            isDark ? "bg-warm-200" : "bg-neutral-200"
+          }`}
+          role="switch"
+          aria-checked={isDark}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              isDark ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
+      </div>
+    );
+  }
 
   if (variant === "inline") {
     return (

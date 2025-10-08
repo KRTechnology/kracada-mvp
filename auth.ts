@@ -2,6 +2,7 @@ import { authConfig } from "@/auth.config";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authService } from "@/lib/auth/auth-service";
+import { adminAuthService } from "@/lib/auth/admin-auth-service";
 import {
   createUserSession,
   updateSessionLastActive,
@@ -17,6 +18,8 @@ type ExtendedUser = {
   name: string;
   accountType: string;
   emailVerified: boolean;
+  isAdmin?: boolean;
+  adminRole?: string;
 };
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
@@ -32,8 +35,46 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
           const email = credentials.email as string;
           const password = credentials.password as string;
+          const isAdminLogin = credentials.isAdmin === "true";
 
-          // Authenticate user with email and password
+          // If admin login, authenticate as admin
+          if (isAdminLogin) {
+            console.log("🔐 Admin login attempt for:", email);
+
+            const admin = await adminAuthService.authenticateAdmin(
+              email,
+              password
+            );
+
+            if (!admin) {
+              console.log("❌ Invalid admin credentials");
+              return null;
+            }
+
+            // Return the admin object (will be stored in the session)
+            const authUser = {
+              id: admin.id,
+              email: admin.email,
+              name: `${admin.firstName} ${admin.lastName}`,
+            };
+
+            // Store custom properties in a way NextAuth can process
+            (authUser as any).isAdmin = true;
+            (authUser as any).adminRole = admin.role;
+            (authUser as any).accountType = "Admin";
+            (authUser as any).emailVerified = true;
+
+            console.log("✅ Admin authenticated, returning user:", {
+              id: authUser.id,
+              email: authUser.email,
+              isAdmin: (authUser as any).isAdmin,
+              adminRole: (authUser as any).adminRole,
+            });
+
+            return authUser;
+          }
+
+          // Otherwise, authenticate as regular user
           const user = await authService.authenticateUser(email, password);
 
           if (!user) {
@@ -51,6 +92,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           // Store custom properties in a way NextAuth can process
           (authUser as any).accountType = user.accountType;
           (authUser as any).emailVerified = user.emailVerified;
+          (authUser as any).isAdmin = false;
 
           return authUser;
         } catch (error) {
@@ -64,14 +106,29 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     // Add JWT callback to include custom user data in token
     async jwt({ token, user, trigger, session }) {
       if (user) {
+        console.log("🔑 JWT callback - setting token from user:", {
+          userId: user.id,
+          isAdmin: (user as any).isAdmin,
+          adminRole: (user as any).adminRole,
+        });
+
         token.id = user.id;
         // Use type assertion to handle custom properties
         token.accountType = (user as any).accountType;
         token.emailVerified = (user as any).emailVerified;
+        token.isAdmin = (user as any).isAdmin;
+        token.adminRole = (user as any).adminRole;
       }
 
-      // Update session last active on each request
-      if (token.sub && token.jti) {
+      console.log("🔑 JWT callback - final token:", {
+        id: token.id,
+        email: token.email,
+        isAdmin: token.isAdmin,
+        adminRole: token.adminRole,
+      });
+
+      // Update session last active on each request (skip for admins)
+      if (token.sub && token.jti && !token.isAdmin) {
         try {
           await updateSessionLastActive(token.jti as string);
         } catch (error) {
@@ -83,17 +140,35 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     },
     // Add session callback to make user data available client-side
     async session({ session, token }) {
+      console.log("📋 Session callback - token data:", {
+        tokenIsAdmin: token.isAdmin,
+        tokenAdminRole: token.adminRole,
+      });
+
       if (session.user) {
         session.user.id = token.id as string;
         // Add custom properties to session
         (session.user as any).accountType = token.accountType;
         (session.user as any).emailVerified = token.emailVerified;
+        (session.user as any).isAdmin = token.isAdmin;
+        (session.user as any).adminRole = token.adminRole;
       }
+
+      console.log("📋 Session callback - final session:", {
+        userId: session.user?.id,
+        userEmail: session.user?.email,
+        isAdmin: (session.user as any)?.isAdmin,
+        adminRole: (session.user as any)?.adminRole,
+      });
+
       return session;
     },
     // Add signIn callback to create session record
     async signIn({ user, account, profile, email, credentials }) {
-      if (user?.id) {
+      // Skip session tracking for admin users
+      const isAdminLogin = (credentials as any)?.isAdmin === "true";
+
+      if (user?.id && !isAdminLogin) {
         try {
           // Get request headers for user agent and IP
           const headersList = await headers();
