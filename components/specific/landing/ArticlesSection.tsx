@@ -4,8 +4,13 @@ import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import ArticleCard from "./ArticleCard";
+import { HomePageLifestylePost } from "@/app/actions/home-actions";
 
-const ArticlesSection = () => {
+interface ArticlesSectionProps {
+  latestPosts: HomePageLifestylePost[];
+}
+
+const ArticlesSection = ({ latestPosts }: ArticlesSectionProps) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -28,48 +33,6 @@ const ArticlesSection = () => {
       },
     },
   };
-
-  // Sample articles data
-  const articlesData: Array<{
-    id: number;
-    author: string;
-    date: string;
-    title: string;
-    description: string;
-    image: string;
-    categories: string[];
-  }> = [
-    {
-      id: 1,
-      author: "Alec Whitten",
-      date: "17 Jan 2025",
-      title: "Bill Walsh leadership lessons",
-      description:
-        "Like to know the secrets of transforming a 2-14 team into a 3x Super Bowl winning Dynasty?",
-      image: "/images/news-sample-image.jpg",
-      categories: ["Leadership", "Management"],
-    },
-    {
-      id: 2,
-      author: "Demi Wilkinson",
-      date: "16 Jan 2025",
-      title: "PM mental models",
-      description:
-        "Mental models are simple expressions of complex processes or relationships.",
-      image: "/images/landing-hero-image.jpg",
-      categories: ["Product", "Research", "Frameworks"],
-    },
-    {
-      id: 3,
-      author: "Alec Whitten",
-      date: "17 Jan 2025",
-      title: "Bill Walsh leadership lessons",
-      description:
-        "Like to know the secrets of transforming a 2-14 team into a 3x Super Bowl winning Dynasty?",
-      image: "/images/news-sample-image.jpg",
-      categories: ["Leadership", "Management"],
-    },
-  ];
 
   return (
     <section className="py-16 lg:py-24 bg-[#585251] dark:bg-neutral-900">
@@ -106,14 +69,25 @@ const ArticlesSection = () => {
           </div>
 
           {/* Articles Cards Grid */}
-          <motion.div
-            variants={itemVariants}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
-          >
-            {articlesData.map((article, index) => (
-              <ArticleCard key={article.id} article={article} index={index} />
-            ))}
-          </motion.div>
+          {latestPosts.length > 0 ? (
+            <motion.div
+              variants={itemVariants}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
+            >
+              {latestPosts.map((article, index) => (
+                <ArticleCard key={article.id} article={article} index={index} />
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div variants={itemVariants} className="text-center py-12">
+              <p className="text-[#FFECE8] dark:text-neutral-200 text-lg">
+                No lifestyle articles available at the moment.
+              </p>
+              <p className="text-[#FFECE8]/80 dark:text-neutral-400 text-sm mt-2">
+                Check back later for inspiring lifestyle content!
+              </p>
+            </motion.div>
+          )}
 
           {/* Mobile View All Button */}
           <motion.div variants={itemVariants} className="lg:hidden mt-8">

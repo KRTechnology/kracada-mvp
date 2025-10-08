@@ -92,6 +92,13 @@
       "when": 1757166651075,
       "tag": "0012_solid_kate_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1759858232502,
+      "tag": "0013_low_aaron_stack",
+      "breakpoints": true
     }
   ]
 }

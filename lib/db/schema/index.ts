@@ -6,4 +6,5 @@ export * from "./jobs";
 export * from "./cvs";
 export * from "./bookmarks";
 export * from "./cv-optimization";
+export * from "./lifestyle-posts";
 // export * from "./indexes"; // Temporarily commented out to fix Drizzle Studio

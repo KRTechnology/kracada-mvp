@@ -8,10 +8,12 @@ import {
   TabSwitcher,
   TabType,
 } from "@/components/specific/dashboard/TabSwitcher";
+import { useSession } from "next-auth/react";
 
 export const LifestyleHeader = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session } = useSession();
 
   // Determine active tab based on pathname
   const getActiveTab = (): TabType => {
@@ -32,6 +34,10 @@ export const LifestyleHeader = () => {
     { id: "Videos" as TabType, label: "Videos" },
   ];
 
+  // Check if user is a Contributor
+  const isContributor =
+    session?.user && (session.user as any).accountType === "Contributor";
+
   return (
     <div className="bg-white dark:bg-dark">
       <div className="container mx-auto px-4 py-8">
@@ -46,15 +52,17 @@ export const LifestyleHeader = () => {
             All Lifestyle Posts
           </h2>
 
-          <Button
-            onClick={() => {
-              // TODO: Implement create lifestyle post functionality
-            }}
-            className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-3 rounded-lg transition-colors flex items-center gap-2 shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Create a lifestyle post
-          </Button>
+          {isContributor && (
+            <Button
+              onClick={() => {
+                router.push("/lifestyle/create");
+              }}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-3 rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Create a lifestyle post
+            </Button>
+          )}
         </motion.div>
 
         {/* Tab Switcher */}

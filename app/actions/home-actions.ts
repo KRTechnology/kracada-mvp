@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db/drizzle";
-import { jobs, jobApplications, users } from "@/lib/db/schema";
+import { jobs, jobApplications, users, lifestylePosts } from "@/lib/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
@@ -248,6 +248,87 @@ export async function getAllActiveJobsAction(): Promise<{
     return {
       success: false,
       message: "Failed to fetch jobs",
+    };
+  }
+}
+
+// Types for home page lifestyle posts data
+export interface HomePageLifestylePost {
+  id: string;
+  slug: string;
+  author: string;
+  date: string;
+  title: string;
+  description: string;
+  image: string;
+  categories: string[];
+}
+
+// Fetch latest 6 published lifestyle posts for home page
+export async function getLatestLifestylePostsAction(): Promise<{
+  success: boolean;
+  data?: HomePageLifestylePost[];
+  message?: string;
+}> {
+  try {
+    // Fetch latest 6 published lifestyle posts with author info, ordered by publication date
+    const latestPosts = await db
+      .select({
+        id: lifestylePosts.id,
+        slug: lifestylePosts.slug,
+        title: lifestylePosts.title,
+        description: lifestylePosts.description,
+        featuredImage: lifestylePosts.featuredImage,
+        categories: lifestylePosts.categories,
+        publishedAt: lifestylePosts.publishedAt,
+        createdAt: lifestylePosts.createdAt,
+        authorFirstName: users.firstName,
+        authorLastName: users.lastName,
+        authorFullName: users.fullName,
+      })
+      .from(lifestylePosts)
+      .innerJoin(users, eq(lifestylePosts.authorId, users.id))
+      .where(eq(lifestylePosts.status, "published"))
+      .orderBy(desc(lifestylePosts.publishedAt))
+      .limit(6);
+
+    // Transform the data to match HomePageLifestylePost interface
+    const transformedPosts: HomePageLifestylePost[] = latestPosts.map(
+      (post) => {
+        const authorName =
+          post.authorFirstName && post.authorLastName
+            ? `${post.authorFirstName} ${post.authorLastName}`
+            : post.authorFullName || "Anonymous";
+
+        const postDate = post.publishedAt || post.createdAt;
+        const formattedDate = new Date(postDate).toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+
+        return {
+          id: post.id,
+          slug: post.slug,
+          author: authorName,
+          date: formattedDate,
+          title: post.title,
+          description: post.description || "",
+          image: post.featuredImage || "/images/news-sample-image.jpg",
+          categories: post.categories ? JSON.parse(post.categories) : [],
+        };
+      }
+    );
+
+    return {
+      success: true,
+      data: transformedPosts,
+    };
+  } catch (error) {
+    console.error("Error fetching latest lifestyle posts:", error);
+    return {
+      success: false,
+      message: "Failed to fetch latest lifestyle posts",
     };
   }
 }

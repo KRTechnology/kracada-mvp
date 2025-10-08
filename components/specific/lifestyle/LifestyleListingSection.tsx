@@ -3,10 +3,11 @@
 import { TabType } from "@/components/specific/dashboard/TabSwitcher";
 import { motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LifestyleArticleCard } from "./LifestyleArticleCard";
 import { Pagination } from "@/components/common/Pagination";
 import { LifestyleVideoCard } from "./LifestyleVideoCard";
+import { getLifestylePostsAction } from "@/app/actions/lifestyle-actions";
 
 // Types for content items
 interface LifestyleArticle {
@@ -369,33 +370,58 @@ const getMixedContent = (): LifestyleContent[] => {
 
 interface LifestyleListingSectionProps {
   activeTab?: TabType;
+  initialPosts?: any[];
+  initialPagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export const LifestyleListingSection = ({
   activeTab = "All posts",
+  initialPosts = [],
+  initialPagination = { page: 1, limit: 6, total: 0, totalPages: 0 },
 }: LifestyleListingSectionProps) => {
   const router = useRouter();
   const pathname = usePathname();
-  const [currentPage, setCurrentPage] = useState(1);
-  const articlesPerPage = 6;
+  const [posts, setPosts] = useState(initialPosts);
+  const [pagination, setPagination] = useState(initialPagination);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Get data based on active tab
-  const getData = (): LifestyleContent[] => {
-    switch (activeTab) {
-      case "Videos":
-        return lifestyleVideosData;
-      case "All posts":
-      default:
-        return getMixedContent();
+  // Fetch posts when page changes
+  const fetchPosts = async (page: number) => {
+    setIsLoading(true);
+    try {
+      const result = await getLifestylePostsAction({
+        page,
+        limit: 6,
+        status: "published",
+      });
+
+      if (result.success && result.data) {
+        setPosts(result.data.posts);
+        setPagination(result.data.pagination);
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const data = getData();
-  const totalPages = Math.ceil(data.length / articlesPerPage);
-
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // In a real app, you would fetch new data here
+    // Update URL with page parameter
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", page.toString());
+    router.push(`${pathname}?${params.toString()}`);
+
+    // Fetch new posts
+    fetchPosts(page);
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleTabChange = (tab: TabType) => {
@@ -406,10 +432,27 @@ export const LifestyleListingSection = ({
     }
   };
 
-  // Get current page articles
-  const startIndex = (currentPage - 1) * articlesPerPage;
-  const endIndex = startIndex + articlesPerPage;
-  const currentArticles = data.slice(startIndex, endIndex);
+  // Transform database posts to match the expected format
+  const transformedPosts = posts.map((post: any) => ({
+    id: post.id,
+    author: post.author
+      ? `${post.author.firstName || ""} ${post.author.lastName || ""}`.trim() ||
+        "Anonymous"
+      : "Anonymous",
+    date: new Date(post.publishedAt || post.createdAt).toLocaleDateString(
+      "en-US",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }
+    ),
+    title: post.title,
+    description: post.description || post.content.substring(0, 150) + "...",
+    image: post.featuredImage || "/images/news-sample-image.jpg",
+    categories: post.categories || [],
+    isVideo: false,
+  }));
 
   const lifestyleTabs = [
     { id: "All posts" as TabType, label: "All posts" },
@@ -419,36 +462,54 @@ export const LifestyleListingSection = ({
   return (
     <section className="bg-white dark:bg-dark">
       <div className="container mx-auto px-4 py-8">
-        {/* Lifestyle Content Grid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
-        >
-          {currentArticles.map((item, index) => (
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-2 border-orange-500 border-t-transparent"></div>
+          </div>
+        ) : transformedPosts.length === 0 ? (
+          /* Empty State */
+          <div className="text-center py-20">
+            <p className="text-neutral-600 dark:text-neutral-400 text-lg">
+              No posts found. Check back later for new content!
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Lifestyle Content Grid */}
             <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="h-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
             >
-              {activeTab === "Videos" || item.isVideo ? (
-                <LifestyleVideoCard video={item} index={index} />
-              ) : (
-                <LifestyleArticleCard article={item} index={index} />
-              )}
+              {transformedPosts.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className="h-full"
+                >
+                  {activeTab === "Videos" || item.isVideo ? (
+                    <LifestyleVideoCard video={item} index={index} />
+                  ) : (
+                    <LifestyleArticleCard article={item} index={index} />
+                  )}
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
-        </motion.div>
 
-        {/* Pagination */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </>
+        )}
       </div>
     </section>
   );

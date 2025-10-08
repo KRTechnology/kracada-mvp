@@ -216,7 +216,7 @@ export const LifestyleArticleContent = () => {
       </div>
 
       {/* Article Footer with Disclaimer and Comments */}
-      <LifestyleArticleFooter />
+      <LifestyleArticleFooter postId="sample-post-id" />
     </motion.article>
   );
 };

@@ -540,6 +540,193 @@ export async function uploadCoverLetter(
 }
 
 /**
+ * Upload lifestyle post featured image
+ */
+export async function uploadLifestyleFeaturedImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const postTitle = formData.get("postTitle") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (5MB limit for featured images)
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 5MB limit.",
+      };
+    }
+
+    // Create custom path for lifestyle featured images
+    const sanitizedTitle = postTitle
+      ? postTitle
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+          .substring(0, 50) // Limit length
+      : "untitled";
+    const customPath = `lifestyle-posts/${userId}/${sanitizedTitle}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `featured-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Lifestyle featured image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload lifestyle post editor image (for images within the post content)
+ */
+export async function uploadLifestyleEditorImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const postId = formData.get("postId") as string; // Optional, for organizing images
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (3MB limit for editor images)
+    const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 3MB limit.",
+      };
+    }
+
+    // Create custom path for lifestyle editor images
+    const customPath = postId
+      ? `lifestyle-posts/${userId}/content/${postId}`
+      : `lifestyle-posts/${userId}/content/temp`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `editor-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Lifestyle editor image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
  * Delete uploaded file
  */
 export async function deleteUploadedFile(
