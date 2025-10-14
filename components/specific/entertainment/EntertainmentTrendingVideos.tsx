@@ -298,6 +298,21 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
     window.open(video.videoUrl, "_blank");
   };
 
+  // Function to get category color based on index
+  const getCategoryColor = (categoryIndex: number) => {
+    const colors = [
+      "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+      "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
+      "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300",
+      "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
+      "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
+      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
+    ];
+    return colors[categoryIndex % colors.length];
+  };
+
   return (
     <div className="group cursor-pointer h-full" onClick={handleVideoClick}>
       <div className="bg-white dark:bg-neutral-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-neutral-100 dark:border-neutral-700 h-full flex flex-col">
@@ -398,10 +413,12 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
 
           {/* Categories */}
           <div className="flex flex-wrap gap-2 mt-auto">
-            {video.categories.slice(0, 2).map((category, index) => (
+            {video.categories.slice(0, 2).map((category, categoryIndex) => (
               <span
-                key={index}
-                className="px-2 py-1 text-xs font-medium bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-full"
+                key={categoryIndex}
+                className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(
+                  categoryIndex
+                )}`}
               >
                 {category}
               </span>
