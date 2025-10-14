@@ -564,7 +564,7 @@ export default function CVSuccessContent() {
               className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto"
             >
               <Link
-                href="/dashboard"
+                href="/dashboard/my-cv-orders"
                 className="flex-1 bg-warm-200 hover:bg-warm-300 text-white font-semibold py-4 px-8 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 whitespace-nowrap"
               >
                 <ArrowRight className="w-5 h-5" />

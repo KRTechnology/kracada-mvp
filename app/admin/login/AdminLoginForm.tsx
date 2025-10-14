@@ -59,8 +59,6 @@ export default function AdminLoginForm() {
         redirect: false,
       });
 
-      console.log("Sign in result:", result); // Debug log
-
       if (result?.error) {
         toast.error("Invalid email or password");
         setIsSubmitting(false);

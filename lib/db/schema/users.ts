@@ -18,6 +18,13 @@ export const accountTypeEnum = pgEnum("account_type", [
   "Contributor",
 ]);
 
+// Define user status enum
+export const userStatusEnum = pgEnum("user_status", [
+  "Active",
+  "Suspended",
+  "Inactive",
+]);
+
 // Users table
 export const users = pgTable("users", {
   id: varchar("id", { length: 128 })
@@ -27,6 +34,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   accountType: accountTypeEnum("account_type").notNull(),
+  status: userStatusEnum("status").default("Active").notNull(),
 
   // Profile fields
   firstName: varchar("first_name", { length: 255 }),

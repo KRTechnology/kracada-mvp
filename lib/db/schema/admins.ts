@@ -10,6 +10,13 @@ import {
 // Define admin role enum
 export const adminRoleEnum = pgEnum("admin_role", ["Super Admin", "Admin"]);
 
+// Define admin status enum
+export const adminStatusEnum = pgEnum("admin_status", [
+  "Active",
+  "Suspended",
+  "Inactive",
+]);
+
 // Admins table
 export const admins = pgTable("admins", {
   id: varchar("id", { length: 128 })
@@ -20,6 +27,7 @@ export const admins = pgTable("admins", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   role: adminRoleEnum("role").notNull().default("Admin"),
+  status: adminStatusEnum("status").default("Active").notNull(),
 
   // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),

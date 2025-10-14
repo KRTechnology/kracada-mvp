@@ -83,26 +83,31 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
 
   return (
     <>
-      <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6">
-        <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-6">
-          Admin Creation
-        </h2>
+      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-warm-100 dark:border-neutral-700 p-8 shadow-sm">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-warm-800 dark:text-warm-200 mb-2">
+            Create New Admin
+          </h2>
+          <p className="text-neutral-600 dark:text-neutral-400">
+            Add a new administrator to the platform
+          </p>
+        </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                    <FormLabel className="text-warm-700 dark:text-warm-300 font-semibold">
                       First Name <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Input first name"
-                        className="bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
+                        placeholder="Enter first name"
+                        className="h-12 border-warm-200/30 dark:border-neutral-600 focus:border-warm-200 focus:ring-warm-200 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-200"
                         disabled={isSubmitting}
                         {...field}
                       />
@@ -117,13 +122,13 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                    <FormLabel className="text-warm-700 dark:text-warm-300 font-semibold">
                       Last Name <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Input last name"
-                        className="bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
+                        placeholder="Enter last name"
+                        className="h-12 border-warm-200/30 dark:border-neutral-600 focus:border-warm-200 focus:ring-warm-200 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-200"
                         disabled={isSubmitting}
                         {...field}
                       />
@@ -139,14 +144,14 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                  <FormLabel className="text-warm-700 dark:text-warm-300 font-semibold">
                     Company Email <span className="text-red-500">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="Input company's email address"
-                      className="bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
+                      placeholder="admin@kimberly-ryan.net"
+                      className="h-12 border-warm-200/30 dark:border-neutral-600 focus:border-warm-200 focus:ring-warm-200 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-200"
                       disabled={isSubmitting}
                       {...field}
                     />
@@ -158,70 +163,83 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
 
             <Button
               type="submit"
-              className="bg-warm-200 hover:bg-warm-300 text-white"
+              className="bg-gradient-to-r from-warm-200 to-warm-700 hover:from-warm-300 hover:to-warm-800 text-white font-semibold h-12 px-8 shadow-lg hover:shadow-xl transition-all"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
                   <Spinner size="sm" className="mr-2" />
-                  <span>Creating...</span>
+                  <span>Creating Admin...</span>
                 </>
               ) : (
-                "Submit"
+                "Create Admin"
               )}
             </Button>
           </form>
         </Form>
       </div>
 
-      {/* Password Display Dialog */}
+      {/* Password Display Dialog - Enhanced */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg border-warm-200/30">
           <DialogHeader>
-            <DialogTitle>Admin Created Successfully</DialogTitle>
-            <DialogDescription>
-              Please save these credentials. The password will not be shown
-              again.
+            <DialogTitle className="text-2xl font-bold text-green-600 dark:text-green-400">
+              ✅ Admin Created Successfully!
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              Please save these credentials securely. The password will not be
+              shown again.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                Email
-              </label>
-              <div className="mt-1 flex items-center space-x-2">
-                <Input value={newAdminEmail} readOnly className="flex-1" />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => copyToClipboard(newAdminEmail)}
-                >
-                  Copy
-                </Button>
+          <div className="space-y-6 py-4">
+            <div className="bg-warm-50 dark:bg-warm-900/20 border border-warm-200/30 dark:border-warm-700/30 rounded-xl p-6 space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-warm-700 dark:text-warm-300 mb-2 block">
+                  Email Address
+                </label>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    value={newAdminEmail}
+                    readOnly
+                    className="flex-1 font-medium border-warm-200/30"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => copyToClipboard(newAdminEmail)}
+                    className="border-warm-200 text-warm-700 hover:bg-warm-50"
+                  >
+                    Copy
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-warm-700 dark:text-warm-300 mb-2 block">
+                  Temporary Password
+                </label>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    value={generatedPassword}
+                    readOnly
+                    className="flex-1 font-mono font-bold border-warm-200/30"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => copyToClipboard(generatedPassword)}
+                    className="border-warm-200 text-warm-700 hover:bg-warm-50"
+                  >
+                    Copy
+                  </Button>
+                </div>
               </div>
             </div>
-            <div>
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                Temporary Password
-              </label>
-              <div className="mt-1 flex items-center space-x-2">
-                <Input
-                  value={generatedPassword}
-                  readOnly
-                  className="flex-1 font-mono"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => copyToClipboard(generatedPassword)}
-                >
-                  Copy
-                </Button>
-              </div>
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+              <p className="text-sm text-blue-800 dark:text-blue-300 font-medium">
+                📋 Important: The new admin must change this password after
+                their first login.
+              </p>
             </div>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              The new admin should change this password after their first login.
-            </p>
           </div>
         </DialogContent>
       </Dialog>

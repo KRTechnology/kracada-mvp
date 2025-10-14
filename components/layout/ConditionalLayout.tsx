@@ -12,7 +12,7 @@ interface ConditionalLayoutProps {
 const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();
 
-  // Determine if we're in auth or dashboard routes
+  // Determine if we're in auth, dashboard, or admin routes
   const isAuthRoute =
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
@@ -27,6 +27,12 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const isEditProfilePage = pathname === "/dashboard/edit";
   const isSetupPage = pathname === "/setup";
   const isSettingsPage = pathname === "/settings";
+  const isAdminRoute = pathname.startsWith("/admin");
+
+  // Admin routes handle their own layout completely
+  if (isAdminRoute) {
+    return <>{children}</>;
+  }
 
   // Show only header for auth, dashboard, setup, and settings routes
   const showFooter =

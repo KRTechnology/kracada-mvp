@@ -40,18 +40,6 @@ export const authConfig = {
         nextUrl.pathname.startsWith("/forgot-password") ||
         nextUrl.pathname.startsWith("/reset-password");
 
-      // Debug logging for admin routes
-      if (isOnAdminRoute) {
-        console.log("🔐 Admin route check:", {
-          path: nextUrl.pathname,
-          isLoggedIn,
-          isAdmin,
-          user: auth?.user
-            ? { email: auth.user.email, isAdmin: (auth.user as any)?.isAdmin }
-            : null,
-        });
-      }
-
       // Admin login page - allow if not logged in, or redirect if logged in as admin
       if (isOnAdminLogin) {
         if (isLoggedIn && isAdmin) {

@@ -39,15 +39,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
           // If admin login, authenticate as admin
           if (isAdminLogin) {
-            console.log("🔐 Admin login attempt for:", email);
-
             const admin = await adminAuthService.authenticateAdmin(
               email,
               password
             );
 
             if (!admin) {
-              console.log("❌ Invalid admin credentials");
               return null;
             }
 
@@ -64,13 +61,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             (authUser as any).accountType = "Admin";
             (authUser as any).emailVerified = true;
 
-            console.log("✅ Admin authenticated, returning user:", {
-              id: authUser.id,
-              email: authUser.email,
-              isAdmin: (authUser as any).isAdmin,
-              adminRole: (authUser as any).adminRole,
-            });
-
             return authUser;
           }
 
@@ -78,7 +68,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           const user = await authService.authenticateUser(email, password);
 
           if (!user) {
-            console.log("Invalid credentials");
             return null;
           }
 
@@ -106,12 +95,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     // Add JWT callback to include custom user data in token
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        console.log("🔑 JWT callback - setting token from user:", {
-          userId: user.id,
-          isAdmin: (user as any).isAdmin,
-          adminRole: (user as any).adminRole,
-        });
-
         token.id = user.id;
         // Use type assertion to handle custom properties
         token.accountType = (user as any).accountType;
@@ -119,13 +102,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         token.isAdmin = (user as any).isAdmin;
         token.adminRole = (user as any).adminRole;
       }
-
-      console.log("🔑 JWT callback - final token:", {
-        id: token.id,
-        email: token.email,
-        isAdmin: token.isAdmin,
-        adminRole: token.adminRole,
-      });
 
       // Update session last active on each request (skip for admins)
       if (token.sub && token.jti && !token.isAdmin) {
@@ -140,11 +116,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     },
     // Add session callback to make user data available client-side
     async session({ session, token }) {
-      console.log("📋 Session callback - token data:", {
-        tokenIsAdmin: token.isAdmin,
-        tokenAdminRole: token.adminRole,
-      });
-
       if (session.user) {
         session.user.id = token.id as string;
         // Add custom properties to session
@@ -153,13 +124,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         (session.user as any).isAdmin = token.isAdmin;
         (session.user as any).adminRole = token.adminRole;
       }
-
-      console.log("📋 Session callback - final session:", {
-        userId: session.user?.id,
-        userEmail: session.user?.email,
-        isAdmin: (session.user as any)?.isAdmin,
-        adminRole: (session.user as any)?.adminRole,
-      });
 
       return session;
     },

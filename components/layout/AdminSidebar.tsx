@@ -58,6 +58,16 @@ const navItems: NavItem[] = [
     badge: 8,
   },
   {
+    href: "/admin/dashboard/news",
+    label: "News Management",
+    icon: <FileText className="w-5 h-5" />,
+  },
+  {
+    href: "/admin/dashboard/lifestyle",
+    label: "Lifestyle Management",
+    icon: <BookOpen className="w-5 h-5" />,
+  },
+  {
     href: "/admin/dashboard/payments",
     label: "Payment & Transactions",
     icon: <CreditCard className="w-5 h-5" />,
@@ -119,8 +129,16 @@ export default function AdminSidebar() {
 
   const SidebarContent = () => (
     <>
+      {/* Sidebar Header */}
+      <div className="px-4 pt-6 pb-4">
+        <div className="bg-gradient-to-br from-warm-200 via-warm-700 to-warm-800 rounded-xl p-4 shadow-lg">
+          <h2 className="text-white font-bold text-lg mb-1">Admin Portal</h2>
+          <p className="text-warm-50 text-xs">Manage your platform</p>
+        </div>
+      </div>
+
       {/* Sidebar content */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-2">
         {/* Navigation items */}
         <nav className="space-y-1">
           {navItems.map((item) => {
@@ -130,18 +148,26 @@ export default function AdminSidebar() {
                 key={item.href}
                 href={item.href}
                 onClick={closeMobileMenu}
-                className={`flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                className={`group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                   isActive
-                    ? "bg-warm-50 dark:bg-warm-900/20 text-warm-600 dark:text-warm-400"
-                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    ? "bg-gradient-to-r from-warm-100 to-warm-200/20 dark:from-warm-900/30 dark:to-warm-800/20 border border-warm-200/30 dark:border-warm-700/30 text-warm-700 dark:text-warm-300 shadow-sm"
+                    : "text-neutral-700 dark:text-neutral-300 hover:bg-warm-50 dark:hover:bg-neutral-800 hover:border hover:border-warm-100 dark:hover:border-neutral-700"
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  {item.icon}
+                  <div
+                    className={
+                      isActive
+                        ? "scale-110"
+                        : "group-hover:scale-110 transition-transform"
+                    }
+                  >
+                    {item.icon}
+                  </div>
                   <span>{item.label}</span>
                 </div>
                 {item.badge && (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-warm-200 text-xs text-white">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-warm-200 to-warm-700 text-xs text-white font-semibold shadow">
                     {item.badge}
                   </span>
                 )}
@@ -152,11 +178,11 @@ export default function AdminSidebar() {
       </div>
 
       {/* Settings section at bottom */}
-      <div className="border-t border-neutral-200 dark:border-neutral-800 px-4 py-4 space-y-4">
+      <div className="border-t border-warm-200/30 dark:border-neutral-800 px-4 py-4 space-y-4 bg-warm-50/30 dark:bg-neutral-900/50">
         {/* Settings header */}
-        <div className="flex items-center space-x-2 text-neutral-500 dark:text-neutral-400">
+        <div className="flex items-center space-x-2 text-warm-700 dark:text-warm-300">
           <Settings className="w-4 h-4" />
-          <span className="text-sm font-medium">Settings</span>
+          <span className="text-sm font-semibold">Settings</span>
         </div>
 
         {/* Dark Mode Toggle */}
