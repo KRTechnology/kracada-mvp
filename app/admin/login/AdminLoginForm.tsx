@@ -79,13 +79,13 @@ export default function AdminLoginForm() {
   }
 
   return (
-    <div className="w-full max-w-md space-y-6">
+    <div className="w-full space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-200">
-          Admin Log in
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-warm-600 to-warm-700 dark:from-warm-300 dark:to-warm-400 bg-clip-text text-transparent">
+          Admin Portal
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">
-          Enter your account details below.
+        <p className="text-warm-600 dark:text-warm-400 mt-2 font-medium">
+          Secure access to your dashboard
         </p>
       </div>
 
@@ -96,13 +96,13 @@ export default function AdminLoginForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-neutral-700 dark:text-neutral-300">
-                  Email
+                <FormLabel className="text-warm-700 dark:text-warm-300 font-semibold">
+                  Email Address
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="example@domain.com"
-                    className="focus-visible:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
+                    placeholder="admin@kracada.com"
+                    className="focus-visible:ring-warm-200 focus-visible:border-warm-300 bg-warm-50/50 dark:bg-neutral-700/50 border-warm-200 dark:border-warm-600 text-neutral-900 dark:text-neutral-200 placeholder:text-warm-400 dark:placeholder:text-warm-500 transition-colors"
                     autoComplete="email"
                     disabled={isSubmitting}
                     {...field}
@@ -118,22 +118,22 @@ export default function AdminLoginForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                <FormLabel className="text-warm-700 dark:text-warm-300 font-semibold">
                   Password
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
-                      placeholder=""
-                      className="focus-visible:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
+                      placeholder="Enter your password"
+                      className="focus-visible:ring-warm-200 focus-visible:border-warm-300 bg-warm-50/50 dark:bg-neutral-700/50 border-warm-200 dark:border-warm-600 text-neutral-900 dark:text-neutral-200 placeholder:text-warm-400 dark:placeholder:text-warm-500 transition-colors pr-12"
                       autoComplete="current-password"
                       disabled={isSubmitting}
                       {...field}
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-warm-500 dark:text-warm-400 hover:text-warm-600 dark:hover:text-warm-300 transition-colors"
                       onClick={() => setShowPassword(!showPassword)}
                       disabled={isSubmitting}
                       tabIndex={-1}
@@ -144,12 +144,12 @@ export default function AdminLoginForm() {
                       {showPassword ? (
                         <EyeOff
                           size={18}
-                          className="text-gray-500 dark:text-gray-400"
+                          className="text-warm-500 dark:text-warm-400"
                         />
                       ) : (
                         <Eye
                           size={18}
-                          className="text-gray-500 dark:text-gray-400"
+                          className="text-warm-500 dark:text-warm-400"
                         />
                       )}
                     </button>
@@ -164,16 +164,17 @@ export default function AdminLoginForm() {
             control={form.control}
             name="rememberMe"
             render={({ field }) => (
-              <FormItem className="flex items-center gap-2 space-y-0">
+              <FormItem className="flex items-center gap-3 space-y-0">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
                     disabled={isSubmitting}
+                    className="border-warm-300 dark:border-warm-600 data-[state=checked]:bg-warm-200 data-[state=checked]:border-warm-200"
                   />
                 </FormControl>
-                <FormLabel className="text-sm font-normal text-neutral-700 dark:text-neutral-300">
-                  Remember for 30 days
+                <FormLabel className="text-sm font-medium text-warm-700 dark:text-warm-300 cursor-pointer">
+                  Remember me for 30 days
                 </FormLabel>
               </FormItem>
             )}
@@ -181,16 +182,31 @@ export default function AdminLoginForm() {
 
           <Button
             type="submit"
-            className="w-full bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
+            className="w-full bg-gradient-to-r from-warm-200 to-warm-300 hover:from-warm-300 hover:to-warm-400 text-white dark:text-neutral-900 font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:transform-none"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
                 <Spinner size="sm" className="mr-2" />
-                <span>Logging in...</span>
+                <span>Signing in...</span>
               </>
             ) : (
-              "Log in"
+              <>
+                <span>Access Dashboard</span>
+                <svg
+                  className="ml-2 w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </>
             )}
           </Button>
         </form>
