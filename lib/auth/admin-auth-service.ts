@@ -104,6 +104,7 @@ export const adminAuthService = {
         lastName: admins.lastName,
         email: admins.email,
         role: admins.role,
+        status: admins.status,
         createdAt: admins.createdAt,
         updatedAt: admins.updatedAt,
         lastLoginAt: admins.lastLoginAt,
