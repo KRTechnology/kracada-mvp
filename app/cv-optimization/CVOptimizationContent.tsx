@@ -246,7 +246,7 @@ export default function CVOptimizationContent() {
             {packages.map((pkg, index) => (
               <div
                 key={pkg.id}
-                className="relative bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-xl transition-all duration-300"
+                className="relative bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-xl transition-all duration-300 h-full flex flex-col"
               >
                 {/* Package Badge */}
                 <div className="mb-4">
@@ -278,7 +278,7 @@ export default function CVOptimizationContent() {
                 )}
 
                 {/* Features */}
-                <div className="space-y-3 mb-6">
+                <div className="space-y-3 mb-6 flex-1">
                   {pkg.features.map((feature, featureIndex) => (
                     <motion.div
                       key={featureIndex}
@@ -300,7 +300,7 @@ export default function CVOptimizationContent() {
                 </div>
 
                 {/* CTA Button */}
-                <div className="w-full">
+                <div className="w-full mt-auto">
                   {isMounted && session?.user && getPaystackConfig(pkg) ? (
                     <PaystackButton
                       {...getPaystackConfig(pkg)!}
@@ -358,7 +358,7 @@ export default function CVOptimizationContent() {
             {packages.map((pkg, index) => (
               <div
                 key={pkg.id}
-                className="relative bg-white dark:bg-neutral-800 rounded-3xl p-8 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
+                className="relative bg-white dark:bg-neutral-800 rounded-3xl p-8 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full flex flex-col"
               >
                 {/* Package Badge */}
                 <div className="mb-6">
@@ -390,7 +390,7 @@ export default function CVOptimizationContent() {
                 )}
 
                 {/* Features */}
-                <div className="space-y-4 mb-8">
+                <div className="space-y-4 mb-8 flex-1">
                   {pkg.features.map((feature, featureIndex) => (
                     <motion.div
                       key={featureIndex}
@@ -412,7 +412,7 @@ export default function CVOptimizationContent() {
                 </div>
 
                 {/* CTA Button */}
-                <div className="w-full">
+                <div className="w-full mt-auto">
                   {isMounted && session?.user && getPaystackConfig(pkg) ? (
                     <PaystackButton
                       {...getPaystackConfig(pkg)!}
