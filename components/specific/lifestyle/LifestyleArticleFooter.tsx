@@ -141,7 +141,7 @@ export const LifestyleArticleFooter = ({
 
   return (
     <div className="bg-white dark:bg-[#0D0D0D]">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4">
         {/* Disclaimer Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -149,21 +149,6 @@ export const LifestyleArticleFooter = ({
           transition={{ duration: 0.6 }}
           className="mb-8 space-y-4"
         >
-          {/* Gray Disclaimer */}
-          <div className="flex items-start gap-3 p-4 border border-[#D5D7DA] dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800/50">
-            <AlertCircle className="w-5 h-5 text-neutral-500 dark:text-neutral-400 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="font-medium text-neutral-900 dark:text-white mb-2">
-                Disclaimer
-              </h4>
-              <p className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
-                Kracada is not responsible for user-generated content. Posts are
-                not pre-screened, and all responsibility lies with the original
-                poster. Please report any content that violates our guidelines.
-              </p>
-            </div>
-          </div>
-
           {/* Orange Warning */}
           <div className="flex items-start gap-3 p-4 border border-orange-200 dark:border-orange-800 rounded-xl bg-orange-50 dark:bg-orange-900/20">
             <AlertTriangle className="w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0 mt-0.5" />
