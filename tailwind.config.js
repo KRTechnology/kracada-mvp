@@ -224,7 +224,118 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      typography: (theme) => ({
+        DEFAULT: {
+          css: {
+            maxWidth: "none",
+            color: theme("colors.neutral.700"),
+            h1: {
+              fontSize: "2.25rem",
+              fontWeight: "700",
+              marginTop: "2rem",
+              marginBottom: "1rem",
+              lineHeight: "2.5rem",
+            },
+            h2: {
+              fontSize: "1.875rem",
+              fontWeight: "700",
+              marginTop: "1.5rem",
+              marginBottom: "0.75rem",
+              lineHeight: "2.25rem",
+            },
+            h3: {
+              fontSize: "1.5rem",
+              fontWeight: "700",
+              marginTop: "1.25rem",
+              marginBottom: "0.75rem",
+              lineHeight: "2rem",
+            },
+            p: {
+              marginTop: "0",
+              marginBottom: "1rem",
+              lineHeight: "1.75",
+            },
+            a: {
+              color: theme("colors.orange.500"),
+              textDecoration: "underline",
+              "&:hover": {
+                color: theme("colors.orange.600"),
+              },
+            },
+            strong: {
+              color: theme("colors.neutral.900"),
+              fontWeight: "700",
+            },
+            em: {
+              fontStyle: "italic",
+            },
+            code: {
+              backgroundColor: theme("colors.neutral.100"),
+              padding: "0.125rem 0.25rem",
+              borderRadius: "0.25rem",
+              fontSize: "0.875em",
+            },
+            blockquote: {
+              borderLeftWidth: "4px",
+              borderLeftColor: theme("colors.orange.500"),
+              paddingLeft: "1rem",
+              fontStyle: "italic",
+              color: theme("colors.neutral.600"),
+              marginTop: "1rem",
+              marginBottom: "1rem",
+            },
+            ul: {
+              listStyleType: "disc",
+              paddingLeft: "1.5rem",
+              marginTop: "1rem",
+              marginBottom: "1rem",
+              li: {
+                marginTop: "0.5rem",
+                marginBottom: "0.5rem",
+              },
+            },
+            ol: {
+              listStyleType: "decimal",
+              paddingLeft: "1.5rem",
+              marginTop: "1rem",
+              marginBottom: "1rem",
+              li: {
+                marginTop: "0.5rem",
+                marginBottom: "0.5rem",
+              },
+            },
+            img: {
+              borderRadius: "0.5rem",
+              marginTop: "1rem",
+              marginBottom: "1rem",
+            },
+          },
+        },
+        dark: {
+          css: {
+            color: theme("colors.neutral.300"),
+            h1: {
+              color: theme("colors.white"),
+            },
+            h2: {
+              color: theme("colors.white"),
+            },
+            h3: {
+              color: theme("colors.white"),
+            },
+            strong: {
+              color: theme("colors.white"),
+            },
+            code: {
+              backgroundColor: theme("colors.neutral.800"),
+            },
+            blockquote: {
+              color: theme("colors.neutral.400"),
+            },
+          },
+        },
+      }),
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 };

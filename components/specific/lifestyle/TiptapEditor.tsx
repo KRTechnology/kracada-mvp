@@ -77,7 +77,7 @@ export function TiptapEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-lg max-w-none focus:outline-none min-h-[400px] p-4 dark:prose-invert prose-headings:font-bold prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-a:text-orange-500 prose-strong:text-neutral-900 dark:prose-strong:text-white prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-li:text-neutral-700 dark:prose-li:text-neutral-300",
+          "prose prose-lg max-w-none focus:outline-none min-h-[400px] p-4 dark:prose-dark",
       },
     },
   });
@@ -188,7 +188,7 @@ export function TiptapEditor({
 
   if (!editable) {
     return (
-      <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-bold prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-a:text-orange-500 prose-strong:text-neutral-900 dark:prose-strong:text-white prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-li:text-neutral-700 dark:prose-li:text-neutral-300">
+      <div className="prose prose-lg max-w-none dark:prose-dark">
         <EditorContent editor={editor} />
       </div>
     );
