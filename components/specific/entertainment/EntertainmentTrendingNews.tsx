@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
+import Link from "next/link";
 import {
   Select,
   SelectContent,
@@ -13,9 +14,14 @@ import {
   SelectValue,
 } from "@/components/common/select";
 import { Pagination } from "@/components/common/Pagination";
+import { EntertainmentNews } from "@/app/actions/entertainment-actions";
 
-// Sample trending news data
-const trendingNewsData = [
+interface EntertainmentTrendingNewsProps {
+  initialNews: EntertainmentNews[];
+}
+
+// Sample fallback news data
+const fallbackNewsData = [
   {
     id: 1,
     author: "Sarah Mitchell",
@@ -233,7 +239,8 @@ const sortOptions = [
 
 interface NewsCardProps {
   article: {
-    id: number;
+    id: string | number;
+    slug?: string;
     author: string;
     date: string;
     title: string;
@@ -260,8 +267,10 @@ const NewsCard = ({ article, index }: NewsCardProps) => {
     return colors[categoryIndex % colors.length];
   };
 
+  const newsLink = article.slug ? `/news/${article.id}` : "#";
+
   return (
-    <div className="group cursor-pointer h-full">
+    <Link href={newsLink} className="group cursor-pointer h-full block">
       <div className="bg-white dark:bg-neutral-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-neutral-100 dark:border-neutral-700 h-full flex flex-col">
         {/* Image */}
         <div className="relative h-48 overflow-hidden">
@@ -310,11 +319,14 @@ const NewsCard = ({ article, index }: NewsCardProps) => {
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
-export const EntertainmentTrendingNews = () => {
+export const EntertainmentTrendingNews = ({
+  initialNews,
+}: EntertainmentTrendingNewsProps) => {
+  const [news, setNews] = useState(initialNews);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("date");
@@ -322,8 +334,13 @@ export const EntertainmentTrendingNews = () => {
   const articlesPerPage = 6;
   const sectionRef = useRef<HTMLElement>(null);
 
+  // Update news when initialNews changes
+  useEffect(() => {
+    setNews(initialNews);
+  }, [initialNews]);
+
   // Filter and sort articles based on current state
-  const filteredNews = trendingNewsData.filter((article) => {
+  const filteredNews = news.filter((article) => {
     const matchesSearch = article.title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());

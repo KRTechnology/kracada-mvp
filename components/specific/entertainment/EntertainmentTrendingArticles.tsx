@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
+import Link from "next/link";
 import {
   Select,
   SelectContent,
@@ -13,9 +14,14 @@ import {
   SelectValue,
 } from "@/components/common/select";
 import { Pagination } from "@/components/common/Pagination";
+import { EntertainmentArticle } from "@/app/actions/entertainment-actions";
 
-// Sample entertainment articles data
-const entertainmentArticlesData = [
+interface EntertainmentTrendingArticlesProps {
+  initialArticles: EntertainmentArticle[];
+}
+
+// Sample fallback data if no real data is available
+const fallbackArticlesData = [
   {
     id: 1,
     author: "Alec Whitten",
@@ -235,7 +241,8 @@ const sortOptions = [
 
 interface ArticleCardProps {
   article: {
-    id: number;
+    id: string | number;
+    slug?: string;
     author: string;
     date: string;
     title: string;
@@ -262,8 +269,10 @@ const ArticleCard = ({ article, index }: ArticleCardProps) => {
     return colors[categoryIndex % colors.length];
   };
 
+  const articleLink = article.slug ? `/lifestyle/${article.id}` : "#";
+
   return (
-    <div className="group cursor-pointer h-full">
+    <Link href={articleLink} className="group cursor-pointer h-full block">
       <div className="bg-white dark:bg-neutral-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-neutral-100 dark:border-neutral-700 h-full flex flex-col">
         {/* Image */}
         <div className="relative h-48 overflow-hidden">
@@ -312,11 +321,14 @@ const ArticleCard = ({ article, index }: ArticleCardProps) => {
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
-export const EntertainmentTrendingArticles = () => {
+export const EntertainmentTrendingArticles = ({
+  initialArticles,
+}: EntertainmentTrendingArticlesProps) => {
+  const [articles, setArticles] = useState(initialArticles);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("date");
@@ -324,8 +336,13 @@ export const EntertainmentTrendingArticles = () => {
   const articlesPerPage = 6;
   const sectionRef = useRef<HTMLElement>(null);
 
+  // Update articles when initialArticles changes
+  useEffect(() => {
+    setArticles(initialArticles);
+  }, [initialArticles]);
+
   // Filter and sort articles based on current state
-  const filteredArticles = entertainmentArticlesData.filter((article) => {
+  const filteredArticles = articles.filter((article) => {
     const matchesSearch = article.title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
