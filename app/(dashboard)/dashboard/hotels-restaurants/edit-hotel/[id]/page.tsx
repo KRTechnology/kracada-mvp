@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function EditHotelPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await auth();
 
@@ -22,8 +22,11 @@ export default async function EditHotelPage({
     redirect("/login");
   }
 
+  // Await params
+  const { id } = await params;
+
   // Fetch hotel data
-  const hotelResult = await getHotelByIdAction(params.id);
+  const hotelResult = await getHotelByIdAction(id);
 
   if (!hotelResult.success || !hotelResult.data) {
     redirect("/dashboard/hotels-restaurants");

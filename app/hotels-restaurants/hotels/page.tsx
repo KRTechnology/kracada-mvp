@@ -1,5 +1,14 @@
 import { HotelsRestaurantsListingSection } from "@/components/specific/hotels-restaurants/HotelsRestaurantsListingSection";
+import { getPublishedHotelsAction } from "@/app/(dashboard)/actions/hotels-restaurants-actions";
 
-export default function HotelsPage() {
-  return <HotelsRestaurantsListingSection activeTab="Hotels" />;
+export default async function HotelsPage() {
+  const hotelsResult = await getPublishedHotelsAction();
+  const hotels = hotelsResult.success ? hotelsResult.data || [] : [];
+
+  return (
+    <HotelsRestaurantsListingSection
+      activeTab="Hotels"
+      initialHotels={hotels}
+    />
+  );
 }

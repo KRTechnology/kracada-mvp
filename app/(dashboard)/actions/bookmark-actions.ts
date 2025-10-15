@@ -1,7 +1,14 @@
 "use server";
 
 import { db } from "@/lib/db/drizzle";
-import { bookmarks, jobs, users, BookmarkContentType } from "@/lib/db/schema";
+import {
+  bookmarks,
+  jobs,
+  users,
+  hotels,
+  restaurants,
+  BookmarkContentType,
+} from "@/lib/db/schema";
 import { auth } from "@/auth";
 import { eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -27,6 +34,34 @@ export interface BookmarkedJobItem {
   description: string;
   skills: string[];
   locationType?: "remote" | "onsite" | "hybrid";
+  bookmarkedAt: Date;
+}
+
+export interface BookmarkedHotelItem {
+  id: string;
+  name: string;
+  description: string;
+  location: string;
+  category: string;
+  pricePerNight: number;
+  currency: string;
+  rating: string | null;
+  reviewCount: number;
+  featuredImage: string | null;
+  bookmarkedAt: Date;
+}
+
+export interface BookmarkedRestaurantItem {
+  id: string;
+  name: string;
+  description: string;
+  location: string;
+  category: string;
+  cuisine: string;
+  priceRange: string;
+  rating: string | null;
+  reviewCount: number;
+  featuredImage: string | null;
   bookmarkedAt: Date;
 }
 
@@ -229,6 +264,7 @@ export async function getBookmarkCountsAction(): Promise<{
     articles: number;
     videos: number;
     hotels: number;
+    restaurants: number;
   };
   message?: string;
 }> {
@@ -249,6 +285,7 @@ export async function getBookmarkCountsAction(): Promise<{
       articles: 0,
       videos: 0,
       hotels: 0,
+      restaurants: 0,
     };
 
     counts.forEach((item) => {
@@ -259,7 +296,9 @@ export async function getBookmarkCountsAction(): Promise<{
             ? "articles"
             : item.contentType === "video"
               ? "videos"
-              : "hotels";
+              : item.contentType === "hotel"
+                ? "hotels"
+                : "restaurants";
       result[key] = Number(item.count);
     });
 
@@ -272,6 +311,128 @@ export async function getBookmarkCountsAction(): Promise<{
     return {
       success: false,
       message: "Failed to fetch bookmark counts",
+    };
+  }
+}
+
+// Get all bookmarked hotels for current user
+export async function getBookmarkedHotelsAction(): Promise<{
+  success: boolean;
+  data?: BookmarkedHotelItem[];
+  message?: string;
+}> {
+  try {
+    const userId = await getCurrentUser();
+
+    const bookmarkedHotels = await db
+      .select({
+        bookmarkId: bookmarks.id,
+        bookmarkedAt: bookmarks.createdAt,
+        hotelId: hotels.id,
+        name: hotels.name,
+        description: hotels.description,
+        location: hotels.location,
+        category: hotels.category,
+        pricePerNight: hotels.pricePerNight,
+        currency: hotels.currency,
+        rating: hotels.rating,
+        reviewCount: hotels.reviewCount,
+        featuredImage: hotels.featuredImage,
+      })
+      .from(bookmarks)
+      .innerJoin(hotels, eq(bookmarks.contentId, hotels.id))
+      .where(
+        and(eq(bookmarks.userId, userId), eq(bookmarks.contentType, "hotel"))
+      )
+      .orderBy(desc(bookmarks.createdAt));
+
+    const formattedHotels: BookmarkedHotelItem[] = bookmarkedHotels.map(
+      (item) => ({
+        id: item.hotelId,
+        name: item.name,
+        description: item.description,
+        location: item.location,
+        category: item.category,
+        pricePerNight: item.pricePerNight,
+        currency: item.currency,
+        rating: item.rating,
+        reviewCount: item.reviewCount,
+        featuredImage: item.featuredImage,
+        bookmarkedAt: item.bookmarkedAt,
+      })
+    );
+
+    return {
+      success: true,
+      data: formattedHotels,
+    };
+  } catch (error) {
+    console.error("Error fetching bookmarked hotels:", error);
+    return {
+      success: false,
+      message: "Failed to fetch bookmarked hotels",
+    };
+  }
+}
+
+// Get all bookmarked restaurants for current user
+export async function getBookmarkedRestaurantsAction(): Promise<{
+  success: boolean;
+  data?: BookmarkedRestaurantItem[];
+  message?: string;
+}> {
+  try {
+    const userId = await getCurrentUser();
+
+    const bookmarkedRestaurants = await db
+      .select({
+        bookmarkId: bookmarks.id,
+        bookmarkedAt: bookmarks.createdAt,
+        restaurantId: restaurants.id,
+        name: restaurants.name,
+        description: restaurants.description,
+        location: restaurants.location,
+        category: restaurants.category,
+        cuisine: restaurants.cuisine,
+        priceRange: restaurants.priceRange,
+        rating: restaurants.rating,
+        reviewCount: restaurants.reviewCount,
+        featuredImage: restaurants.featuredImage,
+      })
+      .from(bookmarks)
+      .innerJoin(restaurants, eq(bookmarks.contentId, restaurants.id))
+      .where(
+        and(
+          eq(bookmarks.userId, userId),
+          eq(bookmarks.contentType, "restaurant")
+        )
+      )
+      .orderBy(desc(bookmarks.createdAt));
+
+    const formattedRestaurants: BookmarkedRestaurantItem[] =
+      bookmarkedRestaurants.map((item) => ({
+        id: item.restaurantId,
+        name: item.name,
+        description: item.description,
+        location: item.location,
+        category: item.category,
+        cuisine: item.cuisine,
+        priceRange: item.priceRange,
+        rating: item.rating,
+        reviewCount: item.reviewCount,
+        featuredImage: item.featuredImage,
+        bookmarkedAt: item.bookmarkedAt,
+      }));
+
+    return {
+      success: true,
+      data: formattedRestaurants,
+    };
+  } catch (error) {
+    console.error("Error fetching bookmarked restaurants:", error);
+    return {
+      success: false,
+      message: "Failed to fetch bookmarked restaurants",
     };
   }
 }

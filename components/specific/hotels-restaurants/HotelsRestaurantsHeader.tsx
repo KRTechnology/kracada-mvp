@@ -6,10 +6,17 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { TabSwitcher } from "@/components/specific/dashboard/TabSwitcher";
 import { HotelsRestaurantsSubTabType } from "@/components/specific/dashboard/SubTabSwitcher";
+import { useSession } from "next-auth/react";
 
 export const HotelsRestaurantsHeader = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  // Check if user is a Business Owner
+  const isBusinessOwner =
+    (session?.user as any)?.accountType === "Business Owner";
+  const isAuthenticated = status === "authenticated";
 
   // Determine active tab based on pathname
   const getActiveTab = (): HotelsRestaurantsSubTabType => {
@@ -44,15 +51,15 @@ export const HotelsRestaurantsHeader = () => {
             Browse Accommodations
           </h2>
 
-          <Button
-            onClick={() => {
-              // TODO: Implement create hotel/restaurant listing functionality
-            }}
-            className="bg-gradient-to-r from-warm-200 to-peach-200 hover:from-warm-300 hover:to-peach-300 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-          >
-            <Plus className="w-5 h-5" />
-            List your property
-          </Button>
+          {isAuthenticated && isBusinessOwner && (
+            <Button
+              onClick={() => router.push("/dashboard/hotels-restaurants")}
+              className="bg-gradient-to-r from-warm-200 to-peach-200 hover:from-warm-300 hover:to-peach-300 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            >
+              <Plus className="w-5 h-5" />
+              List your property
+            </Button>
+          )}
         </motion.div>
 
         {/* Tab Switcher */}

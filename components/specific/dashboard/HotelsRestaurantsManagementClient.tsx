@@ -195,28 +195,34 @@ export function HotelsRestaurantsManagementClient({
           </motion.div>
 
           {/* Tabs */}
-          <div className="flex gap-4 mb-8 border-b border-neutral-200 dark:border-neutral-700">
+          <div className="flex gap-4 mb-8">
             <button
               onClick={() => setActiveTab("hotels")}
-              className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors border-b-2 ${
+              className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors relative ${
                 activeTab === "hotels"
-                  ? "border-warm-200 text-warm-200"
-                  : "border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                  ? "text-warm-200"
+                  : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
               }`}
             >
               <HotelIcon className="w-5 h-5" />
               Hotels ({hotels.length})
+              {activeTab === "hotels" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-warm-200 to-peach-200 rounded-full"></div>
+              )}
             </button>
             <button
               onClick={() => setActiveTab("restaurants")}
-              className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors border-b-2 ${
+              className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors relative ${
                 activeTab === "restaurants"
-                  ? "border-warm-200 text-warm-200"
-                  : "border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                  ? "text-warm-200"
+                  : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
               }`}
             >
               <UtensilsCrossed className="w-5 h-5" />
               Restaurants ({restaurants.length})
+              {activeTab === "restaurants" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-warm-200 to-peach-200 rounded-full"></div>
+              )}
             </button>
           </div>
 
@@ -346,48 +352,51 @@ function HotelCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-neutral-50 dark:bg-neutral-800 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-shadow"
+      className="bg-gradient-to-br from-white to-warm-50/30 dark:from-neutral-800 dark:to-neutral-700/50 rounded-2xl overflow-hidden border border-warm-100/50 dark:border-neutral-600/50 hover:shadow-xl hover:shadow-warm-200/10 dark:hover:shadow-neutral-900/20 transition-all duration-300 hover:-translate-y-1 group"
     >
       {/* Image */}
-      <div className="relative h-48 bg-neutral-200 dark:bg-neutral-700">
+      <div className="relative h-48 bg-gradient-to-br from-warm-100 to-peach-100 dark:from-neutral-700 dark:to-neutral-600 overflow-hidden">
         {hotel.featuredImage ? (
           <Image
             src={hotel.featuredImage}
             alt={hotel.name}
             fill
-            className="object-cover"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <HotelIcon className="w-16 h-16 text-neutral-400" />
+            <HotelIcon className="w-16 h-16 text-warm-300 dark:text-warm-200" />
           </div>
         )}
         {/* Published Badge */}
         <div className="absolute top-3 right-3">
           {hotel.isPublished ? (
-            <span className="px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full">
+            <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-medium rounded-full shadow-lg">
               Published
             </span>
           ) : (
-            <span className="px-3 py-1 bg-neutral-500 text-white text-xs font-medium rounded-full">
+            <span className="px-3 py-1 bg-gradient-to-r from-neutral-500 to-neutral-600 text-white text-xs font-medium rounded-full shadow-lg">
               Draft
             </span>
           )}
         </div>
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 line-clamp-1">
+      <div className="p-5">
+        <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2 line-clamp-1 group-hover:text-warm-200 transition-colors">
           {hotel.name}
         </h3>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2">
+        <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 flex items-center gap-1">
+          <span className="w-1 h-1 bg-warm-200 rounded-full"></span>
           {hotel.location}
         </p>
         <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2">
           {hotel.description}
         </p>
-        <div className="text-lg font-bold text-warm-200 mb-4">
+        <div className="text-xl font-bold bg-gradient-to-r from-warm-200 to-peach-200 bg-clip-text text-transparent mb-4">
           {hotel.currency}
           {hotel.pricePerNight.toLocaleString()}/night
         </div>
@@ -396,14 +405,14 @@ function HotelCard({
         <div className="flex gap-2">
           <button
             onClick={() => onEdit(hotel.id)}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors text-sm font-medium"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-warm-100 to-peach-100 dark:from-neutral-700 dark:to-neutral-600 border border-warm-200/50 dark:border-neutral-500 text-neutral-700 dark:text-neutral-300 rounded-xl hover:from-warm-200 hover:to-peach-200 hover:text-white transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
           >
             <Pencil className="w-4 h-4" />
             Edit
           </button>
           <button
             onClick={() => onTogglePublish(hotel.id, hotel.isPublished)}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors text-sm font-medium"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-xl hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-800/30 dark:hover:to-indigo-800/30 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
           >
             {hotel.isPublished ? (
               <>
@@ -419,7 +428,7 @@ function HotelCard({
           </button>
           <button
             onClick={() => onDelete("hotel", hotel.id, hotel.name)}
-            className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+            className="px-3 py-2.5 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 rounded-xl hover:from-red-100 hover:to-rose-100 dark:hover:from-red-800/30 dark:hover:to-rose-800/30 transition-all duration-200 shadow-sm hover:shadow-md"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -446,53 +455,56 @@ function RestaurantCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-neutral-50 dark:bg-neutral-800 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition-shadow"
+      className="bg-gradient-to-br from-white to-peach-50/30 dark:from-neutral-800 dark:to-neutral-700/50 rounded-2xl overflow-hidden border border-peach-100/50 dark:border-neutral-600/50 hover:shadow-xl hover:shadow-peach-200/10 dark:hover:shadow-neutral-900/20 transition-all duration-300 hover:-translate-y-1 group"
     >
       {/* Image */}
-      <div className="relative h-48 bg-neutral-200 dark:bg-neutral-700">
+      <div className="relative h-48 bg-gradient-to-br from-peach-100 to-orange-100 dark:from-neutral-700 dark:to-neutral-600 overflow-hidden">
         {restaurant.featuredImage ? (
           <Image
             src={restaurant.featuredImage}
             alt={restaurant.name}
             fill
-            className="object-cover"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <UtensilsCrossed className="w-16 h-16 text-neutral-400" />
+            <UtensilsCrossed className="w-16 h-16 text-peach-300 dark:text-peach-200" />
           </div>
         )}
         {/* Published Badge */}
         <div className="absolute top-3 right-3">
           {restaurant.isPublished ? (
-            <span className="px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full">
+            <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-medium rounded-full shadow-lg">
               Published
             </span>
           ) : (
-            <span className="px-3 py-1 bg-neutral-500 text-white text-xs font-medium rounded-full">
+            <span className="px-3 py-1 bg-gradient-to-r from-neutral-500 to-neutral-600 text-white text-xs font-medium rounded-full shadow-lg">
               Draft
             </span>
           )}
         </div>
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 line-clamp-1">
+      <div className="p-5">
+        <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2 line-clamp-1 group-hover:text-peach-200 transition-colors">
           {restaurant.name}
         </h3>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2">
+        <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 flex items-center gap-1">
+          <span className="w-1 h-1 bg-peach-200 rounded-full"></span>
           {restaurant.location}
         </p>
         <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2 line-clamp-2">
           {restaurant.description}
         </p>
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-peach-100 dark:bg-peach-900/20 px-2 py-1 rounded-lg">
             {restaurant.cuisine}
           </span>
           <span className="text-sm text-neutral-500">•</span>
-          <span className="text-sm font-bold text-warm-200">
+          <span className="text-sm font-bold bg-gradient-to-r from-peach-200 to-orange-200 bg-clip-text text-transparent">
             {restaurant.priceRange}
           </span>
         </div>
@@ -501,7 +513,7 @@ function RestaurantCard({
         <div className="flex gap-2">
           <button
             onClick={() => onEdit(restaurant.id)}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors text-sm font-medium"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-peach-100 to-orange-100 dark:from-neutral-700 dark:to-neutral-600 border border-peach-200/50 dark:border-neutral-500 text-neutral-700 dark:text-neutral-300 rounded-xl hover:from-peach-200 hover:to-orange-200 hover:text-white transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
           >
             <Pencil className="w-4 h-4" />
             Edit
@@ -510,7 +522,7 @@ function RestaurantCard({
             onClick={() =>
               onTogglePublish(restaurant.id, restaurant.isPublished)
             }
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors text-sm font-medium"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-xl hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-800/30 dark:hover:to-indigo-800/30 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
           >
             {restaurant.isPublished ? (
               <>
@@ -528,7 +540,7 @@ function RestaurantCard({
             onClick={() =>
               onDelete("restaurant", restaurant.id, restaurant.name)
             }
-            className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+            className="px-3 py-2.5 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 rounded-xl hover:from-red-100 hover:to-rose-100 dark:hover:from-red-800/30 dark:hover:to-rose-800/30 transition-all duration-200 shadow-sm hover:shadow-md"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -548,29 +560,37 @@ function EmptyState({
 }) {
   const isHotel = type === "hotels";
   const Icon = isHotel ? HotelIcon : UtensilsCrossed;
+  const gradientColors = isHotel
+    ? "from-warm-100 to-peach-100 dark:from-warm-900/20 dark:to-peach-900/20"
+    : "from-peach-100 to-orange-100 dark:from-peach-900/20 dark:to-orange-900/20";
+  const iconColor = isHotel
+    ? "text-warm-300 dark:text-warm-200"
+    : "text-peach-300 dark:text-peach-200";
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="flex flex-col items-center justify-center py-16 px-4 text-center"
+      className="flex flex-col items-center justify-center py-20 px-4 text-center"
     >
-      <div className="w-20 h-20 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
-        <Icon className="w-10 h-10 text-neutral-400" />
+      <div
+        className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${gradientColors} flex items-center justify-center mb-6 shadow-lg`}
+      >
+        <Icon className={`w-12 h-12 ${iconColor}`} />
       </div>
-      <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+      <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3">
         No {type} yet
       </h3>
-      <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-md">
+      <p className="text-neutral-600 dark:text-neutral-400 mb-8 max-w-md text-lg">
         You haven't added any {type} yet. Start by adding your first{" "}
-        {isHotel ? "hotel" : "restaurant"}.
+        {isHotel ? "hotel" : "restaurant"} to showcase your business.
       </p>
       <button
         onClick={onAdd}
-        className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-warm-200 to-peach-200 hover:from-warm-300 hover:to-peach-300 text-white rounded-lg transition-all shadow-lg font-medium"
+        className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-warm-200 to-peach-200 hover:from-warm-300 hover:to-peach-300 text-white rounded-xl transition-all duration-300 shadow-xl hover:shadow-2xl font-semibold text-lg hover:-translate-y-1"
       >
-        <Plus className="w-5 h-5" />
+        <Plus className="w-6 h-6" />
         Add {isHotel ? "Hotel" : "Restaurant"}
       </button>
     </motion.div>

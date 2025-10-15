@@ -3,23 +3,15 @@
 import { motion } from "framer-motion";
 import { Heart, MapPin, Star, Clock, Phone, Globe } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-interface Restaurant {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  location: string;
-  rating: number;
-  reviewCount: number;
-  priceRange: string;
-  cuisine: string;
-  category: string;
-  openingHours: string;
-  contact: string;
-}
+import { useSession } from "next-auth/react";
+import { Restaurant } from "@/lib/db/schema";
+import {
+  toggleBookmarkAction,
+  checkBookmarkStatusAction,
+} from "@/app/(dashboard)/actions/bookmark-actions";
+import { toast } from "sonner";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -28,7 +20,28 @@ interface RestaurantCardProps {
 
 export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
+
+  // Check bookmark status on mount
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (status === "authenticated" && session?.user?.id) {
+        const result = await checkBookmarkStatusAction(
+          "restaurant",
+          restaurant.id
+        );
+        if (result.success) {
+          setIsBookmarked(result.isBookmarked);
+        }
+      }
+      setIsCheckingStatus(false);
+    };
+
+    checkStatus();
+  }, [restaurant.id, session, status]);
 
   const getPriceRangeColor = (range: string) => {
     switch (range) {
@@ -49,6 +62,56 @@ export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
     router.push(`/hotels-restaurants/restaurants/${restaurant.id}`);
   };
 
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    // Check if user is authenticated
+    if (status === "unauthenticated") {
+      toast.error("Please sign in to bookmark restaurants");
+      router.push("/login");
+      return;
+    }
+
+    if (status === "loading" || isTogglingBookmark) {
+      return;
+    }
+
+    setIsTogglingBookmark(true);
+
+    try {
+      const result = await toggleBookmarkAction({
+        contentType: "restaurant",
+        contentId: restaurant.id,
+      });
+
+      if (result.success) {
+        setIsBookmarked(result.isBookmarked || false);
+        toast.success(
+          result.isBookmarked
+            ? "Restaurant added to bookmarks"
+            : "Restaurant removed from bookmarks"
+        );
+      } else {
+        toast.error(result.message || "Failed to update bookmark");
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsTogglingBookmark(false);
+    }
+  };
+
+  // Parse rating from string to number
+  const rating = parseFloat(restaurant.rating || "0");
+  // Get the featured image or first gallery image
+  const image =
+    restaurant.featuredImage ||
+    (Array.isArray(restaurant.images) && restaurant.images[0]) ||
+    "/images/hotel-image-one.jpg";
+  // Get contact phone from contact object
+  const contactPhone = restaurant.contact?.phone || "N/A";
+
   return (
     <div
       onClick={handleCardClick}
@@ -57,7 +120,7 @@ export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
       {/* Image Container */}
       <div className="relative h-48 md:h-56 overflow-hidden">
         <Image
-          src={restaurant.image}
+          src={image}
           alt={restaurant.name}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -65,18 +128,16 @@ export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
 
         {/* Bookmark Button */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsBookmarked(!isBookmarked);
-          }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-colors"
+          onClick={handleBookmarkClick}
+          disabled={isTogglingBookmark}
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Heart
-            className={`w-4 h-4 ${
+            className={`w-4 h-4 transition-all ${
               isBookmarked
                 ? "fill-red-500 text-red-500"
                 : "text-neutral-600 dark:text-neutral-400"
-            }`}
+            } ${isTogglingBookmark ? "scale-90" : "scale-100"}`}
           />
         </button>
 
@@ -129,7 +190,7 @@ export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
               <Star
                 key={i}
                 className={`w-4 h-4 ${
-                  i < Math.floor(restaurant.rating)
+                  i < Math.floor(rating)
                     ? "fill-yellow-400 text-yellow-400"
                     : "text-neutral-300 dark:text-neutral-600"
                 }`}
@@ -137,10 +198,10 @@ export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
             ))}
           </div>
           <span className="text-sm font-medium text-neutral-900 dark:text-white">
-            {restaurant.rating}
+            {rating.toFixed(1)}
           </span>
           <span className="text-sm text-neutral-500 dark:text-neutral-400">
-            ({restaurant.reviewCount} reviews)
+            ({restaurant.reviewCount || 0} reviews)
           </span>
         </div>
 
@@ -148,11 +209,11 @@ export const RestaurantCard = ({ restaurant, index }: RestaurantCardProps) => {
         <div className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-700 mt-auto">
           <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
             <Clock className="w-4 h-4 text-warm-200" />
-            <span>{restaurant.openingHours}</span>
+            <span>{restaurant.openingHours || "Hours not specified"}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
             <Phone className="w-4 h-4 text-peach-200" />
-            <span>{restaurant.contact}</span>
+            <span>{contactPhone}</span>
           </div>
           <div className="flex items-center justify-between mt-4">
             <button className="px-4 py-2 bg-gradient-to-r from-warm-200 to-peach-200 text-white text-sm font-semibold rounded-lg hover:from-warm-300 hover:to-peach-300 transition-all duration-200 shadow-lg hover:shadow-xl">

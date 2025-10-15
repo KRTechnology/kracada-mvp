@@ -14,6 +14,96 @@ type ActionResponse<T> = {
 };
 
 /**
+ * Get all published hotels (public access)
+ */
+export async function getPublishedHotelsAction(): Promise<
+  ActionResponse<Hotel[]>
+> {
+  try {
+    const publishedHotels = await db
+      .select()
+      .from(hotels)
+      .where(eq(hotels.isPublished, true))
+      .orderBy(hotels.createdAt);
+
+    return { success: true, data: publishedHotels };
+  } catch (error) {
+    console.error("Error fetching published hotels:", error);
+    return { success: false, error: "Failed to fetch hotels" };
+  }
+}
+
+/**
+ * Get all published restaurants (public access)
+ */
+export async function getPublishedRestaurantsAction(): Promise<
+  ActionResponse<Restaurant[]>
+> {
+  try {
+    const publishedRestaurants = await db
+      .select()
+      .from(restaurants)
+      .where(eq(restaurants.isPublished, true))
+      .orderBy(restaurants.createdAt);
+
+    return { success: true, data: publishedRestaurants };
+  } catch (error) {
+    console.error("Error fetching published restaurants:", error);
+    return { success: false, error: "Failed to fetch restaurants" };
+  }
+}
+
+/**
+ * Get a single published hotel by ID (public access)
+ */
+export async function getPublishedHotelByIdAction(
+  hotelId: string
+): Promise<ActionResponse<Hotel>> {
+  try {
+    const hotel = await db
+      .select()
+      .from(hotels)
+      .where(and(eq(hotels.id, hotelId), eq(hotels.isPublished, true)))
+      .limit(1);
+
+    if (!hotel.length) {
+      return { success: false, error: "Hotel not found" };
+    }
+
+    return { success: true, data: hotel[0] };
+  } catch (error) {
+    console.error("Error fetching hotel:", error);
+    return { success: false, error: "Failed to fetch hotel" };
+  }
+}
+
+/**
+ * Get a single published restaurant by ID (public access)
+ */
+export async function getPublishedRestaurantByIdAction(
+  restaurantId: string
+): Promise<ActionResponse<Restaurant>> {
+  try {
+    const restaurant = await db
+      .select()
+      .from(restaurants)
+      .where(
+        and(eq(restaurants.id, restaurantId), eq(restaurants.isPublished, true))
+      )
+      .limit(1);
+
+    if (!restaurant.length) {
+      return { success: false, error: "Restaurant not found" };
+    }
+
+    return { success: true, data: restaurant[0] };
+  } catch (error) {
+    console.error("Error fetching restaurant:", error);
+    return { success: false, error: "Failed to fetch restaurant" };
+  }
+}
+
+/**
  * Get all hotels for the authenticated user
  */
 export async function getUserHotelsAction(): Promise<ActionResponse<Hotel[]>> {

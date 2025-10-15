@@ -3,7 +3,12 @@
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
-export type BookmarksSubTabType = "Jobs" | "Articles" | "Videos" | "Hotels";
+export type BookmarksSubTabType =
+  | "Jobs"
+  | "Articles"
+  | "Videos"
+  | "Hotels"
+  | "Restaurants";
 
 interface BookmarksNavigationProps {}
 
@@ -34,6 +39,12 @@ const bookmarksSubTabs: SubTabItem[] = [
     path: "/dashboard/bookmarks/hotels",
     count: 0,
   },
+  {
+    id: "Restaurants",
+    label: "Restaurants",
+    path: "/dashboard/bookmarks/restaurants",
+    count: 0,
+  },
 ];
 
 const getActiveSubTabFromPath = (pathname: string): BookmarksSubTabType => {
@@ -41,6 +52,8 @@ const getActiveSubTabFromPath = (pathname: string): BookmarksSubTabType => {
   if (pathname.includes("/dashboard/bookmarks/articles")) return "Articles";
   if (pathname.includes("/dashboard/bookmarks/videos")) return "Videos";
   if (pathname.includes("/dashboard/bookmarks/hotels")) return "Hotels";
+  if (pathname.includes("/dashboard/bookmarks/restaurants"))
+    return "Restaurants";
   return "Jobs"; // Default fallback
 };
 

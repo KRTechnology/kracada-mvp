@@ -3,22 +3,15 @@
 import { motion } from "framer-motion";
 import { Heart, MapPin, Star, Wifi, Car, Coffee } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-interface Hotel {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  location: string;
-  rating: number;
-  reviewCount: number;
-  pricePerNight: number;
-  currency: string;
-  amenities: string[];
-  category: string;
-}
+import { useSession } from "next-auth/react";
+import { Hotel } from "@/lib/db/schema";
+import {
+  toggleBookmarkAction,
+  checkBookmarkStatusAction,
+} from "@/app/(dashboard)/actions/bookmark-actions";
+import { toast } from "sonner";
 
 interface HotelCardProps {
   hotel: Hotel;
@@ -27,24 +20,93 @@ interface HotelCardProps {
 
 export const HotelCard = ({ hotel, index }: HotelCardProps) => {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
+
+  // Check bookmark status on mount
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (status === "authenticated" && session?.user?.id) {
+        const result = await checkBookmarkStatusAction("hotel", hotel.id);
+        if (result.success) {
+          setIsBookmarked(result.isBookmarked);
+        }
+      }
+      setIsCheckingStatus(false);
+    };
+
+    checkStatus();
+  }, [hotel.id, session, status]);
 
   const getAmenityIcon = (amenity: string) => {
-    switch (amenity.toLowerCase()) {
-      case "wi-fi":
-        return <Wifi className="w-4 h-4" />;
-      case "parking":
-        return <Car className="w-4 h-4" />;
-      case "breakfast":
-        return <Coffee className="w-4 h-4" />;
-      default:
-        return null;
+    const lowerAmenity = amenity.toLowerCase();
+    if (lowerAmenity.includes("wi-fi") || lowerAmenity.includes("wifi")) {
+      return <Wifi className="w-4 h-4" />;
     }
+    if (lowerAmenity.includes("parking") || lowerAmenity.includes("park")) {
+      return <Car className="w-4 h-4" />;
+    }
+    if (lowerAmenity.includes("breakfast") || lowerAmenity.includes("meal")) {
+      return <Coffee className="w-4 h-4" />;
+    }
+    return null;
   };
 
   const handleCardClick = () => {
     router.push(`/hotels-restaurants/hotels/${hotel.id}`);
   };
+
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    // Check if user is authenticated
+    if (status === "unauthenticated") {
+      toast.error("Please sign in to bookmark hotels");
+      router.push("/login");
+      return;
+    }
+
+    if (status === "loading" || isTogglingBookmark) {
+      return;
+    }
+
+    setIsTogglingBookmark(true);
+
+    try {
+      const result = await toggleBookmarkAction({
+        contentType: "hotel",
+        contentId: hotel.id,
+      });
+
+      if (result.success) {
+        setIsBookmarked(result.isBookmarked || false);
+        toast.success(
+          result.isBookmarked
+            ? "Hotel added to bookmarks"
+            : "Hotel removed from bookmarks"
+        );
+      } else {
+        toast.error(result.message || "Failed to update bookmark");
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsTogglingBookmark(false);
+    }
+  };
+
+  // Parse rating from string to number
+  const rating = parseFloat(hotel.rating || "0");
+  // Get amenities array (ensure it's an array)
+  const amenities = Array.isArray(hotel.amenities) ? hotel.amenities : [];
+  // Get the featured image or first gallery image
+  const image =
+    hotel.featuredImage ||
+    (Array.isArray(hotel.images) && hotel.images[0]) ||
+    "/images/hotel-image-one.jpg";
 
   return (
     <div
@@ -54,7 +116,7 @@ export const HotelCard = ({ hotel, index }: HotelCardProps) => {
       {/* Image Container */}
       <div className="relative h-48 md:h-56 overflow-hidden">
         <Image
-          src={hotel.image}
+          src={image}
           alt={hotel.name}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -62,18 +124,16 @@ export const HotelCard = ({ hotel, index }: HotelCardProps) => {
 
         {/* Bookmark Button */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsBookmarked(!isBookmarked);
-          }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-colors"
+          onClick={handleBookmarkClick}
+          disabled={isTogglingBookmark}
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Heart
-            className={`w-4 h-4 ${
+            className={`w-4 h-4 transition-all ${
               isBookmarked
                 ? "fill-red-500 text-red-500"
                 : "text-neutral-600 dark:text-neutral-400"
-            }`}
+            } ${isTogglingBookmark ? "scale-90" : "scale-100"}`}
           />
         </button>
 
@@ -112,7 +172,7 @@ export const HotelCard = ({ hotel, index }: HotelCardProps) => {
               <Star
                 key={i}
                 className={`w-4 h-4 ${
-                  i < Math.floor(hotel.rating)
+                  i < Math.floor(rating)
                     ? "fill-yellow-400 text-yellow-400"
                     : "text-neutral-300 dark:text-neutral-600"
                 }`}
@@ -120,16 +180,16 @@ export const HotelCard = ({ hotel, index }: HotelCardProps) => {
             ))}
           </div>
           <span className="text-sm font-medium text-neutral-900 dark:text-white">
-            {hotel.rating}
+            {rating.toFixed(1)}
           </span>
           <span className="text-sm text-neutral-500 dark:text-neutral-400">
-            ({hotel.reviewCount} reviews)
+            ({hotel.reviewCount || 0} reviews)
           </span>
         </div>
 
         {/* Amenities */}
         <div className="flex items-center gap-3 mb-4">
-          {hotel.amenities.slice(0, 3).map((amenity, i) => (
+          {amenities.slice(0, 3).map((amenity, i) => (
             <div
               key={i}
               className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400"

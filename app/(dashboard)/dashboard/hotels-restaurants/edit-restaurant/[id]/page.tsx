@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function EditRestaurantPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await auth();
 
@@ -22,8 +22,11 @@ export default async function EditRestaurantPage({
     redirect("/login");
   }
 
+  // Await params
+  const { id } = await params;
+
   // Fetch restaurant data
-  const restaurantResult = await getRestaurantByIdAction(params.id);
+  const restaurantResult = await getRestaurantByIdAction(id);
 
   if (!restaurantResult.success || !restaurantResult.data) {
     redirect("/dashboard/hotels-restaurants");

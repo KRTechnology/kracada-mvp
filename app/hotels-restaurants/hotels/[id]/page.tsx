@@ -1,4 +1,6 @@
 import { HotelDetailContent } from "@/components/specific/hotels-restaurants/HotelDetailContent";
+import { getPublishedHotelByIdAction } from "@/app/(dashboard)/actions/hotels-restaurants-actions";
+import { redirect } from "next/navigation";
 
 interface HotelDetailPageProps {
   params: Promise<{
@@ -10,5 +12,13 @@ export default async function HotelDetailPage({
   params,
 }: HotelDetailPageProps) {
   const { id } = await params;
-  return <HotelDetailContent hotelId={id} />;
+
+  // Fetch hotel data from database
+  const hotelResult = await getPublishedHotelByIdAction(id);
+
+  if (!hotelResult.success || !hotelResult.data) {
+    redirect("/hotels-restaurants/hotels");
+  }
+
+  return <HotelDetailContent hotel={hotelResult.data} />;
 }

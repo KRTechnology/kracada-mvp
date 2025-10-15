@@ -14,6 +14,7 @@ export const bookmarkContentTypeEnum = pgEnum("bookmark_content_type", [
   "article",
   "video",
   "hotel",
+  "restaurant",
 ]);
 
 // Bookmarks table - polymorphic bookmarks for different content types
@@ -50,7 +51,12 @@ export const bookmarks = pgTable(
 // Types
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type NewBookmark = typeof bookmarks.$inferInsert;
-export type BookmarkContentType = "job" | "article" | "video" | "hotel";
+export type BookmarkContentType =
+  | "job"
+  | "article"
+  | "video"
+  | "hotel"
+  | "restaurant";
 
 // Extended bookmark types for frontend use
 export interface BookmarkWithContent extends Bookmark {

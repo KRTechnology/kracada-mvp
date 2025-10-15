@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Star,
   MapPin,
@@ -20,9 +20,16 @@ import {
 import { Button } from "@/components/common/button";
 import { CommentsSection } from "./CommentsSection";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { Hotel } from "@/lib/db/schema";
+import {
+  toggleBookmarkAction,
+  checkBookmarkStatusAction,
+} from "@/app/(dashboard)/actions/bookmark-actions";
+import { toast } from "sonner";
 
 interface HotelDetailContentProps {
-  hotelId: string;
+  hotel: Hotel;
 }
 
 // Sample hotel detail data - in real app, this would come from API
@@ -82,23 +89,82 @@ const hotelDetailData = {
   },
 };
 
-export const HotelDetailContent = ({ hotelId }: HotelDetailContentProps) => {
+export const HotelDetailContent = ({ hotel }: HotelDetailContentProps) => {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
 
-  const hotel = hotelDetailData; // In real app, fetch by hotelId
+  // Check bookmark status on mount
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (status === "authenticated" && session?.user?.id) {
+        const result = await checkBookmarkStatusAction("hotel", hotel.id);
+        if (result.success) {
+          setIsBookmarked(result.isBookmarked);
+        }
+      }
+      setIsCheckingStatus(false);
+    };
+
+    checkStatus();
+  }, [hotel.id, session, status]);
+
+  // Parse rating and prepare data
+  const rating = parseFloat(hotel.rating || "0");
+  const images = [
+    hotel.featuredImage,
+    ...(Array.isArray(hotel.images) ? hotel.images : []),
+  ].filter(Boolean);
+  const amenities = Array.isArray(hotel.amenities) ? hotel.amenities : [];
+  const features = Array.isArray(hotel.features) ? hotel.features : [];
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === hotel.images.length - 1 ? 0 : prev + 1
-    );
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? hotel.images.length - 1 : prev - 1
-    );
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleBookmarkClick = async () => {
+    // Check if user is authenticated
+    if (status === "unauthenticated") {
+      toast.error("Please sign in to bookmark hotels");
+      router.push("/login");
+      return;
+    }
+
+    if (status === "loading" || isTogglingBookmark) {
+      return;
+    }
+
+    setIsTogglingBookmark(true);
+
+    try {
+      const result = await toggleBookmarkAction({
+        contentType: "hotel",
+        contentId: hotel.id,
+      });
+
+      if (result.success) {
+        setIsBookmarked(result.isBookmarked || false);
+        toast.success(
+          result.isBookmarked
+            ? "Hotel added to bookmarks"
+            : "Hotel removed from bookmarks"
+        );
+      } else {
+        toast.error(result.message || "Failed to update bookmark");
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsTogglingBookmark(false);
+    }
   };
 
   return (
@@ -147,15 +213,15 @@ export const HotelDetailContent = ({ hotelId }: HotelDetailContentProps) => {
                         <Star
                           key={i}
                           className={`w-4 h-4 ${
-                            i < Math.floor(hotel.rating)
+                            i < Math.floor(rating)
                               ? "fill-yellow-400 text-yellow-400"
                               : "text-neutral-300 dark:text-neutral-600"
                           }`}
                         />
                       ))}
                     </div>
-                    <span className="font-medium">{hotel.rating}</span>
-                    <span>({hotel.reviewCount} reviews)</span>
+                    <span className="font-medium">{rating.toFixed(1)}</span>
+                    <span>({hotel.reviewCount || 0} reviews)</span>
                   </div>
                 </div>
               </div>
@@ -167,15 +233,16 @@ export const HotelDetailContent = ({ hotelId }: HotelDetailContentProps) => {
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setIsBookmarked(!isBookmarked)}
-                className="w-12 h-12 rounded-full border-2 border-neutral-200 dark:border-neutral-700 flex items-center justify-center hover:border-warm-200 dark:hover:border-warm-200 transition-colors"
+                onClick={handleBookmarkClick}
+                disabled={isTogglingBookmark}
+                className="w-12 h-12 rounded-full border-2 border-neutral-200 dark:border-neutral-700 flex items-center justify-center hover:border-warm-200 dark:hover:border-warm-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Heart
-                  className={`w-5 h-5 ${
+                  className={`w-5 h-5 transition-all ${
                     isBookmarked
                       ? "fill-red-500 text-red-500"
                       : "text-neutral-600 dark:text-neutral-400"
-                  }`}
+                  } ${isTogglingBookmark ? "scale-90" : "scale-100"}`}
                 />
               </button>
               <button className="w-12 h-12 rounded-full border-2 border-neutral-200 dark:border-neutral-700 flex items-center justify-center hover:border-warm-200 dark:hover:border-warm-200 transition-colors">
@@ -194,7 +261,7 @@ export const HotelDetailContent = ({ hotelId }: HotelDetailContentProps) => {
         >
           <div className="relative h-96 md:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
             <Image
-              src={hotel.images[currentImageIndex]}
+              src={images[currentImageIndex] || "/images/hotel-image-one.jpg"}
               alt={hotel.name}
               fill
               className="object-cover"
@@ -270,7 +337,7 @@ export const HotelDetailContent = ({ hotelId }: HotelDetailContentProps) => {
                 Amenities & Services
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {hotel.amenities.map((amenity, index) => (
+                {amenities.map((amenity, index) => (
                   <div
                     key={index}
                     className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg"
@@ -294,7 +361,7 @@ export const HotelDetailContent = ({ hotelId }: HotelDetailContentProps) => {
                 Special Features
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {hotel.features.map((feature, index) => (
+                {features.map((feature, index) => (
                   <div
                     key={index}
                     className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-xl hover:border-warm-200 dark:hover:border-warm-200 transition-colors"
@@ -361,7 +428,7 @@ export const HotelDetailContent = ({ hotelId }: HotelDetailContentProps) => {
             </motion.div>
 
             {/* Comments Section */}
-            <CommentsSection itemId={hotelId} itemType="hotel" />
+            <CommentsSection itemId={hotel.id} itemType="hotel" />
           </div>
 
           {/* Sidebar */}

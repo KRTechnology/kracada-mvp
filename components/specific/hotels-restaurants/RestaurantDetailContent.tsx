@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Star,
   MapPin,
@@ -20,9 +20,16 @@ import {
 import { Button } from "@/components/common/button";
 import { CommentsSection } from "./CommentsSection";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { Restaurant } from "@/lib/db/schema";
+import {
+  toggleBookmarkAction,
+  checkBookmarkStatusAction,
+} from "@/app/(dashboard)/actions/bookmark-actions";
+import { toast } from "sonner";
 
 interface RestaurantDetailContentProps {
-  restaurantId: string;
+  restaurant: Restaurant;
 }
 
 // Sample restaurant detail data - in real app, this would come from API
@@ -143,25 +150,97 @@ const restaurantDetailData = {
 };
 
 export const RestaurantDetailContent = ({
-  restaurantId,
+  restaurant,
 }: RestaurantDetailContentProps) => {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
   const [activeMenuCategory, setActiveMenuCategory] = useState(0);
 
-  const restaurant = restaurantDetailData; // In real app, fetch by restaurantId
+  // Check bookmark status on mount
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (status === "authenticated" && session?.user?.id) {
+        const result = await checkBookmarkStatusAction(
+          "restaurant",
+          restaurant.id
+        );
+        if (result.success) {
+          setIsBookmarked(result.isBookmarked);
+        }
+      }
+      setIsCheckingStatus(false);
+    };
+
+    checkStatus();
+  }, [restaurant.id, session, status]);
+
+  // Parse rating and prepare data
+  const rating = parseFloat(restaurant.rating || "0");
+  const images = [
+    restaurant.featuredImage,
+    ...(Array.isArray(restaurant.images) ? restaurant.images : []),
+  ].filter(Boolean);
+  const specialties = Array.isArray(restaurant.specialties)
+    ? restaurant.specialties
+    : [];
+  const ambiance = Array.isArray(restaurant.ambiance)
+    ? restaurant.ambiance
+    : [];
+  const menuHighlights = Array.isArray(restaurant.menuHighlights)
+    ? restaurant.menuHighlights
+    : [];
+  const contactPhone = restaurant.contact?.phone || "N/A";
+  const contactEmail = restaurant.contact?.email || "";
+  const contactWebsite = restaurant.contact?.website || "";
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === restaurant.images.length - 1 ? 0 : prev + 1
-    );
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? restaurant.images.length - 1 : prev - 1
-    );
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleBookmarkClick = async () => {
+    // Check if user is authenticated
+    if (status === "unauthenticated") {
+      toast.error("Please sign in to bookmark restaurants");
+      router.push("/login");
+      return;
+    }
+
+    if (status === "loading" || isTogglingBookmark) {
+      return;
+    }
+
+    setIsTogglingBookmark(true);
+
+    try {
+      const result = await toggleBookmarkAction({
+        contentType: "restaurant",
+        contentId: restaurant.id,
+      });
+
+      if (result.success) {
+        setIsBookmarked(result.isBookmarked || false);
+        toast.success(
+          result.isBookmarked
+            ? "Restaurant added to bookmarks"
+            : "Restaurant removed from bookmarks"
+        );
+      } else {
+        toast.error(result.message || "Failed to update bookmark");
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsTogglingBookmark(false);
+    }
   };
 
   const getPriceRangeColor = (range: string) => {
@@ -239,15 +318,15 @@ export const RestaurantDetailContent = ({
                         <Star
                           key={i}
                           className={`w-4 h-4 ${
-                            i < Math.floor(restaurant.rating)
+                            i < Math.floor(rating)
                               ? "fill-yellow-400 text-yellow-400"
                               : "text-neutral-300 dark:text-neutral-600"
                           }`}
                         />
                       ))}
                     </div>
-                    <span className="font-medium">{restaurant.rating}</span>
-                    <span>({restaurant.reviewCount} reviews)</span>
+                    <span className="font-medium">{rating.toFixed(1)}</span>
+                    <span>({restaurant.reviewCount || 0} reviews)</span>
                   </div>
                 </div>
               </div>
@@ -259,15 +338,16 @@ export const RestaurantDetailContent = ({
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setIsBookmarked(!isBookmarked)}
-                className="w-12 h-12 rounded-full border-2 border-neutral-200 dark:border-neutral-700 flex items-center justify-center hover:border-warm-200 dark:hover:border-warm-200 transition-colors"
+                onClick={handleBookmarkClick}
+                disabled={isTogglingBookmark}
+                className="w-12 h-12 rounded-full border-2 border-neutral-200 dark:border-neutral-700 flex items-center justify-center hover:border-warm-200 dark:hover:border-warm-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Heart
-                  className={`w-5 h-5 ${
+                  className={`w-5 h-5 transition-all ${
                     isBookmarked
                       ? "fill-red-500 text-red-500"
                       : "text-neutral-600 dark:text-neutral-400"
-                  }`}
+                  } ${isTogglingBookmark ? "scale-90" : "scale-100"}`}
                 />
               </button>
               <button className="w-12 h-12 rounded-full border-2 border-neutral-200 dark:border-neutral-700 flex items-center justify-center hover:border-warm-200 dark:hover:border-warm-200 transition-colors">
@@ -286,7 +366,7 @@ export const RestaurantDetailContent = ({
         >
           <div className="relative h-96 md:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
             <Image
-              src={restaurant.images[currentImageIndex]}
+              src={images[currentImageIndex] || "/images/hotel-image-one.jpg"}
               alt={restaurant.name}
               fill
               className="object-cover"
@@ -525,7 +605,7 @@ export const RestaurantDetailContent = ({
             </motion.div>
 
             {/* Comments Section */}
-            <CommentsSection itemId={restaurantId} itemType="restaurant" />
+            <CommentsSection itemId={restaurant.id} itemType="restaurant" />
           </div>
 
           {/* Sidebar */}
