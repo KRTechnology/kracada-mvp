@@ -1,5 +1,7 @@
-import { NewsArticleHeader } from "@/components/specific/news/NewsArticleHeader";
-import { NewsArticleContent } from "@/components/specific/news/NewsArticleContent";
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getNewsPostAction } from "@/app/(dashboard)/actions/news-actions";
+import { NewsArticlePageClient } from "@/components/specific/news/NewsArticlePageClient";
 
 interface NewsArticlePageProps {
   params: Promise<{
@@ -7,15 +9,47 @@ interface NewsArticlePageProps {
   }>;
 }
 
+// Force dynamic rendering
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: NewsArticlePageProps): Promise<Metadata> {
+  const { id } = await params;
+  const result = await getNewsPostAction(id);
+
+  if (!result.success || !result.data) {
+    return {
+      title: "Post Not Found | Kracada News",
+    };
+  }
+
+  const post = result.data;
+
+  return {
+    title: `${post.title} | Kracada News`,
+    description: post.description || post.content.substring(0, 160),
+  };
+}
+
 export default async function NewsArticlePage({
   params,
 }: NewsArticlePageProps) {
   const { id } = await params;
 
-  return (
-    <div className="min-h-screen bg-white dark:bg-[#0D0D0D]">
-      <NewsArticleHeader />
-      <NewsArticleContent />
-    </div>
-  );
+  // Fetch post from database
+  const result = await getNewsPostAction(id);
+
+  if (!result.success || !result.data) {
+    notFound();
+  }
+
+  const post = result.data;
+
+  // Check if the post is not published
+  if (post.status !== "published") {
+    notFound();
+  }
+
+  return <NewsArticlePageClient post={post} />;
 }

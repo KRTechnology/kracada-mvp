@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface NewsArticle {
-  id: number;
+  id: string | number;
   author: string;
   date: string;
   title: string;

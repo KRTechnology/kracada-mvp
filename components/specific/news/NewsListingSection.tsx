@@ -1,12 +1,39 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NewsArticleCard } from "./NewsArticleCard";
 import { Pagination } from "@/components/common/Pagination";
+import { useRouter } from "next/navigation";
 
-// Sample news data - in a real app, this would come from an API
-const newsData = [
+interface NewsPost {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  featuredImage: string | null;
+  categories: string[];
+  publishedAt: Date | null;
+  createdAt: Date;
+  author: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+}
+
+interface NewsListingSectionProps {
+  initialPosts: NewsPost[];
+  initialPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// Sample news data - fallback for empty state
+const sampleNewsData = [
   {
     id: 1,
     author: "Alec Whitten",
@@ -189,20 +216,46 @@ const newsData = [
   },
 ];
 
-export const NewsListingSection = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const articlesPerPage = 6;
-  const totalPages = Math.ceil(newsData.length / articlesPerPage);
+export const NewsListingSection = ({
+  initialPosts,
+  initialPagination,
+}: NewsListingSectionProps) => {
+  const router = useRouter();
+  const [posts, setPosts] = useState(initialPosts);
+  const [pagination, setPagination] = useState(initialPagination);
+
+  // Update state when props change
+  useEffect(() => {
+    setPosts(initialPosts);
+    setPagination(initialPagination);
+  }, [initialPosts, initialPagination]);
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // In a real app, you would fetch new data here
+    router.push(`/news?page=${page}`);
   };
 
-  // Get current page articles
-  const startIndex = (currentPage - 1) * articlesPerPage;
-  const endIndex = startIndex + articlesPerPage;
-  const currentArticles = newsData.slice(startIndex, endIndex);
+  // Transform posts to match card format
+  const articlesData = posts.map((post) => ({
+    id: post.id,
+    author: post.author
+      ? `${post.author.firstName} ${post.author.lastName}`
+      : "Admin",
+    date: post.publishedAt
+      ? new Date(post.publishedAt).toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : new Date(post.createdAt).toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }),
+    title: post.title,
+    description: post.description || post.title,
+    image: post.featuredImage || "/images/news-sample-image.jpg",
+    categories: post.categories || [],
+  }));
 
   return (
     <section className="bg-white dark:bg-dark">
@@ -218,31 +271,43 @@ export const NewsListingSection = () => {
         </motion.h2>
 
         {/* News Articles Grid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
-        >
-          {currentArticles.map((article, index) => (
+        {articlesData.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-neutral-600 dark:text-neutral-400 text-lg">
+              No news posts available yet. Check back soon!
+            </p>
+          </div>
+        ) : (
+          <>
             <motion.div
-              key={article.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="h-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
             >
-              <NewsArticleCard article={article} index={index} />
+              {articlesData.map((article, index) => (
+                <motion.div
+                  key={article.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className="h-full"
+                >
+                  <NewsArticleCard article={article} index={index} />
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
-        </motion.div>
 
-        {/* Pagination */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </>
+        )}
       </div>
     </section>
   );

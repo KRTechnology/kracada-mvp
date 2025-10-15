@@ -6,20 +6,27 @@ import { useState } from "react";
 import { Input } from "@/components/common/input";
 import { Button } from "@/components/common/button";
 
-export const NewsListingHeader = () => {
+interface NewsListingHeaderProps {
+  totalResults?: number;
+}
+
+export const NewsListingHeader = ({
+  totalResults = 0,
+}: NewsListingHeaderProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("Most Recent");
 
   const categories = [
     "All Categories",
-    "Leadership",
-    "Management",
-    "Product",
-    "Research",
-    "Frameworks",
     "Technology",
     "Business",
+    "Politics",
+    "Sports",
+    "Entertainment",
+    "Health",
+    "Science",
+    "Education",
   ];
 
   const sortOptions = [
@@ -63,7 +70,8 @@ export const NewsListingHeader = () => {
 
           {/* Results Count */}
           <div className="text-sm text-neutral-600 dark:text-neutral-400">
-            Displaying 18 results
+            Displaying {totalResults}{" "}
+            {totalResults === 1 ? "result" : "results"}
           </div>
 
           {/* Sort Dropdown */}

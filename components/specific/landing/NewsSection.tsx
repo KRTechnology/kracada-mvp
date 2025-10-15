@@ -5,8 +5,13 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import NewsCard from "./NewsCard";
 import NewsPagination from "./NewsPagination";
+import { HomePageNewsPost } from "@/app/actions/home-actions";
 
-const NewsSection = () => {
+interface NewsSectionProps {
+  latestNews: HomePageNewsPost[];
+}
+
+const NewsSection = ({ latestNews }: NewsSectionProps) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -30,47 +35,16 @@ const NewsSection = () => {
     },
   };
 
-  // Sample news data
-  const newsData: Array<{
-    id: number;
-    author: string;
-    date: string;
-    title: string;
-    description: string;
-    image: string;
-    type: "image" | "video";
-  }> = [
-    {
-      id: 1,
-      author: "Alec Whitten",
-      date: "17 Jan 2025",
-      title: "Bill Walsh leadership lessons",
-      description:
-        "Like to know the secrets of transforming a 2-14 team into a 3x Super Bowl winning Dynasty?",
-      image: "/images/news-sample-image.jpg",
-      type: "image",
-    },
-    {
-      id: 2,
-      author: "Demi Wilkinson",
-      date: "16 Jan 2025",
-      title: "PM mental models",
-      description:
-        "Mental models are simple expressions of complex processes or relationships.",
-      image: "/images/landing-hero-image.jpg",
-      type: "video",
-    },
-    {
-      id: 3,
-      author: "Alec Whitten",
-      date: "17 Jan 2025",
-      title: "Bill Walsh leadership lessons",
-      description:
-        "Like to know the secrets of transforming a 2-14 team into a 3x Super Bowl winning Dynasty?",
-      image: "/images/news-sample-image.jpg",
-      type: "image",
-    },
-  ];
+  // Transform news data to match NewsCard expected format
+  const newsData = latestNews.map((news) => ({
+    id: news.id,
+    author: news.author,
+    date: news.date,
+    title: news.title,
+    description: news.description,
+    image: news.image,
+    type: "image" as const,
+  }));
 
   return (
     <section className="py-16 lg:py-24 bg-[#301000] dark:bg-neutral-900">

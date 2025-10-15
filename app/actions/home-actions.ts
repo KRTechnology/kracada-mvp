@@ -1,7 +1,14 @@
 "use server";
 
 import { db } from "@/lib/db/drizzle";
-import { jobs, jobApplications, users, lifestylePosts } from "@/lib/db/schema";
+import {
+  jobs,
+  jobApplications,
+  users,
+  lifestylePosts,
+  newsPosts,
+  admins,
+} from "@/lib/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
@@ -329,6 +336,81 @@ export async function getLatestLifestylePostsAction(): Promise<{
     return {
       success: false,
       message: "Failed to fetch latest lifestyle posts",
+    };
+  }
+}
+
+// Types for home page news posts data
+export interface HomePageNewsPost {
+  id: string;
+  slug: string;
+  author: string;
+  date: string;
+  title: string;
+  description: string;
+  image: string;
+  categories: string[];
+}
+
+// Fetch latest 3 published news posts for home page
+export async function getLatestNewsPostsAction(): Promise<{
+  success: boolean;
+  data?: HomePageNewsPost[];
+  message?: string;
+}> {
+  try {
+    // Fetch latest 3 published news posts with author info, ordered by publication date
+    const latestNews = await db
+      .select({
+        id: newsPosts.id,
+        slug: newsPosts.slug,
+        title: newsPosts.title,
+        description: newsPosts.description,
+        featuredImage: newsPosts.featuredImage,
+        categories: newsPosts.categories,
+        publishedAt: newsPosts.publishedAt,
+        createdAt: newsPosts.createdAt,
+        authorFirstName: admins.firstName,
+        authorLastName: admins.lastName,
+      })
+      .from(newsPosts)
+      .innerJoin(admins, eq(newsPosts.authorId, admins.id))
+      .where(eq(newsPosts.status, "published"))
+      .orderBy(desc(newsPosts.publishedAt))
+      .limit(3);
+
+    // Transform the data to match HomePageNewsPost interface
+    const transformedNews: HomePageNewsPost[] = latestNews.map((post) => {
+      const authorName = `${post.authorFirstName} ${post.authorLastName}`;
+
+      const postDate = post.publishedAt || post.createdAt;
+      const formattedDate = new Date(postDate).toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+
+      return {
+        id: post.id,
+        slug: post.slug,
+        author: authorName,
+        date: formattedDate,
+        title: post.title,
+        description: post.description || "",
+        image: post.featuredImage || "/images/news-sample-image.jpg",
+        categories: post.categories ? JSON.parse(post.categories) : [],
+      };
+    });
+
+    return {
+      success: true,
+      data: transformedNews,
+    };
+  } catch (error) {
+    console.error("Error fetching latest news posts:", error);
+    return {
+      success: false,
+      message: "Failed to fetch latest news posts",
     };
   }
 }

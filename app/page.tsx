@@ -6,21 +6,25 @@ import TravelSection from "@/components/specific/landing/TravelSection";
 import {
   getLatestJobsAction,
   getLatestLifestylePostsAction,
+  getLatestNewsPostsAction,
 } from "@/app/actions/home-actions";
 import { EntertainmentQuizBanner } from "@/components/specific/entertainment/EntertainmentQuizBanner";
 
 export default async function Home() {
-  // Fetch latest jobs and lifestyle posts data
+  // Fetch latest jobs, lifestyle posts, and news posts data
   const jobsResult = await getLatestJobsAction();
   const latestJobs = jobsResult.success ? jobsResult.data || [] : [];
 
   const postsResult = await getLatestLifestylePostsAction();
   const latestPosts = postsResult.success ? postsResult.data || [] : [];
 
+  const newsResult = await getLatestNewsPostsAction();
+  const latestNews = newsResult.success ? newsResult.data || [] : [];
+
   return (
     <>
       <HeroSection />
-      <NewsSection />
+      <NewsSection latestNews={latestNews} />
       <EntertainmentQuizBanner />
       <JobsSection latestJobs={latestJobs} />
       <ArticlesSection latestPosts={latestPosts} />
