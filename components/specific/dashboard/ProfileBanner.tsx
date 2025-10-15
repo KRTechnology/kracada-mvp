@@ -52,6 +52,13 @@ export function ProfileBanner({
   const canAddCV =
     accountType === "Job Seeker" || accountType === "Contributor";
 
+  // Check if user can manage hotels and restaurants (Business Owners)
+  const canManageBusinesses = accountType === "Business Owner";
+
+  const handleManageBusinesses = () => {
+    router.push("/dashboard/hotels-restaurants");
+  };
+
   return (
     <div className="relative">
       {/* Banner Section with Padding - Apply padding to the container that holds the image */}
@@ -162,6 +169,15 @@ export function ProfileBanner({
                 className="px-4 py-2 bg-blue-500 hover:bg-blue-600 border border-blue-600 dark:border-blue-500 text-white dark:text-white rounded-lg transition-colors shadow-sm font-medium"
               >
                 Add CV
+              </button>
+            )}
+
+            {canManageBusinesses && (
+              <button
+                onClick={handleManageBusinesses}
+                className="px-4 py-2 bg-gradient-to-r from-warm-200 to-peach-200 hover:from-warm-300 hover:to-peach-300 text-white rounded-lg transition-all shadow-sm font-medium"
+              >
+                Manage Properties
               </button>
             )}
           </motion.div>

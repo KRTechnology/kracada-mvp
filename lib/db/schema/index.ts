@@ -9,4 +9,6 @@ export * from "./bookmarks";
 export * from "./cv-optimization";
 export * from "./lifestyle-posts";
 export * from "./news";
+export * from "./hotels";
+export * from "./restaurants";
 // export * from "./indexes"; // Temporarily commented out to fix Drizzle Studio
