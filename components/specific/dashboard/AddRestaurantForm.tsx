@@ -18,6 +18,10 @@ import {
   uploadRestaurantGalleryImage,
 } from "@/app/(dashboard)/actions/upload-actions";
 import Image from "next/image";
+import {
+  MenuBuilder,
+  MenuCategory,
+} from "@/components/specific/dashboard/MenuBuilder";
 
 // Validation schema
 const restaurantFormSchema = z.object({
@@ -77,6 +81,7 @@ export function AddRestaurantForm({ userId }: AddRestaurantFormProps) {
   const [galleryImageFiles, setGalleryImageFiles] = useState<File[]>([]);
   const [isUploadingFeatured, setIsUploadingFeatured] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [menuHighlights, setMenuHighlights] = useState<MenuCategory[]>([]);
 
   const {
     register,
@@ -241,7 +246,7 @@ export function AddRestaurantForm({ userId }: AddRestaurantFormProps) {
         features: featuresArray,
         specialties: specialtiesArray,
         ambiance: ambianceArray,
-        menuHighlights: [], // Can be added later in edit
+        menuHighlights: menuHighlights,
         policies: {
           reservations: data.reservations,
           dressCode: data.dressCode,
@@ -808,17 +813,17 @@ export function AddRestaurantForm({ userId }: AddRestaurantFormProps) {
           </div>
         </motion.div>
 
-        {/* Info Note */}
+        {/* Menu Builder */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.7 }}
-          className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+          className="space-y-6"
         >
-          <p className="text-sm text-blue-900 dark:text-blue-300">
-            <strong>Note:</strong> Menu items can be added later by editing the
-            restaurant after creation.
-          </p>
+          <MenuBuilder
+            menuHighlights={menuHighlights}
+            onChange={setMenuHighlights}
+          />
         </motion.div>
 
         {/* Submit Buttons */}

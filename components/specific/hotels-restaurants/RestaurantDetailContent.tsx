@@ -373,46 +373,56 @@ export const RestaurantDetailContent = ({
             />
 
             {/* Navigation Buttons */}
-            <button
-              onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-colors"
-            >
-              <ChevronLeft className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
-            </button>
-            <button
-              onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-colors"
-            >
-              <ChevronRight className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
-            </button>
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <ChevronLeft className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <ChevronRight className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
+                </button>
+              </>
+            )}
 
             {/* Image Counter */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/60 text-white text-sm rounded-full">
-              {currentImageIndex + 1} of {restaurant.images.length}
-            </div>
+            {images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/60 text-white text-sm rounded-full">
+                {currentImageIndex + 1} of {images.length}
+              </div>
+            )}
           </div>
 
           {/* Thumbnail Strip */}
-          <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-            {restaurant.images.map((image, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                  index === currentImageIndex
-                    ? "border-warm-200"
-                    : "border-neutral-200 dark:border-neutral-700"
-                }`}
-              >
-                <Image
-                  src={image}
-                  alt={`${restaurant.name} ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </button>
-            ))}
-          </div>
+          {images.length > 1 && (
+            <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+              {images.map((image, index) =>
+                image ? (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                      index === currentImageIndex
+                        ? "border-warm-200"
+                        : "border-neutral-200 dark:border-neutral-700"
+                    }`}
+                  >
+                    <Image
+                      src={image}
+                      alt={`${restaurant.name} ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ) : null
+              )}
+            </div>
+          )}
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -433,176 +443,220 @@ export const RestaurantDetailContent = ({
             </motion.div>
 
             {/* Menu Highlights */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
-                Menu Highlights
-              </h2>
+            {menuHighlights.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
+                  Menu Highlights
+                </h2>
 
-              {/* Menu Category Tabs */}
-              <div className="flex gap-2 mb-6 overflow-x-auto">
-                {restaurant.menuHighlights.map((category, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setActiveMenuCategory(index)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
-                      activeMenuCategory === index
-                        ? "bg-gradient-to-r from-warm-200 to-peach-200 text-white"
-                        : "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-                    }`}
-                  >
-                    {category.category}
-                  </button>
-                ))}
-              </div>
-
-              {/* Menu Items */}
-              <div className="space-y-4">
-                {restaurant.menuHighlights[activeMenuCategory].items.map(
-                  (item, index) => (
-                    <div
+                {/* Menu Category Tabs */}
+                <div className="flex gap-2 mb-6 overflow-x-auto">
+                  {menuHighlights.map((category, index) => (
+                    <button
                       key={index}
-                      className="flex justify-between items-start p-4 bg-neutral-50 dark:bg-neutral-800 rounded-xl"
+                      onClick={() => setActiveMenuCategory(index)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+                        activeMenuCategory === index
+                          ? "bg-gradient-to-r from-warm-200 to-peach-200 text-white"
+                          : "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                      }`}
                     >
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-neutral-900 dark:text-white mb-1">
-                          {item.name}
-                        </h4>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                          {item.description}
-                        </p>
+                      {category.category}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Menu Items */}
+                <div className="space-y-4">
+                  {menuHighlights[activeMenuCategory]?.items.map(
+                    (item, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-start p-4 bg-neutral-50 dark:bg-neutral-800 rounded-xl"
+                      >
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-neutral-900 dark:text-white mb-1">
+                            {item.name}
+                          </h4>
+                          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                            {item.description}
+                          </p>
+                        </div>
+                        <div className="ml-4 text-lg font-bold text-warm-200">
+                          {item.price}
+                        </div>
                       </div>
-                      <div className="ml-4 text-lg font-bold text-warm-200">
-                        {item.price}
-                      </div>
-                    </div>
-                  )
-                )}
-              </div>
-            </motion.div>
+                    )
+                  )}
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-8 text-center"
+              >
+                <Utensils className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+                  Menu Coming Soon
+                </h3>
+                <p className="text-neutral-600 dark:text-neutral-400">
+                  The restaurant menu will be available shortly. Please contact
+                  the restaurant for current offerings.
+                </p>
+              </motion.div>
+            )}
 
             {/* Specialties */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
-                Our Specialties
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {restaurant.specialties.map((specialty, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg"
-                  >
-                    <Utensils className="w-5 h-5 text-warm-200" />
-                    <span className="text-neutral-700 dark:text-neutral-300">
-                      {specialty}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+            {specialties.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
+                  Our Specialties
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {specialties.map((specialty, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg"
+                    >
+                      <Utensils className="w-5 h-5 text-warm-200" />
+                      <span className="text-neutral-700 dark:text-neutral-300">
+                        {specialty}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {/* Ambiance & Features */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
-                Ambiance & Features
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white mb-3">
-                    Perfect For
-                  </h3>
-                  <div className="space-y-2">
-                    {restaurant.ambiance.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-warm-200 rounded-full"></div>
-                        <span className="text-sm text-neutral-700 dark:text-neutral-300">
-                          {item}
-                        </span>
+            {(ambiance.length > 0 ||
+              (Array.isArray(restaurant.features) &&
+                restaurant.features.length > 0)) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
+                  Ambiance & Features
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {ambiance.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-neutral-900 dark:text-white mb-3">
+                        Perfect For
+                      </h3>
+                      <div className="space-y-2">
+                        {ambiance.map((item, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-warm-200 rounded-full"></div>
+                            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                              {item}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white mb-3">
-                    Special Features
-                  </h3>
-                  <div className="space-y-2">
-                    {restaurant.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-peach-200 rounded-full"></div>
-                        <span className="text-sm text-neutral-700 dark:text-neutral-300">
-                          {feature}
-                        </span>
+                    </div>
+                  )}
+                  {Array.isArray(restaurant.features) &&
+                    restaurant.features.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold text-neutral-900 dark:text-white mb-3">
+                          Special Features
+                        </h3>
+                        <div className="space-y-2">
+                          {restaurant.features.map((feature, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-2"
+                            >
+                              <div className="w-2 h-2 bg-peach-200 rounded-full"></div>
+                              <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                                {feature}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    )}
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
 
             {/* Policies */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
-                Restaurant Policies
-              </h2>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-3 border-b border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-600 dark:text-neutral-400">
-                    Reservations
-                  </span>
-                  <span className="text-neutral-900 dark:text-white font-medium">
-                    {restaurant.policies.reservations}
-                  </span>
+            {restaurant.policies && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
+                  Restaurant Policies
+                </h2>
+                <div className="space-y-4">
+                  {restaurant.policies.reservations && (
+                    <div className="flex justify-between items-center py-3 border-b border-neutral-200 dark:border-neutral-700">
+                      <span className="text-neutral-600 dark:text-neutral-400">
+                        Reservations
+                      </span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {restaurant.policies.reservations}
+                      </span>
+                    </div>
+                  )}
+                  {restaurant.policies.dressCode && (
+                    <div className="flex justify-between items-center py-3 border-b border-neutral-200 dark:border-neutral-700">
+                      <span className="text-neutral-600 dark:text-neutral-400">
+                        Dress Code
+                      </span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {restaurant.policies.dressCode}
+                      </span>
+                    </div>
+                  )}
+                  {restaurant.policies.minimumAge && (
+                    <div className="flex justify-between items-center py-3 border-b border-neutral-200 dark:border-neutral-700">
+                      <span className="text-neutral-600 dark:text-neutral-400">
+                        Age Requirement
+                      </span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {restaurant.policies.minimumAge}
+                      </span>
+                    </div>
+                  )}
+                  {restaurant.policies.cancellation && (
+                    <div className="flex justify-between items-center py-3 border-b border-neutral-200 dark:border-neutral-700">
+                      <span className="text-neutral-600 dark:text-neutral-400">
+                        Cancellation
+                      </span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {restaurant.policies.cancellation}
+                      </span>
+                    </div>
+                  )}
+                  {restaurant.policies.payment && (
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-neutral-600 dark:text-neutral-400">
+                        Payment
+                      </span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {restaurant.policies.payment}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between items-center py-3 border-b border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-600 dark:text-neutral-400">
-                    Dress Code
-                  </span>
-                  <span className="text-neutral-900 dark:text-white font-medium">
-                    {restaurant.policies.dressCode}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-600 dark:text-neutral-400">
-                    Age Requirement
-                  </span>
-                  <span className="text-neutral-900 dark:text-white font-medium">
-                    {restaurant.policies.minimumAge}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-neutral-200 dark:border-neutral-700">
-                  <span className="text-neutral-600 dark:text-neutral-400">
-                    Cancellation
-                  </span>
-                  <span className="text-neutral-900 dark:text-white font-medium">
-                    {restaurant.policies.cancellation}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-3">
-                  <span className="text-neutral-600 dark:text-neutral-400">
-                    Payment
-                  </span>
-                  <span className="text-neutral-900 dark:text-white font-medium">
-                    {restaurant.policies.payment}
-                  </span>
-                </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
 
             {/* Comments Section */}
             <CommentsSection itemId={restaurant.id} itemType="restaurant" />

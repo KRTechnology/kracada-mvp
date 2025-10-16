@@ -19,6 +19,10 @@ import {
 } from "@/app/(dashboard)/actions/upload-actions";
 import { Restaurant } from "@/lib/db/schema";
 import Image from "next/image";
+import {
+  MenuBuilder,
+  MenuCategory,
+} from "@/components/specific/dashboard/MenuBuilder";
 
 // Validation schema
 const restaurantFormSchema = z.object({
@@ -83,6 +87,9 @@ export function EditRestaurantForm({
   const [galleryImageFiles, setGalleryImageFiles] = useState<File[]>([]);
   const [isUploadingFeatured, setIsUploadingFeatured] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [menuHighlights, setMenuHighlights] = useState<MenuCategory[]>(
+    Array.isArray(restaurant.menuHighlights) ? restaurant.menuHighlights : []
+  );
 
   const {
     register,
@@ -271,7 +278,7 @@ export function EditRestaurantForm({
         features: featuresArray,
         specialties: specialtiesArray,
         ambiance: ambianceArray,
-        menuHighlights: restaurant.menuHighlights, // Keep existing menu highlights
+        menuHighlights: menuHighlights,
         policies: {
           reservations: data.reservations,
           dressCode: data.dressCode,
@@ -802,11 +809,24 @@ export function EditRestaurantForm({
           </div>
         </motion.div>
 
-        {/* Submit Buttons */}
+        {/* Menu Builder */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.7 }}
+          className="space-y-6"
+        >
+          <MenuBuilder
+            menuHighlights={menuHighlights}
+            onChange={setMenuHighlights}
+          />
+        </motion.div>
+
+        {/* Submit Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
           className="flex gap-4 pt-6 border-t border-neutral-200 dark:border-neutral-700"
         >
           <Button
