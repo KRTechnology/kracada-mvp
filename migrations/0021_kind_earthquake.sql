@@ -1,0 +1,1 @@
+ALTER TYPE "public"."subscription_source" ADD VALUE 'lifestyle_page' BEFORE 'homepage';

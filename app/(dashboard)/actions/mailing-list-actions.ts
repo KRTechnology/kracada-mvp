@@ -16,7 +16,14 @@ import crypto from "crypto";
 const subscribeSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   source: z
-    .enum(["news_page", "homepage", "footer", "popup", "other"])
+    .enum([
+      "news_page",
+      "lifestyle_page",
+      "homepage",
+      "footer",
+      "popup",
+      "other",
+    ])
     .default("other"),
   ipAddress: z.string().optional(),
   userAgent: z.string().optional(),

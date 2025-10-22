@@ -18,6 +18,7 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
 // Subscription Source Enum
 export const subscriptionSourceEnum = pgEnum("subscription_source", [
   "news_page",
+  "lifestyle_page",
   "homepage",
   "footer",
   "popup",

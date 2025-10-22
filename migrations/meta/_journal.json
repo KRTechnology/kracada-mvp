@@ -148,6 +148,13 @@
       "when": 1761123348229,
       "tag": "0020_motionless_stephen_strange",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1761132154458,
+      "tag": "0021_kind_earthquake",
+      "breakpoints": true
     }
   ]
 }

@@ -186,6 +186,7 @@ export default function MailingListManagementContent() {
   const getSourceBadge = (source: string) => {
     const sourceLabels: Record<string, string> = {
       news_page: "News Page",
+      lifestyle_page: "Lifestyle Page",
       homepage: "Homepage",
       footer: "Footer",
       popup: "Popup",
@@ -435,6 +436,7 @@ export default function MailingListManagementContent() {
           >
             <option value="all">All Sources</option>
             <option value="news_page">News Page</option>
+            <option value="lifestyle_page">Lifestyle Page</option>
             <option value="homepage">Homepage</option>
             <option value="footer">Footer</option>
             <option value="popup">Popup</option>
