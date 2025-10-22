@@ -7,6 +7,7 @@ import {
   users,
   hotels,
   restaurants,
+  videos,
   BookmarkContentType,
 } from "@/lib/db/schema";
 import { auth } from "@/auth";
@@ -62,6 +63,21 @@ export interface BookmarkedRestaurantItem {
   rating: string | null;
   reviewCount: number;
   featuredImage: string | null;
+  bookmarkedAt: Date;
+}
+
+export interface BookmarkedVideoItem {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnailImage: string;
+  videoUrl: string;
+  duration: string;
+  author: string;
+  categories: string[];
+  type: "kracada_tv" | "trending";
+  viewCount: number;
+  likeCount: number;
   bookmarkedAt: Date;
 }
 
@@ -433,6 +449,68 @@ export async function getBookmarkedRestaurantsAction(): Promise<{
     return {
       success: false,
       message: "Failed to fetch bookmarked restaurants",
+    };
+  }
+}
+
+// Get all bookmarked videos for current user
+export async function getBookmarkedVideosAction(): Promise<{
+  success: boolean;
+  data?: BookmarkedVideoItem[];
+  message?: string;
+}> {
+  try {
+    const userId = await getCurrentUser();
+
+    const bookmarkedVideos = await db
+      .select({
+        bookmarkId: bookmarks.id,
+        bookmarkedAt: bookmarks.createdAt,
+        videoId: videos.id,
+        title: videos.title,
+        description: videos.description,
+        thumbnailImage: videos.thumbnailImage,
+        videoUrl: videos.videoUrl,
+        duration: videos.duration,
+        author: videos.author,
+        categories: videos.categories,
+        type: videos.type,
+        viewCount: videos.viewCount,
+        likeCount: videos.likeCount,
+      })
+      .from(bookmarks)
+      .innerJoin(videos, eq(bookmarks.contentId, videos.id))
+      .where(
+        and(eq(bookmarks.userId, userId), eq(bookmarks.contentType, "video"))
+      )
+      .orderBy(desc(bookmarks.createdAt));
+
+    const formattedVideos: BookmarkedVideoItem[] = bookmarkedVideos.map(
+      (item) => ({
+        id: item.videoId,
+        title: item.title,
+        description: item.description,
+        thumbnailImage: item.thumbnailImage,
+        videoUrl: item.videoUrl,
+        duration: item.duration,
+        author: item.author,
+        categories: JSON.parse(item.categories || "[]"),
+        type: item.type,
+        viewCount: item.viewCount,
+        likeCount: item.likeCount,
+        bookmarkedAt: item.bookmarkedAt,
+      })
+    );
+
+    return {
+      success: true,
+      data: formattedVideos,
+    };
+  } catch (error) {
+    console.error("Error fetching bookmarked videos:", error);
+    return {
+      success: false,
+      message: "Failed to fetch bookmarked videos",
     };
   }
 }

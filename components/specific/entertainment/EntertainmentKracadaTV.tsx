@@ -5,46 +5,17 @@ import Image from "next/image";
 import { Play, ExternalLink } from "lucide-react";
 import { Button } from "@/components/common/button";
 
-// Sample Kracada TV videos data
-const kracadaTVVideos = [
-  {
-    id: 1,
-    title: "Career Success Strategies",
-    description:
-      "Discover proven strategies for advancing your career, building professional networks, and achieving your goals in today's competitive job market.",
-    thumbnail: "/images/news-sample-image.jpg",
-    duration: "12:34",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  },
-  {
-    id: 2,
-    title: "Tech Industry Insights",
-    description:
-      "Expert analysis of the latest technology trends, startup culture, and digital transformation opportunities for professionals.",
-    thumbnail: "/images/landing-hero-image.jpg",
-    duration: "8:45",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  },
-  {
-    id: 3,
-    title: "Personal Branding Masterclass",
-    description:
-      "Learn how to build a strong personal brand online, leverage social media effectively, and stand out in your industry.",
-    thumbnail: "/images/news-sample-image.jpg",
-    duration: "15:20",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  },
-];
+interface Video {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnailImage: string;
+  duration: string;
+  videoUrl: string;
+}
 
 interface VideoCardProps {
-  video: {
-    id: number;
-    title: string;
-    description: string;
-    thumbnail: string;
-    duration: string;
-    videoUrl: string;
-  };
+  video: Video;
   index: number;
 }
 
@@ -59,7 +30,7 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
         {/* Video Thumbnail */}
         <div className="relative aspect-video overflow-hidden">
           <Image
-            src={video.thumbnail}
+            src={video.thumbnailImage}
             alt={video.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -144,10 +115,21 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
   );
 };
 
-export const EntertainmentKracadaTV = () => {
+interface EntertainmentKracadaTVProps {
+  videos: Video[];
+}
+
+export const EntertainmentKracadaTV = ({
+  videos,
+}: EntertainmentKracadaTVProps) => {
   const handleGoToKracadaTV = () => {
     window.open("https://www.youtube.com/@kracada01", "_blank");
   };
+
+  // Don't render the section if there are no videos
+  if (videos.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-8 lg:py-12 bg-gradient-to-br from-amber-900 via-amber-800 to-orange-900 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
@@ -185,7 +167,7 @@ export const EntertainmentKracadaTV = () => {
 
         {/* Video Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-          {kracadaTVVideos.map((video, index) => (
+          {videos.map((video, index) => (
             <motion.div
               key={video.id}
               initial={{ opacity: 0, y: 20 }}

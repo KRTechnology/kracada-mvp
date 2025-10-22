@@ -18,6 +18,7 @@ import {
   Settings,
   User,
   Users,
+  Video,
   X,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
@@ -68,6 +69,11 @@ const navItems: NavItem[] = [
     href: "/admin/dashboard/quizzes",
     label: "Quizzes",
     icon: <BookOpen className="w-5 h-5" />,
+  },
+  {
+    href: "/admin/dashboard/videos",
+    label: "Video Management",
+    icon: <Video className="w-5 h-5" />,
   },
   {
     href: "/admin/dashboard/payments",

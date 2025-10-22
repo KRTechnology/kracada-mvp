@@ -1393,6 +1393,105 @@ export async function uploadQuizFeaturedImage(
 }
 
 /**
+ * Upload video thumbnail image (for admin video creation)
+ */
+export async function uploadVideoThumbnail(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const adminId = formData.get("adminId") as string;
+    const videoTitle = formData.get("videoTitle") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({
+      file,
+      userId: adminId,
+    });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (5MB limit for video thumbnails)
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 5MB limit.",
+      };
+    }
+
+    // Create custom path for video thumbnails
+    const sanitizedTitle = videoTitle
+      ? videoTitle
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+          .substring(0, 50) // Limit length
+      : "untitled";
+    const customPath = `videos/${adminId}/${sanitizedTitle}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `thumbnail-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Video thumbnail upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
  * Delete uploaded file
  */
 export async function deleteUploadedFile(

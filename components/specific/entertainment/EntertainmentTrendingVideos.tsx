@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useRef } from "react";
+import { useState, useRef, useTransition } from "react";
 import { Search, Play, ExternalLink } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
@@ -13,9 +13,23 @@ import {
   SelectValue,
 } from "@/components/common/select";
 import { Pagination } from "@/components/common/Pagination";
+import { getTrendingVideosAction } from "@/app/(dashboard)/actions/video-actions";
 
-// Sample trending videos data
-const trendingVideosData = [
+interface Video {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnailImage: string;
+  duration: string;
+  author: string;
+  categories: string;
+  videoUrl: string;
+  viewCount: number;
+  likeCount: number;
+}
+
+// Sample for reference - will be removed
+const _sampleData = [
   {
     id: 1,
     author: "Demi Wilkinson",
@@ -279,17 +293,7 @@ const sortOptions = [
 ];
 
 interface VideoCardProps {
-  video: {
-    id: number;
-    author: string;
-    date: string;
-    title: string;
-    description: string;
-    thumbnail: string;
-    duration: string;
-    categories: string[];
-    videoUrl: string;
-  };
+  video: Video;
   index: number;
 }
 
@@ -313,13 +317,15 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
     return colors[categoryIndex % colors.length];
   };
 
+  const videoCategories = JSON.parse(video.categories || "[]");
+
   return (
     <div className="group cursor-pointer h-full" onClick={handleVideoClick}>
       <div className="bg-white dark:bg-neutral-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-neutral-100 dark:border-neutral-700 h-full flex flex-col">
         {/* Video Thumbnail */}
         <div className="relative aspect-video overflow-hidden">
           <img
-            src={video.thumbnail}
+            src={video.thumbnailImage}
             alt={video.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
@@ -391,13 +397,10 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
 
         {/* Video Info */}
         <div className="p-6 flex-1 flex flex-col">
-          {/* Author and Date */}
+          {/* Author */}
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm font-medium text-orange-500">
               {video.author}
-            </span>
-            <span className="text-sm text-neutral-500 dark:text-neutral-400">
-              • {video.date}
             </span>
           </div>
 
@@ -407,22 +410,26 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
           </h3>
 
           {/* Description */}
-          <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-4 line-clamp-3 flex-1">
-            {video.description}
-          </p>
+          {video.description && (
+            <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-4 line-clamp-3 flex-1">
+              {video.description}
+            </p>
+          )}
 
           {/* Categories */}
           <div className="flex flex-wrap gap-2 mt-auto">
-            {video.categories.slice(0, 2).map((category, categoryIndex) => (
-              <span
-                key={categoryIndex}
-                className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(
-                  categoryIndex
-                )}`}
-              >
-                {category}
-              </span>
-            ))}
+            {videoCategories
+              .slice(0, 2)
+              .map((category: string, categoryIndex: number) => (
+                <span
+                  key={categoryIndex}
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(
+                    categoryIndex
+                  )}`}
+                >
+                  {category}
+                </span>
+              ))}
           </div>
         </div>
       </div>
@@ -430,27 +437,47 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
   );
 };
 
-export const EntertainmentTrendingVideos = () => {
+interface EntertainmentTrendingVideosProps {
+  initialVideos?: Video[];
+  initialTotal?: number;
+  initialTotalPages?: number;
+}
+
+export const EntertainmentTrendingVideos = ({
+  initialVideos = [],
+  initialTotal = 0,
+  initialTotalPages = 1,
+}: EntertainmentTrendingVideosProps) => {
+  const [videos, setVideos] = useState<Video[]>(initialVideos);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("popularity");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
+  const [totalCount, setTotalCount] = useState(initialTotal);
+  const [isPending, startTransition] = useTransition();
   const videosPerPage = 6;
   const sectionRef = useRef<HTMLElement>(null);
 
-  // Filter and sort videos based on current state
-  const filteredVideos = trendingVideosData.filter((video) => {
+  // Don't render the section if there are no videos
+  if (videos.length === 0) {
+    return null;
+  }
+
+  // Filter videos client-side for search and category
+  const filteredVideos = videos.filter((video) => {
     const matchesSearch = video.title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
+    const videoCategories = JSON.parse(video.categories || "[]");
     const matchesCategory =
       selectedCategory === "All Categories" ||
-      video.categories.includes(selectedCategory);
+      videoCategories.includes(selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+  const paginationTotalPages = Math.ceil(filteredVideos.length / videosPerPage);
   const startIndex = (currentPage - 1) * videosPerPage;
   const currentVideos = filteredVideos.slice(
     startIndex,
@@ -599,7 +626,7 @@ export const EntertainmentTrendingVideos = () => {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {paginationTotalPages > 1 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -607,7 +634,7 @@ export const EntertainmentTrendingVideos = () => {
           >
             <Pagination
               currentPage={currentPage}
-              totalPages={totalPages}
+              totalPages={paginationTotalPages}
               onPageChange={handlePageChange}
             />
           </motion.div>
