@@ -8,6 +8,8 @@ import { z } from "zod";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
 import { Spinner } from "@/components/common/spinner";
+import { subscribeToMailingListAction } from "@/app/(dashboard)/actions/mailing-list-actions";
+import { toast } from "sonner";
 
 const subscriptionSchema = z.object({
   email: z
@@ -35,21 +37,33 @@ export const NewsSubscriptionForm = () => {
     try {
       setIsSubmitting(true);
 
-      // Simulate API request
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Get user info for analytics
+      const userAgent =
+        typeof navigator !== "undefined" ? navigator.userAgent : undefined;
 
-      console.log("Subscription data:", data);
+      const result = await subscribeToMailingListAction({
+        email: data.email,
+        source: "news_page",
+        userAgent,
+      });
 
-      // Simulate success
-      setIsSubmitted(true);
-      reset();
+      if (result.success) {
+        setIsSubmitted(true);
+        reset();
 
-      // Reset success state after 3 seconds
-      setTimeout(() => {
-        setIsSubmitted(false);
-      }, 3000);
+        // Show toast notification
+        toast.success(result.message);
+
+        // Reset success state after 5 seconds
+        setTimeout(() => {
+          setIsSubmitted(false);
+        }, 5000);
+      } else {
+        toast.error(result.message || "Failed to subscribe");
+      }
     } catch (error) {
       console.error("Subscription error:", error);
+      toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }

@@ -13,4 +13,5 @@ export * from "./hotels";
 export * from "./restaurants";
 export * from "./reviews";
 export * from "./quizzes";
+export * from "./mailing-list";
 // export * from "./indexes"; // Temporarily commented out to fix Drizzle Studio

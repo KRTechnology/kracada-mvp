@@ -1,34 +1,30 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { Logo } from "@/components/common/Logo";
+import { Spinner } from "@/components/common/spinner";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  LayoutDashboard,
-  FileText,
-  Users,
-  FileStack,
-  CreditCard,
-  Building,
-  Headphones,
-  BarChart3,
-  Hotel,
-  Mail,
   BookOpen,
-  Settings,
-  LogOut,
-  User,
-  Menu,
-  X,
   ChevronLeft,
   ChevronRight,
+  CreditCard,
+  FileText,
+  Hotel,
+  LayoutDashboard,
+  LogOut,
+  Mail,
+  Menu,
+  Settings,
+  User,
+  Users,
+  X,
 } from "lucide-react";
-import { ThemeToggle } from "@/components/common/ThemeToggle";
-import { useState, useEffect } from "react";
-import { Spinner } from "@/components/common/spinner";
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AnimatePresence, motion } from "framer-motion";
-import { Logo } from "@/components/common/Logo";
 
 interface NavItem {
   href: string;
@@ -78,21 +74,21 @@ const navItems: NavItem[] = [
     label: "Payment & Transactions",
     icon: <CreditCard className="w-5 h-5" />,
   },
-  {
-    href: "/admin/dashboard/business-listings",
-    label: "Business listings",
-    icon: <Building className="w-5 h-5" />,
-  },
-  {
-    href: "/admin/dashboard/customer-support",
-    label: "Customer support",
-    icon: <Headphones className="w-5 h-5" />,
-  },
-  {
-    href: "/admin/dashboard/analytics",
-    label: "Analytics & Report",
-    icon: <BarChart3 className="w-5 h-5" />,
-  },
+  // {
+  //   href: "/admin/dashboard/business-listings",
+  //   label: "Business listings",
+  //   icon: <Building className="w-5 h-5" />,
+  // },
+  // {
+  //   href: "/admin/dashboard/customer-support",
+  //   label: "Customer support",
+  //   icon: <Headphones className="w-5 h-5" />,
+  // },
+  // {
+  //   href: "/admin/dashboard/analytics",
+  //   label: "Analytics & Report",
+  //   icon: <BarChart3 className="w-5 h-5" />,
+  // },
   {
     href: "/admin/dashboard/mailing-list",
     label: "Mailing list",
