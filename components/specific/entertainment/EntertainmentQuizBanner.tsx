@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/common/button";
 
 export const EntertainmentQuizBanner = () => {
@@ -73,12 +74,14 @@ export const EntertainmentQuizBanner = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <Button
-                  size="lg"
-                  className="bg-[#FF6F00] hover:bg-[#F57C00] text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  Get started
-                </Button>
+                <Link href="/quiz">
+                  <Button
+                    size="lg"
+                    className="bg-[#FF6F00] hover:bg-[#F57C00] text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    Get started
+                  </Button>
+                </Link>
               </motion.div>
             </div>
 
