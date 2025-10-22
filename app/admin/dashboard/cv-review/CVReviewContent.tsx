@@ -226,14 +226,6 @@ export default function CVReviewContent() {
     document.body.removeChild(link);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header with gradient */}
@@ -331,42 +323,49 @@ export default function CVReviewContent() {
 
       {/* Orders Table - Enhanced */}
       <div className="bg-white dark:bg-neutral-800 rounded-xl border border-warm-100 dark:border-neutral-700 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gradient-to-r from-warm-50 to-orange-50 dark:from-neutral-900 dark:to-neutral-800 border-b-2 border-warm-200/30 dark:border-neutral-700">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
-                  Package
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
-                  Revisions
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
-                  Submission Date
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
-              {filteredOrders.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-warm-700"></div>
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="text-center py-12">
+            <AlertCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+              No CV orders found
+            </h3>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              {searchTerm || statusFilter !== "all"
+                ? "Try adjusting your filters"
+                : "No CV orders have been submitted yet"}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gradient-to-r from-warm-50 to-orange-50 dark:from-neutral-900 dark:to-neutral-800 border-b-2 border-warm-200/30 dark:border-neutral-700">
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-8 text-center text-neutral-600 dark:text-neutral-400"
-                  >
-                    No orders found
-                  </td>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+                    Package
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+                    Revisions
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+                    Submission Date
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ) : (
-                filteredOrders.map((order) => (
+              </thead>
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
+                {filteredOrders.map((order) => (
                   <tr
                     key={order.id}
                     className="hover:bg-warm-50/30 dark:hover:bg-neutral-900/50 transition-colors duration-150"
@@ -476,11 +475,11 @@ export default function CVReviewContent() {
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Upload Optimized CV Modal - Enhanced */}
