@@ -605,8 +605,8 @@ export default function QuizManagementContent() {
       {/* Quizzes Table */}
       <div className="bg-white dark:bg-neutral-800 rounded-xl border border-warm-100 dark:border-neutral-700 shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Spinner />
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-warm-700"></div>
           </div>
         ) : quizzes.length === 0 ? (
           <div className="text-center py-12">
