@@ -63,7 +63,14 @@ export async function getAllUsersAction(filters: UserFilters = {}) {
     }
 
     if (status && status !== "all") {
-      whereConditions.push(eq(users.status, status as any));
+      // Special case: "flagged" means Suspended OR Inactive
+      if (status === "flagged") {
+        whereConditions.push(
+          or(eq(users.status, "Suspended"), eq(users.status, "Inactive"))
+        );
+      } else {
+        whereConditions.push(eq(users.status, status as any));
+      }
     }
 
     if (accountType && accountType !== "all") {
@@ -118,6 +125,12 @@ export async function getAllUsersAction(filters: UserFilters = {}) {
       .from(users)
       .where(eq(users.accountType, "Contributor"));
 
+    // Get count of flagged (Suspended or Inactive) users
+    const [flaggedCount] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(or(eq(users.status, "Suspended"), eq(users.status, "Inactive")));
+
     return {
       success: true,
       users: usersList,
@@ -130,6 +143,7 @@ export async function getAllUsersAction(filters: UserFilters = {}) {
         recruiters: recruiterCount.count,
         businessOwners: businessOwnerCount.count,
         contributors: contributorCount.count,
+        flagged: flaggedCount.count,
       },
     };
   } catch (error: any) {

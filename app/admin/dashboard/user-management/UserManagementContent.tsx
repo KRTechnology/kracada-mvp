@@ -92,6 +92,7 @@ export default function UserManagementContent() {
     recruiters: 0,
     businessOwners: 0,
     contributors: 0,
+    flagged: 0,
     superAdmins: 0,
     regularAdmins: 0,
   });
@@ -131,14 +132,22 @@ export default function UserManagementContent() {
       } else {
         // Determine account type filter based on tab
         let typeFilter = accountTypeFilter;
+        let statusOverride = statusFilter;
+
         if (activeTab === "businesses") {
           typeFilter = "Business Owner";
+        } else if (activeTab === "reported") {
+          // For "reported" tab, show only Suspended or Inactive users
+          // If statusFilter is "all", show both Suspended and Inactive
+          // Otherwise, respect the specific status filter
+          if (statusFilter === "all") {
+            statusOverride = "flagged"; // This will be a special flag to fetch Suspended OR Inactive
+          }
         }
-        // For "reported" tab, we'll add logic later when we have a reported flag
 
         const result = await getAllUsersAction({
           search,
-          status: statusFilter,
+          status: statusOverride,
           accountType: typeFilter,
           page: currentPage,
           limit: 10,
@@ -155,6 +164,7 @@ export default function UserManagementContent() {
             recruiters: result.counts?.recruiters || 0,
             businessOwners: result.counts?.businessOwners || 0,
             contributors: result.counts?.contributors || 0,
+            flagged: result.counts?.flagged || 0,
           }));
         }
       }
@@ -243,7 +253,7 @@ export default function UserManagementContent() {
       : activeTab === "businesses"
         ? counts.businessOwners
         : activeTab === "reported"
-          ? 0 // Placeholder for reported users
+          ? counts.flagged
           : counts.superAdmins + counts.regularAdmins;
 
   return (
@@ -317,15 +327,17 @@ export default function UserManagementContent() {
           >
             <Flag className="w-4 h-4" />
             Reported & Flagged Accounts
-            <span
-              className={`px-2 py-0.5 rounded-full text-xs ${
-                activeTab === "reported"
-                  ? "bg-warm-700 text-white"
-                  : "bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
-              }`}
-            >
-              0
-            </span>
+            {counts.flagged > 0 && (
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs ${
+                  activeTab === "reported"
+                    ? "bg-warm-700 text-white"
+                    : "bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
+                }`}
+              >
+                {counts.flagged}
+              </span>
+            )}
           </button>
 
           {isSuperAdmin && (
@@ -435,13 +447,57 @@ export default function UserManagementContent() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-warm-700"></div>
             </div>
           ) : activeTab === "admins" ? (
-            <AdminsTable
-              admins={admins}
-              onStatusChange={handleStatusChange}
-              onRoleChange={handleRoleChange}
-              onDelete={openDeleteDialog}
-              isSuperAdmin={isSuperAdmin}
-            />
+            admins.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 text-center px-4">
+                <UserCog className="w-16 h-16 text-neutral-300 dark:text-neutral-600 mb-4" />
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+                  No admins found
+                </h3>
+                <p className="text-neutral-600 dark:text-neutral-400 max-w-md">
+                  {search || statusFilter !== "all"
+                    ? "Try adjusting your search or filters"
+                    : "No admin accounts have been created yet"}
+                </p>
+              </div>
+            ) : (
+              <AdminsTable
+                admins={admins}
+                onStatusChange={handleStatusChange}
+                onRoleChange={handleRoleChange}
+                onDelete={openDeleteDialog}
+                isSuperAdmin={isSuperAdmin}
+              />
+            )
+          ) : users.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 text-center px-4">
+              {activeTab === "reported" ? (
+                <>
+                  <Flag className="w-16 h-16 text-neutral-300 dark:text-neutral-600 mb-4" />
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+                    No flagged accounts
+                  </h3>
+                  <p className="text-neutral-600 dark:text-neutral-400 max-w-md">
+                    {search || statusFilter !== "all"
+                      ? "No flagged accounts match your search or filters"
+                      : "There are currently no suspended or inactive user accounts. Users who are suspended or deactivated will appear here."}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Users className="w-16 h-16 text-neutral-300 dark:text-neutral-600 mb-4" />
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+                    No users found
+                  </h3>
+                  <p className="text-neutral-600 dark:text-neutral-400 max-w-md">
+                    {search ||
+                    statusFilter !== "all" ||
+                    accountTypeFilter !== "all"
+                      ? "Try adjusting your search or filters"
+                      : "No user accounts have been created yet"}
+                  </p>
+                </>
+              )}
+            </div>
           ) : (
             <UsersTable
               users={users}

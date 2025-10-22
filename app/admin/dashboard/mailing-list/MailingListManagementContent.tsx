@@ -318,12 +318,12 @@ export default function MailingListManagementContent() {
   return (
     <div className="space-y-6">
       {/* Header with gradient */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-200 via-blue-600 to-blue-800 rounded-2xl p-8 shadow-lg">
+      <div className="relative overflow-hidden bg-gradient-to-br from-warm-200 via-warm-700 to-warm-800 rounded-2xl p-8 shadow-lg">
         <div className="relative z-10">
           <h1 className="text-4xl font-bold text-white mb-2">
             Mailing List Management
           </h1>
-          <p className="text-blue-50 text-lg">
+          <p className="text-warm-50 text-lg">
             Manage newsletter subscribers and email campaigns
           </p>
         </div>
@@ -334,7 +334,7 @@ export default function MailingListManagementContent() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 border border-blue-100 dark:border-neutral-700 shadow-sm">
+          <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 border border-warm-100 dark:border-neutral-700 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-1">
@@ -344,8 +344,8 @@ export default function MailingListManagementContent() {
                   {stats.total}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="w-12 h-12 bg-warm-100 dark:bg-warm-900/30 rounded-lg flex items-center justify-center">
+                <Users className="w-6 h-6 text-warm-600 dark:text-warm-400" />
               </div>
             </div>
           </div>
@@ -401,7 +401,7 @@ export default function MailingListManagementContent() {
       )}
 
       {/* Filters and Actions */}
-      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-blue-100 dark:border-neutral-700 p-6 shadow-sm">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-warm-100 dark:border-neutral-700 p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -419,7 +419,7 @@ export default function MailingListManagementContent() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-warm-500 focus:border-transparent"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -431,7 +431,7 @@ export default function MailingListManagementContent() {
           <select
             value={sourceFilter}
             onChange={(e) => setSourceFilter(e.target.value)}
-            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-warm-500 focus:border-transparent"
           >
             <option value="all">All Sources</option>
             <option value="news_page">News Page</option>
@@ -446,7 +446,7 @@ export default function MailingListManagementContent() {
             onClick={handleExport}
             disabled={isExporting}
             variant="outline"
-            className="border-blue-300 dark:border-blue-700"
+            className="border-warm-300 dark:border-warm-700"
           >
             {isExporting ? (
               <>
@@ -464,8 +464,8 @@ export default function MailingListManagementContent() {
 
         {/* Bulk Actions */}
         {selectedSubscribers.length > 0 && (
-          <div className="mt-4 flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <span className="text-sm font-medium text-blue-900 dark:text-blue-300">
+          <div className="mt-4 flex items-center gap-4 p-4 bg-warm-50 dark:bg-warm-900/20 rounded-lg border border-warm-200 dark:border-warm-800">
+            <span className="text-sm font-medium text-warm-900 dark:text-warm-300">
               {selectedSubscribers.length} selected
             </span>
             <div className="flex gap-2">
@@ -505,7 +505,7 @@ export default function MailingListManagementContent() {
       </div>
 
       {/* Subscribers Table */}
-      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-blue-100 dark:border-neutral-700 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-warm-100 dark:border-neutral-700 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-warm-700"></div>
@@ -525,7 +525,7 @@ export default function MailingListManagementContent() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-neutral-900 dark:to-neutral-800 border-b-2 border-blue-200 dark:border-blue-800">
+              <thead className="bg-gradient-to-r from-warm-50 to-orange-50 dark:from-neutral-900 dark:to-neutral-800 border-b-2 border-warm-200 dark:border-warm-800">
                 <tr>
                   <th className="px-4 py-4 text-left w-12">
                     <Checkbox
@@ -536,31 +536,31 @@ export default function MailingListManagementContent() {
                       onCheckedChange={handleSelectAll}
                     />
                   </th>
-                  <th className="px-4 py-4 text-left text-xs font-semibold text-blue-900 dark:text-blue-100 uppercase tracking-wider">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-warm-900 dark:text-warm-100 uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-4 py-4 text-left text-xs font-semibold text-blue-900 dark:text-blue-100 uppercase tracking-wider">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-warm-900 dark:text-warm-100 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-4 py-4 text-left text-xs font-semibold text-blue-900 dark:text-blue-100 uppercase tracking-wider">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-warm-900 dark:text-warm-100 uppercase tracking-wider">
                     Source
                   </th>
-                  <th className="px-4 py-4 text-left text-xs font-semibold text-blue-900 dark:text-blue-100 uppercase tracking-wider">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-warm-900 dark:text-warm-100 uppercase tracking-wider">
                     Verified
                   </th>
-                  <th className="px-4 py-4 text-left text-xs font-semibold text-blue-900 dark:text-blue-100 uppercase tracking-wider">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-warm-900 dark:text-warm-100 uppercase tracking-wider">
                     Subscribed
                   </th>
-                  <th className="px-4 py-4 text-right text-xs font-semibold text-blue-900 dark:text-blue-100 uppercase tracking-wider">
+                  <th className="px-4 py-4 text-right text-xs font-semibold text-warm-900 dark:text-warm-100 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-blue-100 dark:divide-neutral-700">
+              <tbody className="divide-y divide-warm-100 dark:divide-neutral-700">
                 {subscribers.map((subscriber, index) => (
                   <tr
                     key={subscriber.id}
-                    className={`hover:bg-blue-50/50 dark:hover:bg-neutral-800/50 transition-all duration-200 ${
+                    className={`hover:bg-warm-50/50 dark:hover:bg-neutral-800/50 transition-all duration-200 ${
                       index % 2 === 0
                         ? "bg-white dark:bg-neutral-800"
                         : "bg-neutral-50/30 dark:bg-neutral-850/30"
@@ -642,7 +642,7 @@ export default function MailingListManagementContent() {
 
         {/* Pagination */}
         {!isLoading && totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-blue-100 dark:border-neutral-700">
+          <div className="px-6 py-4 border-t border-warm-100 dark:border-neutral-700">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
