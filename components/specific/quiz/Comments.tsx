@@ -1,17 +1,28 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
+import {
+  getQuizCommentsAction,
+  addQuizCommentAction,
+  deleteQuizCommentAction,
+} from "@/app/(dashboard)/actions/quiz-actions";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import { Trash2, Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface Comment {
   id: string;
-  author: string;
-  avatar: string;
-  timestamp: string;
-  text: string;
-  isOnline?: boolean;
+  quizId: string;
+  userId: string | null;
+  userName: string | null;
+  userAvatar: string | null;
+  commentText: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface CommentsProps {
@@ -19,57 +30,73 @@ interface CommentsProps {
 }
 
 export function Comments({ quizId }: CommentsProps) {
+  const { data: session } = useSession();
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: "1",
-      author: "Phoenix Baker",
-      avatar: "/images/landing-hero-image.jpg",
-      timestamp: "Just now",
-      text: "Looks good!",
-      isOnline: true,
-    },
-    {
-      id: "2",
-      author: "Lana Steiner",
-      avatar: "/images/landing-hero-image.jpg",
-      timestamp: "2 mins ago",
-      text: "Thanks so much, happy with that.",
-      isOnline: false,
-    },
-    {
-      id: "3",
-      author: "Lana Steiner",
-      avatar: "/images/landing-hero-image.jpg",
-      timestamp: "2 mins ago",
-      text: "Thanks so much, happy with that.",
-      isOnline: false,
-    },
-    {
-      id: "4",
-      author: "Lana Steiner",
-      avatar: "/images/landing-hero-image.jpg",
-      timestamp: "2 mins ago",
-      text: "Thanks so much, happy with that.",
-      isOnline: false,
-    },
-  ]);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+    null
+  );
 
-  const handleSubmitComment = (e: React.FormEvent) => {
+  // Fetch comments on mount
+  useEffect(() => {
+    fetchComments();
+  }, [quizId]);
+
+  const fetchComments = async () => {
+    setIsLoading(true);
+    const result = await getQuizCommentsAction(quizId.toString());
+    if (result.success && result.data) {
+      setComments(result.data as Comment[]);
+    }
+    setIsLoading(false);
+  };
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    const comment: Comment = {
-      id: Date.now().toString(),
-      author: "You",
-      avatar: "/images/landing-hero-image.jpg",
-      timestamp: "Just now",
-      text: newComment,
-      isOnline: true,
-    };
+    setIsSubmitting(true);
 
-    setComments([comment, ...comments]);
-    setNewComment("");
+    const result = await addQuizCommentAction({
+      quizId: quizId.toString(),
+      commentText: newComment.trim(),
+      userName: session?.user?.name || undefined,
+    });
+
+    if (result.success) {
+      toast.success("Comment added successfully");
+      setNewComment("");
+      await fetchComments(); // Refresh comments
+    } else {
+      toast.error(result.message || "Failed to add comment");
+    }
+
+    setIsSubmitting(false);
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    setDeletingCommentId(commentId);
+
+    const result = await deleteQuizCommentAction(commentId);
+
+    if (result.success) {
+      toast.success("Comment deleted successfully");
+      await fetchComments(); // Refresh comments
+    } else {
+      toast.error(result.message || "Failed to delete comment");
+    }
+
+    setDeletingCommentId(null);
+  };
+
+  const getTimeAgo = (date: Date) => {
+    try {
+      return formatDistanceToNow(new Date(date), { addSuffix: true });
+    } catch {
+      return "recently";
+    }
   };
 
   return (
@@ -98,59 +125,101 @@ export function Comments({ quizId }: CommentsProps) {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             className="w-full"
+            disabled={isSubmitting}
           />
           <Button
             type="submit"
-            disabled={!newComment.trim()}
+            disabled={!newComment.trim() || isSubmitting}
             className="bg-orange-500 hover:bg-orange-600 text-white"
           >
-            Add Comment
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              "Add Comment"
+            )}
           </Button>
         </div>
       </form>
 
-      {/* Comments List */}
-      <div className="space-y-6">
-        {comments.map((comment, index) => (
-          <motion.div
-            key={comment.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: index * 0.1 }}
-            className="flex items-start space-x-3"
-          >
-            {/* Avatar */}
-            <div className="relative flex-shrink-0">
-              <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-semibold">
-                  {comment.author.charAt(0)}
-                </span>
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+        </div>
+      ) : comments.length === 0 ? (
+        /* Empty State */
+        <div className="text-center py-8">
+          <p className="text-neutral-600 dark:text-neutral-400">
+            No comments yet. Be the first to comment!
+          </p>
+        </div>
+      ) : (
+        /* Comments List */
+        <div className="space-y-6">
+          {comments.map((comment, index) => (
+            <motion.div
+              key={comment.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="flex items-start space-x-3"
+            >
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                {comment.userAvatar ? (
+                  <img
+                    src={comment.userAvatar}
+                    alt={comment.userName || "User"}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-semibold">
+                      {(comment.userName || "A").charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
               </div>
-              {/* Online Status Indicator */}
-              <div
-                className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-neutral-800 ${
-                  comment.isOnline ? "bg-green-500" : "bg-neutral-400"
-                }`}
-              />
-            </div>
 
-            {/* Comment Content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-2 mb-1">
-                <span className="text-sm font-semibold text-neutral-900 dark:text-white">
-                  {comment.author}
-                </span>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {comment.timestamp}
-                </span>
+              {/* Comment Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-semibold text-neutral-900 dark:text-white">
+                      {comment.userName || "Anonymous"}
+                    </span>
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                      {getTimeAgo(comment.createdAt)}
+                    </span>
+                  </div>
+                  {/* Delete button - only show for comment owner */}
+                  {session?.user?.id === comment.userId && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteComment(comment.id)}
+                      disabled={deletingCommentId === comment.id}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 h-7 px-2"
+                    >
+                      {deletingCommentId === comment.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-3 h-3" />
+                      )}
+                    </Button>
+                  )}
+                </div>
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                  {comment.commentText}
+                </p>
               </div>
-              <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                {comment.text}
-              </p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }

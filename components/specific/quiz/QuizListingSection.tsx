@@ -1,9 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QuizCard } from "./QuizCard";
 import { Pagination } from "@/components/common/Pagination";
+import { useSearchParams, useRouter } from "next/navigation";
+import { getFilteredQuizzesAction } from "@/app/(dashboard)/actions/quiz-actions";
+import { format } from "date-fns";
 
 interface Quiz {
   id: string | number;
@@ -34,24 +37,74 @@ export const QuizListingSection = ({
   initialQuizzes,
   initialPagination,
 }: QuizListingSectionProps) => {
-  const [quizzes] = useState<Quiz[]>(initialQuizzes);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [quizzes, setQuizzes] = useState<Quiz[]>(initialQuizzes);
   const [pagination, setPagination] =
     useState<PaginationData>(initialPagination);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handlePageChange = async (newPage: number) => {
+  // Fetch quizzes when search params change
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      setIsLoading(true);
+
+      const page = searchParams.get("page")
+        ? parseInt(searchParams.get("page")!)
+        : 1;
+      const category = searchParams.get("category") || undefined;
+      const difficulty = searchParams.get("difficulty") || undefined;
+      const search = searchParams.get("search") || undefined;
+      const sortBy = (searchParams.get("sortBy") as any) || "recent";
+
+      try {
+        const result = await getFilteredQuizzesAction({
+          page,
+          limit: 6,
+          category,
+          difficulty,
+          search,
+          sortBy,
+        });
+
+        if (result.success && result.data) {
+          const transformedQuizzes = result.data.quizzes.map((quiz: any) => ({
+            id: quiz.id,
+            title: quiz.title,
+            description: quiz.description,
+            category: quiz.category,
+            author: "Admin",
+            date: quiz.publishedAt
+              ? format(new Date(quiz.publishedAt), "dd MMM yyyy")
+              : format(new Date(quiz.createdAt), "dd MMM yyyy"),
+            image: quiz.featuredImage || "/images/landing-hero-image.jpg",
+            difficulty: quiz.difficulty,
+            questionsCount: quiz.questionsCount,
+            estimatedTime: quiz.estimatedTime,
+          }));
+
+          setQuizzes(transformedQuizzes);
+          setPagination(result.data.pagination);
+        }
+      } catch (error) {
+        console.error("Error fetching quizzes:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuizzes();
+  }, [searchParams]);
+
+  const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > pagination.totalPages || isLoading) return;
 
-    setIsLoading(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    router.push(`/quiz?${params.toString()}`);
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // In a real app, you would fetch new data here
-    // For now, we'll just update the pagination state
-    setPagination((prev) => ({ ...prev, page: newPage }));
-
-    setIsLoading(false);
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -76,7 +129,8 @@ export const QuizListingSection = ({
           /* Empty State */
           <div className="text-center py-20">
             <p className="text-neutral-600 dark:text-neutral-400 text-lg">
-              No quizzes found. Check back later for new content!
+              No quizzes found. Try adjusting your filters or check back later
+              for new content!
             </p>
           </div>
         ) : (

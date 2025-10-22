@@ -1,4 +1,12 @@
 import { QuizDetailClient } from "@/components/specific/quiz/QuizDetailClient";
+import {
+  getQuizAction,
+  getRelatedQuizzesAction,
+} from "@/app/(dashboard)/actions/quiz-actions";
+import { notFound } from "next/navigation";
+import { format } from "date-fns";
+
+export const dynamic = "force-dynamic";
 
 interface QuizDetailPageProps {
   params: Promise<{ id: string }>;
@@ -7,55 +15,58 @@ interface QuizDetailPageProps {
 export default async function QuizDetailPage({ params }: QuizDetailPageProps) {
   const { id } = await params;
 
-  // Sample quiz data - in a real app, this would come from a database
+  // Fetch quiz data from database
+  const result = await getQuizAction(id);
+
+  if (!result.success || !result.data) {
+    notFound();
+  }
+
+  // Fetch related quizzes
+  const relatedResult = await getRelatedQuizzesAction({
+    currentQuizId: id,
+    category: result.data.category,
+    limit: 6,
+  });
+
+  const relatedQuizzes =
+    relatedResult.success && relatedResult.data
+      ? relatedResult.data.map((quiz: any) => ({
+          id: quiz.id,
+          title: quiz.title,
+          description: quiz.description,
+          category: quiz.category,
+          author: "Admin",
+          date: quiz.publishedAt
+            ? format(new Date(quiz.publishedAt), "dd MMM yyyy")
+            : format(new Date(quiz.createdAt), "dd MMM yyyy"),
+          image: quiz.featuredImage || "/images/landing-hero-image.jpg",
+          difficulty: quiz.difficulty,
+          questionsCount: quiz.questionsCount,
+          estimatedTime: quiz.estimatedTime,
+        }))
+      : [];
+
   const quiz = {
-    id: id,
-    title: "Migrating to Linear 101",
-    description:
-      "Linear helps streamline software projects, sprints, tasks, and bug tracking. Here's how to get started.",
-    category: "Quiz Category",
-    author: "Phoenix Baker",
-    date: "19 Jan 2025",
-    image: "/images/landing-hero-image.jpg",
-    difficulty: "Beginner",
-    questionsCount: 3,
-    estimatedTime: "5 min",
-    questions: [
-      {
-        id: 1,
-        question: "What is Linear primarily used for?",
-        options: [
-          "Email management",
-          "Project management and bug tracking",
-          "Social media management",
-          "File storage",
-        ],
-        correctAnswer: 1,
-      },
-      {
-        id: 2,
-        question: "Which of the following is NOT a core feature of Linear?",
-        options: [
-          "Issue tracking",
-          "Sprint planning",
-          "Video conferencing",
-          "Team collaboration",
-        ],
-        correctAnswer: 2,
-      },
-      {
-        id: 3,
-        question: "How does Linear help with software development?",
-        options: [
-          "By providing video calls",
-          "By streamlining project management",
-          "By hosting websites",
-          "By managing emails",
-        ],
-        correctAnswer: 1,
-      },
-    ],
+    id: result.data.id,
+    title: result.data.title,
+    description: result.data.description,
+    category: result.data.category,
+    author: "Admin", // You can enhance this by fetching admin details
+    date: result.data.publishedAt
+      ? format(new Date(result.data.publishedAt), "dd MMM yyyy")
+      : format(new Date(result.data.createdAt), "dd MMM yyyy"),
+    image: result.data.featuredImage || "/images/landing-hero-image.jpg",
+    difficulty: result.data.difficulty,
+    questionsCount: result.data.questionsCount,
+    estimatedTime: result.data.estimatedTime,
+    questions: result.data.questions.map((q: any, index: number) => ({
+      id: index + 1,
+      question: q.question,
+      options: q.options.map((opt: any) => opt.text),
+      correctAnswer: q.correctAnswer,
+    })),
   };
 
-  return <QuizDetailClient quiz={quiz} />;
+  return <QuizDetailClient quiz={quiz} relatedQuizzes={relatedQuizzes} />;
 }

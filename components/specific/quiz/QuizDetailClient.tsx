@@ -8,6 +8,8 @@ import { Button } from "@/components/common/button";
 import { ArrowLeft, CheckCircle } from "lucide-react";
 import { MoreQuizzes } from "./MoreQuizzes";
 import { Comments } from "./Comments";
+import { submitQuizAttemptAction } from "@/app/(dashboard)/actions/quiz-actions";
+import { toast } from "sonner";
 
 interface Question {
   id: number;
@@ -30,11 +32,28 @@ interface Quiz {
   questions: Question[];
 }
 
-interface QuizDetailClientProps {
-  quiz: Quiz;
+interface RelatedQuiz {
+  id: string | number;
+  author: string;
+  date: string;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  difficulty: string;
+  questionsCount: number;
+  estimatedTime: string;
 }
 
-export function QuizDetailClient({ quiz }: QuizDetailClientProps) {
+interface QuizDetailClientProps {
+  quiz: Quiz;
+  relatedQuizzes?: RelatedQuiz[];
+}
+
+export function QuizDetailClient({
+  quiz,
+  relatedQuizzes = [],
+}: QuizDetailClientProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<{
     [key: number]: number;
   }>({});
@@ -49,7 +68,7 @@ export function QuizDetailClient({ quiz }: QuizDetailClientProps) {
     }));
   };
 
-  const handleSubmitQuiz = () => {
+  const handleSubmitQuiz = async () => {
     let correctCount = 0;
 
     quiz.questions.forEach((question) => {
@@ -61,6 +80,18 @@ export function QuizDetailClient({ quiz }: QuizDetailClientProps) {
 
     setScore(correctCount);
     setIsQuizComplete(true);
+
+    // Submit quiz attempt to database
+    try {
+      await submitQuizAttemptAction({
+        quizId: quiz.id.toString(),
+        score: correctCount,
+        totalQuestions: quiz.questions.length,
+      });
+    } catch (error) {
+      console.error("Failed to submit quiz attempt:", error);
+      // Don't show error to user as it doesn't affect the quiz completion
+    }
   };
 
   const handleRestart = () => {
@@ -256,7 +287,10 @@ export function QuizDetailClient({ quiz }: QuizDetailClientProps) {
 
             {/* Right Sidebar - More Quizzes */}
             <div className="lg:col-span-1">
-              <MoreQuizzes currentQuizId={quiz.id} />
+              <MoreQuizzes
+                currentQuizId={quiz.id}
+                relatedQuizzes={relatedQuizzes}
+              />
             </div>
           </div>
         </div>
@@ -401,7 +435,10 @@ export function QuizDetailClient({ quiz }: QuizDetailClientProps) {
 
           {/* Right Sidebar - More Quizzes */}
           <div className="lg:col-span-1">
-            <MoreQuizzes currentQuizId={quiz.id} />
+            <MoreQuizzes
+              currentQuizId={quiz.id}
+              relatedQuizzes={relatedQuizzes}
+            />
           </div>
         </div>
       </div>

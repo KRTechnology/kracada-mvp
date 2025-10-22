@@ -1294,6 +1294,105 @@ export async function uploadRestaurantGalleryImage(
 }
 
 /**
+ * Upload quiz featured image (for admin quiz creation)
+ */
+export async function uploadQuizFeaturedImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const adminId = formData.get("adminId") as string;
+    const quizTitle = formData.get("quizTitle") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({
+      file,
+      userId: adminId,
+    });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (5MB limit for featured images)
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 5MB limit.",
+      };
+    }
+
+    // Create custom path for quiz featured images
+    const sanitizedTitle = quizTitle
+      ? quizTitle
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+          .substring(0, 50) // Limit length
+      : "untitled";
+    const customPath = `quizzes/${adminId}/${sanitizedTitle}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `featured-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Quiz featured image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
  * Delete uploaded file
  */
 export async function deleteUploadedFile(

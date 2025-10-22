@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { formatEstimatedTime } from "@/lib/utils/quiz-utils";
 
 interface Quiz {
   id: string | number;
@@ -82,7 +83,7 @@ export function QuizCard({ quiz, index }: QuizCardProps) {
           <div className="flex items-center justify-between text-sm text-neutral-500 dark:text-neutral-400">
             <span>{quiz.questionsCount} questions</span>
             <span>•</span>
-            <span>{quiz.estimatedTime}</span>
+            <span>{formatEstimatedTime(quiz.estimatedTime)}</span>
           </div>
         </div>
 

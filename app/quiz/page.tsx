@@ -1,5 +1,10 @@
 import { QuizListingHeader } from "@/components/specific/quiz/QuizListingHeader";
 import { QuizListingSection } from "@/components/specific/quiz/QuizListingSection";
+import {
+  getFilteredQuizzesAction,
+  getQuizCategoriesAction,
+} from "@/app/(dashboard)/actions/quiz-actions";
+import { format } from "date-fns";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
@@ -7,113 +12,80 @@ export const dynamic = "force-dynamic";
 export default async function QuizPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    category?: string;
+    difficulty?: string;
+    search?: string;
+    sortBy?: string;
+  }>;
 }) {
   const params = await searchParams;
   const page = params.page ? parseInt(params.page) : 1;
+  const category = params.category || undefined;
+  const difficulty = params.difficulty || undefined;
+  const search = params.search || undefined;
+  const sortBy = (params.sortBy as any) || "recent";
 
-  // Sample quiz data - in a real app, this would come from a database
-  const sampleQuizzes = [
-    {
-      id: "1",
-      title: "Migrating to Linear 101",
-      description:
-        "Linear helps streamline software projects, sprints, tasks, and bug tracking. Here's how to get started.",
-      category: "Quiz Category",
-      author: "Phoenix Baker",
-      date: "19 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Beginner",
-      questionsCount: 10,
-      estimatedTime: "5 min",
-    },
-    {
-      id: "2",
-      title: "React Hooks Mastery",
-      description:
-        "Test your knowledge of React hooks including useState, useEffect, and custom hooks.",
-      category: "Technology",
-      author: "Sarah Johnson",
-      date: "18 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Intermediate",
-      questionsCount: 15,
-      estimatedTime: "8 min",
-    },
-    {
-      id: "3",
-      title: "JavaScript Fundamentals",
-      description:
-        "Master the basics of JavaScript including variables, functions, and control structures.",
-      category: "Programming",
-      author: "Mike Chen",
-      date: "17 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Beginner",
-      questionsCount: 12,
-      estimatedTime: "6 min",
-    },
-    {
-      id: "4",
-      title: "CSS Grid Layout",
-      description:
-        "Learn and test your understanding of CSS Grid layout system and its properties.",
-      category: "Web Design",
-      author: "Emma Wilson",
-      date: "16 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Intermediate",
-      questionsCount: 18,
-      estimatedTime: "10 min",
-    },
-    {
-      id: "5",
-      title: "TypeScript Basics",
-      description:
-        "Get familiar with TypeScript features including types, interfaces, and generics.",
-      category: "Programming",
-      author: "David Kim",
-      date: "15 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Intermediate",
-      questionsCount: 14,
-      estimatedTime: "7 min",
-    },
-    {
-      id: "6",
-      title: "Node.js Backend Development",
-      description:
-        "Test your knowledge of Node.js, Express, and backend development concepts.",
-      category: "Backend",
-      author: "Lisa Rodriguez",
-      date: "14 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Advanced",
-      questionsCount: 20,
-      estimatedTime: "12 min",
-    },
-  ];
+  // Fetch available categories
+  const categoriesResult = await getQuizCategoriesAction();
+  const categories = categoriesResult.success ? categoriesResult.data : [];
 
-  // Pagination logic
-  const itemsPerPage = 6;
-  const totalQuizzes = sampleQuizzes.length;
-  const totalPages = Math.ceil(totalQuizzes / itemsPerPage);
-  const startIndex = (page - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentQuizzes = sampleQuizzes.slice(startIndex, endIndex);
-
-  const pagination = {
+  // Fetch quizzes from database with filters
+  const result = await getFilteredQuizzesAction({
     page,
-    limit: itemsPerPage,
-    total: totalQuizzes,
-    totalPages,
-  };
+    limit: 6,
+    category,
+    difficulty,
+    search,
+    sortBy,
+  });
+
+  if (!result.success || !result.data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">
+            Failed to load quizzes
+          </h2>
+          <p className="text-neutral-600 dark:text-neutral-400">
+            {result.message || "Please try again later"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Transform quizzes data for display
+  const quizzes = result.data.quizzes.map((quiz: any) => ({
+    id: quiz.id,
+    title: quiz.title,
+    description: quiz.description,
+    category: quiz.category,
+    author: "Admin", // You can enhance this by fetching admin details
+    date: quiz.publishedAt
+      ? format(new Date(quiz.publishedAt), "dd MMM yyyy")
+      : format(new Date(quiz.createdAt), "dd MMM yyyy"),
+    image: quiz.featuredImage || "/images/landing-hero-image.jpg",
+    difficulty: quiz.difficulty,
+    questionsCount: quiz.questionsCount,
+    estimatedTime: quiz.estimatedTime,
+  }));
+
+  const pagination = result.data.pagination;
 
   return (
     <div className="min-h-screen">
-      <QuizListingHeader totalResults={pagination.total} />
+      <QuizListingHeader
+        totalResults={pagination.total}
+        categories={categories}
+        initialCategory={category}
+        initialDifficulty={difficulty}
+        initialSearch={search}
+        initialSortBy={sortBy}
+      />
       <QuizListingSection
-        initialQuizzes={currentQuizzes}
+        initialQuizzes={quizzes}
         initialPagination={pagination}
       />
     </div>

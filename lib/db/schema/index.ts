@@ -12,4 +12,5 @@ export * from "./news";
 export * from "./hotels";
 export * from "./restaurants";
 export * from "./reviews";
+export * from "./quizzes";
 // export * from "./indexes"; // Temporarily commented out to fix Drizzle Studio

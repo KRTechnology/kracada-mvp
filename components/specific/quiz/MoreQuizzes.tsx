@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { formatEstimatedTime } from "@/lib/utils/quiz-utils";
 
 interface Quiz {
   id: string | number;
@@ -20,93 +20,17 @@ interface Quiz {
 
 interface MoreQuizzesProps {
   currentQuizId: string | number;
+  relatedQuizzes?: Quiz[];
 }
 
-export function MoreQuizzes({ currentQuizId }: MoreQuizzesProps) {
-  // Sample quizzes data
-  const quizzes: Quiz[] = [
-    {
-      id: "2",
-      title: "UX review presentations",
-      description:
-        "How do you create compelling presentations that wow your colleagues and impress your managers?",
-      category: "Quiz Category",
-      author: "Olivia Rhye",
-      date: "20 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Intermediate",
-      questionsCount: 12,
-      estimatedTime: "8 min",
-    },
-    {
-      id: "3",
-      title: "React Hooks Mastery",
-      description:
-        "Test your knowledge of React hooks including useState, useEffect, and custom hooks.",
-      category: "Technology",
-      author: "Sarah Johnson",
-      date: "18 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Intermediate",
-      questionsCount: 15,
-      estimatedTime: "8 min",
-    },
-    {
-      id: "4",
-      title: "JavaScript Fundamentals",
-      description:
-        "Master the basics of JavaScript including variables, functions, and control structures.",
-      category: "Programming",
-      author: "Mike Chen",
-      date: "17 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Beginner",
-      questionsCount: 12,
-      estimatedTime: "6 min",
-    },
-    {
-      id: "5",
-      title: "CSS Grid Layout",
-      description:
-        "Learn and test your understanding of CSS Grid layout system and its properties.",
-      category: "Web Design",
-      author: "Emma Wilson",
-      date: "16 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Intermediate",
-      questionsCount: 18,
-      estimatedTime: "10 min",
-    },
-    {
-      id: "6",
-      title: "TypeScript Basics",
-      description:
-        "Get familiar with TypeScript features including types, interfaces, and generics.",
-      category: "Programming",
-      author: "David Kim",
-      date: "15 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Intermediate",
-      questionsCount: 14,
-      estimatedTime: "7 min",
-    },
-    {
-      id: "7",
-      title: "Node.js Backend Development",
-      description:
-        "Test your knowledge of Node.js, Express, and backend development concepts.",
-      category: "Backend",
-      author: "Lisa Rodriguez",
-      date: "14 Jan 2025",
-      image: "/images/landing-hero-image.jpg",
-      difficulty: "Advanced",
-      questionsCount: 20,
-      estimatedTime: "12 min",
-    },
-  ];
-
-  // Filter out current quiz
-  const filteredQuizzes = quizzes.filter((quiz) => quiz.id !== currentQuizId);
+export function MoreQuizzes({
+  currentQuizId,
+  relatedQuizzes = [],
+}: MoreQuizzesProps) {
+  // If no related quizzes, don't show the section
+  if (!relatedQuizzes || relatedQuizzes.length === 0) {
+    return null;
+  }
 
   return (
     <div className="hidden lg:block">
@@ -120,8 +44,8 @@ export function MoreQuizzes({ currentQuizId }: MoreQuizzesProps) {
           More Quizzes
         </h3>
 
-        <div className="grid grid-cols-1 gap-4 mb-6">
-          {filteredQuizzes.slice(0, 6).map((quiz, index) => (
+        <div className="grid grid-cols-1 gap-4">
+          {relatedQuizzes.map((quiz, index) => (
             <motion.div
               key={quiz.id}
               initial={{ opacity: 0, y: 20 }}
@@ -142,20 +66,40 @@ export function MoreQuizzes({ currentQuizId }: MoreQuizzesProps) {
 
                   {/* Quiz Content */}
                   <div className="p-4 space-y-3">
-                    <div className="text-orange-500 text-xs font-medium">
-                      {quiz.category}
+                    <div className="flex items-center justify-between">
+                      <span className="text-orange-500 text-xs font-medium">
+                        {quiz.category}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                          quiz.difficulty === "Beginner"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                            : quiz.difficulty === "Intermediate"
+                              ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                        }`}
+                      >
+                        {quiz.difficulty}
+                      </span>
                     </div>
 
-                    <h4 className="text-sm font-bold text-neutral-900 dark:text-white leading-tight">
+                    <h4 className="text-sm font-bold text-neutral-900 dark:text-white leading-tight line-clamp-2">
                       {quiz.title}
                     </h4>
 
-                    <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                    <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed line-clamp-2">
                       {quiz.description}
                     </p>
 
+                    {/* Quiz Stats */}
+                    <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+                      <span>{quiz.questionsCount} questions</span>
+                      <span>•</span>
+                      <span>{formatEstimatedTime(quiz.estimatedTime)}</span>
+                    </div>
+
                     {/* Author and Date - Bottom Left */}
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 pt-2 border-t border-neutral-100 dark:border-neutral-700">
                       <div className="w-6 h-6 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs font-semibold">
                           {quiz.author.charAt(0)}
@@ -175,17 +119,6 @@ export function MoreQuizzes({ currentQuizId }: MoreQuizzesProps) {
               </Link>
             </motion.div>
           ))}
-        </div>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-center space-x-2 text-sm text-neutral-500 dark:text-neutral-400">
-          <button className="hover:text-orange-500 transition-colors">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span>Page 1 of 10</span>
-          <button className="hover:text-orange-500 transition-colors">
-            <ChevronRight className="w-4 h-4" />
-          </button>
         </div>
       </motion.div>
     </div>
