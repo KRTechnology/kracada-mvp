@@ -1,5 +1,10 @@
 import EditVideoContent from "./EditVideoContent";
 
-export default function EditVideoPage({ params }: { params: { id: string } }) {
-  return <EditVideoContent videoId={params.id} />;
+export default async function EditVideoPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return <EditVideoContent videoId={id} />;
 }

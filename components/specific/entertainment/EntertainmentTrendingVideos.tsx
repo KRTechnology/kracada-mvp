@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useRef, useTransition } from "react";
-import { Search, Play, ExternalLink } from "lucide-react";
+import { useState, useRef, useTransition, useEffect } from "react";
+import { Search, Play, ExternalLink, Bookmark } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
 import {
@@ -14,6 +14,12 @@ import {
 } from "@/components/common/select";
 import { Pagination } from "@/components/common/Pagination";
 import { getTrendingVideosAction } from "@/app/(dashboard)/actions/video-actions";
+import { useSession } from "next-auth/react";
+import {
+  toggleBookmarkAction,
+  checkBookmarkStatusAction,
+} from "@/app/(dashboard)/actions/bookmark-actions";
+import { toast } from "sonner";
 
 interface Video {
   id: string;
@@ -298,8 +304,67 @@ interface VideoCardProps {
 }
 
 const VideoCard = ({ video, index }: VideoCardProps) => {
+  const { data: session, status } = useSession();
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
+
+  // Check bookmark status on mount
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (status === "authenticated" && session?.user?.id) {
+        try {
+          const result = await checkBookmarkStatusAction("video", video.id);
+          setIsBookmarked(result.isBookmarked);
+        } catch (error) {
+          console.error("Error checking bookmark status:", error);
+        } finally {
+          setIsCheckingStatus(false);
+        }
+      } else {
+        setIsCheckingStatus(false);
+      }
+    };
+
+    checkStatus();
+  }, [status, session?.user?.id, video.id]);
+
   const handleVideoClick = () => {
     window.open(video.videoUrl, "_blank");
+  };
+
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (status !== "authenticated") {
+      toast.error("Please log in to bookmark videos");
+      return;
+    }
+
+    setIsTogglingBookmark(true);
+
+    try {
+      const result = await toggleBookmarkAction({
+        contentType: "video",
+        contentId: video.id,
+      });
+
+      if (result.success) {
+        setIsBookmarked(result.isBookmarked || false);
+        toast.success(
+          result.isBookmarked
+            ? "Video added to bookmarks"
+            : "Video removed from bookmarks"
+        );
+      } else {
+        toast.error(result.message || "Failed to update bookmark");
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsTogglingBookmark(false);
+    }
   };
 
   // Function to get category color based on index
@@ -348,6 +413,22 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
           <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/80 text-white text-xs font-medium rounded">
             {video.duration}
           </div>
+
+          {/* Bookmark Button */}
+          <button
+            onClick={handleBookmarkClick}
+            disabled={isTogglingBookmark}
+            className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+              isBookmarked
+                ? "bg-orange-500 text-white"
+                : "bg-white/90 text-neutral-700 hover:bg-white"
+            } ${isTogglingBookmark ? "opacity-50 cursor-not-allowed" : ""}`}
+            aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
+          >
+            <Bookmark
+              className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`}
+            />
+          </button>
 
           {/* Video Controls */}
           <div className="absolute bottom-3 left-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
