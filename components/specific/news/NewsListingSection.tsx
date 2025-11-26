@@ -30,6 +30,7 @@ interface NewsListingSectionProps {
     total: number;
     totalPages: number;
   };
+  apiPost: any;
 }
 
 // Sample news data - fallback for empty state
@@ -219,6 +220,7 @@ const sampleNewsData = [
 export const NewsListingSection = ({
   initialPosts,
   initialPagination,
+  apiPost,
 }: NewsListingSectionProps) => {
   const router = useRouter();
   const [posts, setPosts] = useState(initialPosts);
@@ -231,31 +233,55 @@ export const NewsListingSection = ({
   }, [initialPosts, initialPagination]);
 
   const handlePageChange = (page: number) => {
+    // make a new api call to get page 2
     router.push(`/news?page=${page}`);
   };
 
   // Transform posts to match card format
-  const articlesData = posts.map((post) => ({
-    id: post.id,
-    author: post.author
-      ? `${post.author.firstName} ${post.author.lastName}`
-      : "Admin",
-    date: post.publishedAt
-      ? new Date(post.publishedAt).toLocaleDateString("en-US", {
+  // const articlesData = posts.map((post) => ({
+  //   id: post.id,
+  //   author: post.author
+  //     ? `${post.author.firstName} ${post.author.lastName}`
+  //     : "Admin",
+  //   date: post.publishedAt
+  //     ? new Date(post.publishedAt).toLocaleDateString("en-US", {
+  //         day: "numeric",
+  //         month: "short",
+  //         year: "numeric",
+  //       })
+  //     : new Date(post.createdAt).toLocaleDateString("en-US", {
+  //         day: "numeric",
+  //         month: "short",
+  //         year: "numeric",
+  //       }),
+  //   title: post.title,
+  //   description: post.description || post.title,
+  //   image: post.featuredImage || "/images/news-sample-image.jpg",
+  //   categories: post.categories || [],
+  // }));
+
+  // transform api post to match card
+
+  // const newArticleCardData = "";
+
+  const newArticleCardData = apiPost.articles.map((post: any) => ({
+    id: post.article_id,
+    author: post.creator?.length ? post.creator.join(", ") : "Unknown",
+    date: post.pubDate
+      ? new Date(post.pubDate).toLocaleDateString("en-US", {
           day: "numeric",
           month: "short",
           year: "numeric",
         })
-      : new Date(post.createdAt).toLocaleDateString("en-US", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        }),
+      : "",
     title: post.title,
     description: post.description || post.title,
-    image: post.featuredImage || "/images/news-sample-image.jpg",
-    categories: post.categories || [],
+    image: post.image_url || "/images/news-sample-image.jpg",
+    categories: post.category || [],
+    link: post.link,
+    source: post.source_name || "",
   }));
+  console.log(newArticleCardData);
 
   return (
     <section className="bg-white dark:bg-dark">
@@ -271,7 +297,7 @@ export const NewsListingSection = ({
         </motion.h2>
 
         {/* News Articles Grid */}
-        {articlesData.length === 0 ? (
+        {newArticleCardData.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-neutral-600 dark:text-neutral-400 text-lg">
               No news posts available yet. Check back soon!
@@ -285,15 +311,17 @@ export const NewsListingSection = ({
               transition={{ duration: 0.6, delay: 0.2 }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
             >
-              {articlesData.map((article, index) => (
+              {newArticleCardData.map((item: any, index: any) => (
                 <motion.div
-                  key={article.id}
+                  key={item.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   className="h-full"
                 >
-                  <NewsArticleCard article={article} index={index} />
+                  <NewsArticleCard article={item} index={index} />
+
+                  {/* <p>{item.image}</p> */}
                 </motion.div>
               ))}
             </motion.div>

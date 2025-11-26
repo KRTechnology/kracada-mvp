@@ -1,7 +1,6 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
-import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -13,6 +12,7 @@ interface NewsArticle {
   description: string;
   image: string;
   categories: string[];
+  link?: string;
 }
 
 interface NewsArticleCardProps {
@@ -21,7 +21,6 @@ interface NewsArticleCardProps {
 }
 
 export function NewsArticleCard({ article, index }: NewsArticleCardProps) {
-  // Function to get category color based on index
   const getCategoryColor = (categoryIndex: number) => {
     const colors = [
       "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
@@ -36,8 +35,19 @@ export function NewsArticleCard({ article, index }: NewsArticleCardProps) {
     return colors[categoryIndex % colors.length];
   };
 
+  // Determine the wrapper component dynamically
+  const Wrapper = article.link ? "a" : Link;
+  const wrapperProps = article.link
+    ? {
+        href: article.link,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        className: "h-full",
+      }
+    : { href: `/news/${article.id}`, className: "h-full" };
+
   return (
-    <Link href={`/news/${article.id}`} className="h-full">
+    <Wrapper {...wrapperProps}>
       <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer h-full flex flex-col">
         {/* Article Image */}
         <div className="relative w-full h-48 overflow-hidden">
@@ -69,7 +79,9 @@ export function NewsArticleCard({ article, index }: NewsArticleCardProps) {
             <h3 className="text-xl font-bold text-neutral-900 dark:text-white leading-tight flex-1 pr-2">
               {article.title}
             </h3>
-            <ExternalLink className="w-5 h-5 text-neutral-400 dark:text-neutral-500 flex-shrink-0 mt-1" />
+            {article.link && (
+              <ExternalLink className="w-5 h-5 text-neutral-400 dark:text-neutral-500 flex-shrink-0 mt-1" />
+            )}
           </div>
 
           {/* Description */}
@@ -82,7 +94,7 @@ export function NewsArticleCard({ article, index }: NewsArticleCardProps) {
             {article.categories.map((category, categoryIndex) => (
               <span
                 key={categoryIndex}
-                className={`px-3 py-1 text-xs font-medium rounded-full ${getCategoryColor(
+                className={`px-3 py-1 text-xs font-medium rounded-full capitalize ${getCategoryColor(
                   categoryIndex
                 )}`}
               >
@@ -92,6 +104,6 @@ export function NewsArticleCard({ article, index }: NewsArticleCardProps) {
           </div>
         </div>
       </div>
-    </Link>
+    </Wrapper>
   );
 }

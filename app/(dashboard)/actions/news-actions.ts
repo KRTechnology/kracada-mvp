@@ -407,6 +407,48 @@ export async function getNewsPostsAction(params?: {
   }
 }
 
+export async function getNewsApi(query = "human resources nigeria") {
+  const apiKey = process.env.NEWSDATA_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Missing NEWSData API key.");
+  }
+
+  const url = new URL("https://newsdata.io/api/1/latest");
+
+  url.searchParams.append("apikey", apiKey);
+  url.searchParams.append("q", query);
+
+  try {
+    const response = await fetch(url.toString());
+
+    if (!response.ok) {
+      throw new Error(
+        `News API error: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+
+    return {
+      status: "success",
+      total: data.totalResults || 0,
+      articles: data.results || [],
+      raw: data, // keep raw response in case you need fields like nextPage later
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+
+    console.error("Error fetching news:", message);
+
+    return {
+      status: "error",
+      message,
+      articles: [],
+    };
+  }
+}
+
 /**
  * Get a single news post by ID or slug
  */
