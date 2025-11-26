@@ -9,9 +9,10 @@ import { HomePageNewsPost } from "@/app/actions/home-actions";
 
 interface NewsSectionProps {
   latestNews: HomePageNewsPost[];
+  newNews: any;
 }
 
-const NewsSection = ({ latestNews }: NewsSectionProps) => {
+const NewsSection = ({ latestNews, newNews }: NewsSectionProps) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -23,6 +24,7 @@ const NewsSection = ({ latestNews }: NewsSectionProps) => {
     },
   };
 
+  console.log(newNews);
   const itemVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -44,6 +46,23 @@ const NewsSection = ({ latestNews }: NewsSectionProps) => {
     description: news.description,
     image: news.image,
     type: "image" as const,
+  }));
+
+  const newNewsdata = newNews.map((post: any) => ({
+    id: post.article_id,
+    author: post.creator?.length ? post.creator.join(", ") : "Unknown",
+    date: post.pubDate
+      ? new Date(post.pubDate).toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "",
+    title: post.title,
+    description: post.description || post.title,
+    image: post.image_url || "/images/news-sample-image.jpg",
+    type: "image" as const,
+    link: post.link,
   }));
 
   return (
@@ -88,7 +107,7 @@ const NewsSection = ({ latestNews }: NewsSectionProps) => {
             variants={itemVariants}
             className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
           >
-            {newsData.map((news, index) => (
+            {newNewsdata.slice(0, 3).map((news: any, index: number) => (
               <NewsCard key={news.id} news={news} index={index} />
             ))}
           </motion.div>
