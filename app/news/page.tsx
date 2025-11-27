@@ -27,7 +27,6 @@ export default async function NewsPage({
   });
 
   const apiPosts = await getNewsApi();
-  console.log(apiPosts);
 
   const posts = postsResult.success ? postsResult.data?.posts || [] : [];
 

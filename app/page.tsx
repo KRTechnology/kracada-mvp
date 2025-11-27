@@ -25,7 +25,6 @@ export default async function Home() {
   const latestNews = newsResult.success ? newsResult.data || [] : [];
 
   const newNews = await getNewsApi();
-  console.log(newNews);
 
   // Fetch Kracada TV videos (limit to 3)
   const kracadaTVResult = await getKracadaTVVideosAction({ limit: 3 });
