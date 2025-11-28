@@ -2,7 +2,11 @@ import { EntertainmentQuizBanner } from "@/components/specific/entertainment/Ent
 import { NewsHeroSection } from "@/components/specific/news/NewsHeroSection";
 import { NewsListingHeader } from "@/components/specific/news/NewsListingHeader";
 import { NewsListingSection } from "@/components/specific/news/NewsListingSection";
-import { getNewsPostsAction } from "@/app/(dashboard)/actions/news-actions";
+
+import {
+  getNewsApi,
+  getNewsPostsAction,
+} from "@/app/(dashboard)/actions/news-actions";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
@@ -22,7 +26,10 @@ export default async function NewsPage({
     status: "published",
   });
 
+  const apiPosts = await getNewsApi();
+
   const posts = postsResult.success ? postsResult.data?.posts || [] : [];
+
   const pagination =
     postsResult.success && postsResult.data?.pagination
       ? postsResult.data.pagination
@@ -32,7 +39,11 @@ export default async function NewsPage({
     <div className="min-h-screen">
       <NewsHeroSection />
       <NewsListingHeader totalResults={pagination.total} />
-      <NewsListingSection initialPosts={posts} initialPagination={pagination} />
+      <NewsListingSection
+        initialPosts={posts}
+        initialPagination={pagination}
+        apiPost={apiPosts}
+      />
       <EntertainmentQuizBanner />
     </div>
   );

@@ -415,6 +415,8 @@ export async function getLatestNewsPostsAction(): Promise<{
   }
 }
 
+// Fetch latest 3 published news via the news data api posts for home page
+
 // Track job view - increment view count for non-owners
 export async function trackJobViewAction(jobId: string) {
   try {

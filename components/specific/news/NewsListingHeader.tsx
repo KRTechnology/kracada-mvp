@@ -2,10 +2,9 @@
 
 import { Search, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
 import { Input } from "@/components/common/input";
 import { Button } from "@/components/common/button";
-
+import { useState } from "react";
 interface NewsListingHeaderProps {
   totalResults?: number;
 }

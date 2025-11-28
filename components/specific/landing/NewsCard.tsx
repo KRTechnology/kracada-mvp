@@ -14,6 +14,7 @@ interface NewsItem {
   description: string;
   image: string;
   type: "image" | "video";
+  link: string;
 }
 
 interface NewsCardProps {
@@ -43,7 +44,12 @@ const NewsCard = ({ news, index }: NewsCardProps) => {
       viewport={{ once: true }}
       className="cursor-pointer relative"
     >
-      <Link href={`/news/${news.id}`}>
+      <a
+        href={news.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="h-full"
+      >
         <motion.div
           whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.3 }}
@@ -97,7 +103,7 @@ const NewsCard = ({ news, index }: NewsCardProps) => {
             </p>
           </div>
         </motion.div>
-      </Link>
+      </a>
     </motion.div>
   );
 };

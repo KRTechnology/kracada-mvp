@@ -9,6 +9,9 @@ import {
   getLatestNewsPostsAction,
 } from "@/app/actions/home-actions";
 import { EntertainmentQuizBanner } from "@/components/specific/entertainment/EntertainmentQuizBanner";
+import { EntertainmentKracadaTV } from "@/components/specific/entertainment/EntertainmentKracadaTV";
+import { getKracadaTVVideosAction } from "./(dashboard)/actions/video-actions";
+import { getNewsApi } from "./(dashboard)/actions/news-actions";
 
 export default async function Home() {
   // Fetch latest jobs, lifestyle posts, and news posts data
@@ -21,12 +24,21 @@ export default async function Home() {
   const newsResult = await getLatestNewsPostsAction();
   const latestNews = newsResult.success ? newsResult.data || [] : [];
 
+  const newNews = await getNewsApi();
+
+  // Fetch Kracada TV videos (limit to 3)
+  const kracadaTVResult = await getKracadaTVVideosAction({ limit: 3 });
+  const kracadaTVVideos = kracadaTVResult.success
+    ? kracadaTVResult.data || []
+    : [];
+
   return (
     <>
       <HeroSection />
-      <NewsSection latestNews={latestNews} />
+      <NewsSection latestNews={latestNews} newNews={newNews.articles} />
       <EntertainmentQuizBanner />
       <JobsSection latestJobs={latestJobs} />
+      <EntertainmentKracadaTV videos={kracadaTVVideos} />
       <ArticlesSection latestPosts={latestPosts} />
       <TravelSection />
     </>
