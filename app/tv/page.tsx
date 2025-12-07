@@ -1,17 +1,17 @@
 import { EntertainmentQuizBanner } from "@/components/specific/entertainment/EntertainmentQuizBanner";
-import { NewsHeroSection } from "@/components/specific/news/NewsHeroSection";
-import { NewsListingHeader } from "@/components/specific/news/NewsListingHeader";
-import { NewsListingSection } from "@/components/specific/news/NewsListingSection";
+import { TvHeroSection } from "@/components/specific/tv/TvHeroSection";
+import { TvListingSection } from "@/components/specific/tv/TvListingSection";
 
 import {
   getNewsApi,
   getNewsPostsAction,
 } from "@/app/(dashboard)/actions/news-actions";
+import { getKracadaTVVideosAction } from "../(dashboard)/actions/video-actions";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 
-export default async function NewsPage({
+export default async function TvPage({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string }>;
@@ -25,10 +25,12 @@ export default async function NewsPage({
     limit: 6,
     status: "published",
   });
+  const kracadaTVResult = await getKracadaTVVideosAction();
 
   const apiPosts = await getNewsApi();
 
   const posts = postsResult.success ? postsResult.data?.posts || [] : [];
+  const tvPosts = kracadaTVResult.success ? kracadaTVResult.data || [] : [];
 
   const pagination =
     postsResult.success && postsResult.data?.pagination
@@ -37,13 +39,10 @@ export default async function NewsPage({
 
   return (
     <div className="min-h-screen">
-      <NewsHeroSection />
-      <NewsListingHeader totalResults={pagination.total} />
-      <NewsListingSection
-        initialPosts={posts}
-        initialPagination={pagination}
-        apiPost={apiPosts}
-      />
+      <TvHeroSection />
+      {/* <TvListingHeader totalResults={pagination.total} /> */}
+      <TvListingSection videos={tvPosts} />
+
       <EntertainmentQuizBanner />
     </div>
   );
