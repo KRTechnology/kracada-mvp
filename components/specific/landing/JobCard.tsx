@@ -116,7 +116,7 @@ const JobCard = ({ job, index, showBookmarkButton = true }: JobCardProps) => {
         )}
 
         {/* Three Dots Menu */}
-        <motion.button
+        {/* <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onClick={(e) => e.stopPropagation()}
@@ -124,7 +124,7 @@ const JobCard = ({ job, index, showBookmarkButton = true }: JobCardProps) => {
           style={{ width: "24px", height: "24px" }}
         >
           <MoreVertical className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
-        </motion.button>
+        </motion.button> */}
       </div>
 
       <motion.div
