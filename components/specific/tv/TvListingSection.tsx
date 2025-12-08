@@ -200,8 +200,8 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
 };
 
 interface EntertainmentKracadaTVProps {
-  videos: Array<Video & { categories: string[] }>;
-  totalResults?: number;
+  videos: Video[]; // Array of Video objects
+  totalResults?: number; // Optional
 }
 
 export const TvListingSection = ({
