@@ -4,8 +4,9 @@ import { MoreVertical, Play, Eye, Clock } from "lucide-react";
 import { VideoBookmark } from "@/lib/data/bookmarks-data";
 import { lineClamp } from "@/lib/utils";
 
-interface VideoCardProps {
+export interface VideoCardProps {
   video: VideoBookmark;
+  index?: number;
 }
 
 export function VideoCard({ video }: VideoCardProps) {

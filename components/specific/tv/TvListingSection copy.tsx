@@ -217,7 +217,7 @@ const sampleNewsData = [
   },
 ];
 
-export const NewsListingSection = ({
+export const TvListingSection = ({
   initialPosts,
   initialPagination,
   apiPost,
@@ -281,6 +281,7 @@ export const NewsListingSection = ({
     link: post.link,
     source: post.source_name || "",
   }));
+  console.log(newArticleCardData);
 
   return (
     <section className="bg-white dark:bg-dark">
