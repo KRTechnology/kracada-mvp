@@ -20,6 +20,18 @@ export interface ToggleBookmarkData {
   contentId: string;
 }
 
+interface ArticleCardItem {
+  contentType: string;
+  id: string | number;
+  author: string;
+  date: string;
+  title: string;
+  description: string;
+  image: string;
+  categories: string[];
+  link?: string;
+}
+
 export interface BookmarkResult {
   success: boolean;
   message: string;
@@ -81,6 +93,10 @@ export interface BookmarkedVideoItem {
   bookmarkedAt: Date;
 }
 
+export interface BookmarkedArticleItem {
+  id: string;
+}
+
 // Helper function to get current user
 async function getCurrentUser(): Promise<string> {
   const session = await auth();
@@ -91,10 +107,9 @@ async function getCurrentUser(): Promise<string> {
 }
 
 // Toggle bookmark (add if not exists, remove if exists)
-export async function toggleBookmarkAction(
-  data: ToggleBookmarkData
-): Promise<BookmarkResult> {
+export async function toggleBookmarkAction(data: any): Promise<BookmarkResult> {
   try {
+    console.log(data);
     const userId = await getCurrentUser();
 
     // Check if bookmark already exists
@@ -127,8 +142,9 @@ export async function toggleBookmarkAction(
       // Add bookmark
       await db.insert(bookmarks).values({
         userId,
-        contentType: data.contentType,
-        contentId: data.contentId,
+        // contentType: data.contentType,
+        // contentId: data.contentId,
+        ...data,
       });
 
       revalidatePath("/dashboard/bookmarks");
@@ -147,6 +163,72 @@ export async function toggleBookmarkAction(
     };
   }
 }
+
+// export async function toggleArticleAction(
+//   data: ArticleCardItem
+// ): Promise<BookmarkResult> {
+//   try {
+//     const userId = await getCurrentUser();
+
+//     // Check if bookmark already exists
+//     const existingBookmark = await db
+//       .select()
+//       .from(bookmarks)
+//       .where(
+//         and(
+//           eq(bookmarks.userId, userId),
+//           eq(bookmarks.contentType, "article"),
+//           eq(bookmarks.contentId, data.id)
+//         )
+//       )
+//       .limit(1);
+
+//     if (existingBookmark.length > 0) {
+//       // Remove bookmark
+//       await db
+//         .delete(bookmarks)
+//         .where(eq(bookmarks.id, existingBookmark[0].id));
+
+//       revalidatePath("/dashboard/bookmarks");
+
+//       return {
+//         success: true,
+//         message: "Bookmark removed successfully",
+//         isBookmarked: false,
+//       };
+//     } else {
+//       // Add bookmark
+//       await db.insert(bookmarks).values([
+//         {
+//           userId,
+//           contentType: "article",
+//           contentId: data.id,
+//           author: data.author,
+//           articleDate: data.date,
+//           articleTitle: data.title,
+//           articleDescription: data.description,
+//           articleImage: data.image,
+//           articleCategory: data.categories,
+//           articleLink: data.link,
+//         },
+//       ]);
+
+//       revalidatePath("/dashboard/bookmarks");
+
+//       return {
+//         success: true,
+//         message: "Bookmark added successfully",
+//         isBookmarked: true,
+//       };
+//     }
+//   } catch (error) {
+//     console.error("Error toggling bookmark:", error);
+//     return {
+//       success: false,
+//       message: "Failed to toggle bookmark",
+//     };
+//   }
+// }
 
 // Check if content is bookmarked by current user
 export async function checkBookmarkStatusAction(
@@ -213,6 +295,14 @@ export async function getBookmarkedJobsAction(): Promise<{
       )
       .orderBy(desc(bookmarks.createdAt));
 
+    const newa = await db
+      .select()
+      .from(bookmarks)
+      .where(and(eq(bookmarks.userId, userId)))
+      .orderBy(desc(bookmarks.createdAt));
+
+    console.log(newa);
+
     const formattedJobs: BookmarkedJobItem[] = bookmarkedJobs.map((item) => ({
       id: item.jobId,
       title: item.title,
@@ -228,6 +318,50 @@ export async function getBookmarkedJobsAction(): Promise<{
     return {
       success: true,
       data: formattedJobs,
+    };
+  } catch (error) {
+    console.error("Error fetching bookmarked jobs:", error);
+    return {
+      success: false,
+      message: "Failed to fetch bookmarked jobs",
+    };
+  }
+}
+
+// Get all bookmarked articles for current user
+export async function getBookmarkedArticleAction(): Promise<{
+  success: boolean;
+  // data?: BookmarkedJobItem[];
+  data?: any;
+
+  message?: string;
+}> {
+  try {
+    const userId = await getCurrentUser();
+
+    const bookmarkedJobs = await db
+      .select()
+      .from(bookmarks)
+      .where(
+        and(eq(bookmarks.userId, userId), eq(bookmarks.contentType, "article"))
+      )
+      .orderBy(desc(bookmarks.createdAt));
+
+    // const formattedJobs: BookmarkedJobItem[] = bookmarkedJobs.map((item) => ({
+    //   id: item.jobId,
+    //   title: item.title,
+    //   company: item.companyName || item.fullName,
+    //   companyLogo: item.companyLogo,
+    //   location: item.location,
+    //   description: item.description,
+    //   skills: JSON.parse(item.requiredSkills || "[]"),
+    //   locationType: item.locationType,
+    //   bookmarkedAt: item.bookmarkedAt,
+    // }));
+
+    return {
+      success: true,
+      data: bookmarkedJobs,
     };
   } catch (error) {
     console.error("Error fetching bookmarked jobs:", error);

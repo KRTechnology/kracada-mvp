@@ -85,7 +85,7 @@ export function BookmarkedJobsContent({
                   locationType: item.locationType,
                 }}
                 index={index}
-                showBookmarkButton={false}
+                // showBookmarkButton={false}
               />
             </motion.div>
           ))}

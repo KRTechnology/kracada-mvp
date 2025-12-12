@@ -16,7 +16,7 @@ interface ProfilePictureCardProps {
   userData: {
     profilePicture?: string | null;
     cv?: string | null;
-    id: string; // User ID for uploads
+    id: string;
     firstName: string;
     lastName: string;
   };
@@ -26,6 +26,92 @@ interface ProfilePictureCardProps {
   }) => void;
   isEditMode?: boolean;
 }
+
+// Image compression function
+const compressImage = async (file: File, maxSizeMB = 1): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+          reject(new Error("Failed to get canvas context"));
+          return;
+        }
+
+        // Calculate new dimensions while maintaining aspect ratio
+        let width = img.width;
+        let height = img.height;
+        const maxDimension = 1920; // Max width or height
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = (height / width) * maxDimension;
+            width = maxDimension;
+          } else {
+            width = (width / height) * maxDimension;
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw image on canvas
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Start with quality of 0.9 and reduce if needed
+        let quality = 0.9;
+        const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+        const tryCompress = () => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error("Failed to compress image"));
+                return;
+              }
+
+              // If still too large and quality can be reduced, try again
+              if (blob.size > maxSizeBytes && quality > 0.1) {
+                quality -= 0.1;
+                tryCompress();
+                return;
+              }
+
+              // Create new file from blob
+              const compressedFile = new File([blob], file.name, {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              });
+
+              resolve(compressedFile);
+            },
+            "image/jpeg",
+            quality
+          );
+        };
+
+        tryCompress();
+      };
+
+      img.onerror = () => {
+        reject(new Error("Failed to load image"));
+      };
+    };
+
+    reader.onerror = () => {
+      reject(new Error("Failed to read file"));
+    };
+  });
+};
 
 export function ProfilePictureCard({
   userData,
@@ -42,22 +128,13 @@ export function ProfilePictureCard({
   const [cvKey, setCvKey] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [uploadType, setUploadType] = useState<"profile" | "cv" | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   const handleProfilePictureUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    // Client-side validation
-    const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
-    if (file.size > MAX_IMAGE_SIZE) {
-      toast.error(
-        "Image size exceeds 1MB limit. Please choose a smaller image."
-      );
-      event.target.value = "";
-      return;
-    }
 
     // Validate file type
     const allowedImageTypes = [
@@ -80,8 +157,29 @@ export function ProfilePictureCard({
 
     startTransition(async () => {
       try {
+        let fileToUpload = file;
+        const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
+
+        // Compress image if it exceeds the size limit
+        if (file.size > MAX_IMAGE_SIZE) {
+          setIsCompressing(true);
+          toast.info("Compressing image...");
+
+          try {
+            fileToUpload = await compressImage(file, 1);
+            toast.success("Image compressed successfully!");
+          } catch (compressionError) {
+            console.error("Compression error:", compressionError);
+            toast.error("Failed to compress image. Please try a smaller file.");
+            event.target.value = "";
+            return;
+          } finally {
+            setIsCompressing(false);
+          }
+        }
+
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", fileToUpload);
         formData.append("userId", userData.id);
         formData.append(
           "fullName",
@@ -94,13 +192,9 @@ export function ProfilePictureCard({
           setProfilePictureUrl(result.url);
           setProfilePictureKey(result.key || null);
 
-          // Update database with new profile picture URL
           await updateFileUploadsAction({ profilePicture: result.url });
-
-          // Notify parent component of the update
           onUserDataUpdate?.({ profilePicture: result.url });
 
-          // Only show toast if not in edit mode
           if (!isEditMode) {
             toast.success("Profile picture uploaded successfully!");
           }
@@ -115,7 +209,6 @@ export function ProfilePictureCard({
       }
     });
 
-    // Reset input
     event.target.value = "";
   };
 
@@ -123,7 +216,6 @@ export function ProfilePictureCard({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Client-side validation
     const MAX_CV_SIZE = 1 * 1024 * 1024; // 1MB
     if (file.size > MAX_CV_SIZE) {
       toast.error(
@@ -133,7 +225,6 @@ export function ProfilePictureCard({
       return;
     }
 
-    // Validate file type (PDF only)
     if (file.type !== "application/pdf") {
       toast.error("Invalid file type. Please upload a PDF file.");
       event.target.value = "";
@@ -158,13 +249,9 @@ export function ProfilePictureCard({
           setCvUrl(result.url);
           setCvKey(result.key || null);
 
-          // Update database with new CV URL
           await updateFileUploadsAction({ cv: result.url });
-
-          // Notify parent component of the update
           onUserDataUpdate?.({ cv: result.url });
 
-          // Only show toast if not in edit mode
           if (!isEditMode) {
             toast.success("CV uploaded successfully!");
           }
@@ -179,7 +266,6 @@ export function ProfilePictureCard({
       }
     });
 
-    // Reset input
     event.target.value = "";
   };
 
@@ -191,13 +277,9 @@ export function ProfilePictureCard({
           setProfilePictureUrl(null);
           setProfilePictureKey(null);
 
-          // Update database to remove profile picture URL
           await updateFileUploadsAction({ profilePicture: null });
-
-          // Notify parent component of the update
           onUserDataUpdate?.({ profilePicture: null });
 
-          // Only show toast if not in edit mode
           if (!isEditMode) {
             toast.success("Profile picture removed successfully");
           }
@@ -212,13 +294,9 @@ export function ProfilePictureCard({
       setProfilePictureUrl(null);
       setProfilePictureKey(null);
 
-      // Update database to remove profile picture URL
       await updateFileUploadsAction({ profilePicture: null });
-
-      // Notify parent component of the update
       onUserDataUpdate?.({ profilePicture: null });
 
-      // Only show toast if not in edit mode
       if (!isEditMode) {
         toast.success("Profile picture removed");
       }
@@ -233,13 +311,9 @@ export function ProfilePictureCard({
           setCvUrl(null);
           setCvKey(null);
 
-          // Update database to remove CV URL
           await updateFileUploadsAction({ cv: null });
-
-          // Notify parent component of the update
           onUserDataUpdate?.({ cv: null });
 
-          // Only show toast if not in edit mode
           if (!isEditMode) {
             toast.success("CV removed successfully");
           }
@@ -254,13 +328,9 @@ export function ProfilePictureCard({
       setCvUrl(null);
       setCvKey(null);
 
-      // Update database to remove CV URL
       await updateFileUploadsAction({ cv: null });
-
-      // Notify parent component of the update
       onUserDataUpdate?.({ cv: null });
 
-      // Only show toast if not in edit mode
       if (!isEditMode) {
         toast.success("CV removed");
       }
@@ -293,7 +363,6 @@ export function ProfilePictureCard({
             Upload your profile picture
           </h3>
 
-          {/* Profile Picture Upload Container */}
           <div className="bg-gray-50 dark:bg-[#171717] rounded-sm p-6 mb-4">
             <div className="flex items-center gap-4">
               <div className="relative w-[72px] h-[72px] rounded-full bg-gray-100 dark:bg-[#171717] border-2 border-transparent dark:border-[#18212E] flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -319,7 +388,7 @@ export function ProfilePictureCard({
                   </svg>
                 )}
 
-                {isProfilePictureUploading && (
+                {(isProfilePictureUploading || isCompressing) && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
                   </div>
@@ -331,17 +400,17 @@ export function ProfilePictureCard({
                   <Button
                     variant="default"
                     className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark cursor-pointer w-28"
-                    disabled={isPending || !!profilePictureUrl}
+                    disabled={isPending || !!profilePictureUrl || isCompressing}
                     onClick={() => {
                       document
                         .getElementById("profile-picture-upload")
                         ?.click();
                     }}
                   >
-                    {isProfilePictureUploading ? (
+                    {isProfilePictureUploading || isCompressing ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                        Uploading...
+                        {isCompressing ? "Compressing..." : "Uploading..."}
                       </>
                     ) : (
                       <>
@@ -356,7 +425,7 @@ export function ProfilePictureCard({
                     accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
                     onChange={handleProfilePictureUpload}
                     className="hidden"
-                    disabled={isPending || !!profilePictureUrl}
+                    disabled={isPending || !!profilePictureUrl || isCompressing}
                   />
                 </label>
 
@@ -375,11 +444,14 @@ export function ProfilePictureCard({
             </div>
           </div>
 
-          {/* Image requirements text - outside the container */}
           <p className="text-sm text-neutral-500 dark:text-neutral-100">
-            Images should be at least 200px x 200px (Max: 1MB)
+            Images should be at least 200px x 200px
             <br />
             Supported formats: JPEG, PNG, WebP, GIF
+            <br />
+            <span className="text-xs italic">
+              Large images will be automatically compressed
+            </span>
           </p>
         </div>
 
@@ -391,7 +463,6 @@ export function ProfilePictureCard({
 
           <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-sm p-8 text-center bg-white dark:bg-[#171717] relative">
             {cvUrl ? (
-              /* CV Uploaded State */
               <div className="flex flex-col items-center space-y-4">
                 <div className="w-16 h-16 rounded-xl bg-green-100 dark:bg-green-900 flex items-center justify-center">
                   <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
@@ -428,7 +499,6 @@ export function ProfilePictureCard({
                 </div>
               </div>
             ) : (
-              /* CV Upload State */
               <div className="flex flex-col items-center space-y-4">
                 <Folder className="w-8 h-8 text-neutral-400" />
 
@@ -474,7 +544,6 @@ export function ProfilePictureCard({
               </div>
             )}
 
-            {/* Loading overlay for CV upload */}
             {isCVUploading && (
               <div className="absolute inset-0 bg-white/80 dark:bg-neutral-900/80 rounded-xl flex items-center justify-center">
                 <div className="flex flex-col items-center space-y-2">

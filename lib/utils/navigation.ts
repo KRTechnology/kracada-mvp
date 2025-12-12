@@ -27,7 +27,7 @@ export const defaultNavigationConfig: NavigationConfig = {
     },
     {
       href: "/tv",
-      label: "TV",
+      label: "KracadaTV",
       patterns: ["/tv"],
       isActive: (path: string) => path.startsWith("/tv"),
     },
