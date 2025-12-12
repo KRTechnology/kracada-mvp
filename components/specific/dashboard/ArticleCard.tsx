@@ -1,9 +1,23 @@
 "use client";
 
-import { MoreVertical, Clock, User } from "lucide-react";
+import {
+  MoreVertical,
+  Bookmark,
+  BookmarkCheck,
+  Clock,
+  User,
+} from "lucide-react";
+
 import { useState, useRef, useEffect } from "react";
 import { ArticleBookmark } from "@/lib/data/bookmarks-data";
 import { lineClamp } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+
+import {
+  toggleBookmarkAction,
+  checkBookmarkStatusAction,
+} from "@/app/(dashboard)/actions/bookmark-actions";
 
 interface ArticleCardProps {
   article: ArticleBookmark;
@@ -12,6 +26,9 @@ interface ArticleCardProps {
 export function ArticleCard({ article }: ArticleCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { data: session, status } = useSession();
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -29,14 +46,37 @@ export function ArticleCard({ article }: ArticleCardProps) {
     };
   }, []);
 
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (status === "loading" || !session?.user?.id) return;
+
+    setIsBookmarkLoading(true);
+    try {
+      const result = await toggleBookmarkAction({
+        contentType: "article",
+        contentId: String(article.id),
+      });
+
+      if (result.success) {
+        setIsBookmarked(result.isBookmarked || false);
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      toast.error("Failed to update bookmark");
+    } finally {
+      setIsBookmarkLoading(false);
+    }
+  };
+
   // Handlers for the items
   const handleView = () => {
     setIsOpen(false); // close after action
   };
 
-  const handleDelete = () => {
-    setIsOpen(false); // close after action
-  };
   return (
     <div className="bg-white dark:bg-dark rounded-lg border border-neutral-50 dark:border-[#232020] p-4 hover:shadow-md transition-shadow">
       <div
@@ -79,6 +119,13 @@ export function ArticleCard({ article }: ArticleCardProps) {
               Delete
             </p>
           </div>
+        )}
+        {isBookmarkLoading ? (
+          <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+        ) : isBookmarked ? (
+          <BookmarkCheck className="w-4 h-4" />
+        ) : (
+          <Bookmark className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
         )}
       </div>
 

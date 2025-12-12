@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArticleCard } from "./ArticleCard";
 import { Pagination } from "./Pagination";
 import { articlesBookmarks, ArticleBookmark } from "@/lib/data/bookmarks-data";
+// import { getBookmarkedArticleAction } from "@/app/(dashboard)/actions/bookmark-actions";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -17,10 +18,12 @@ export function BookmarkedArticlesContent() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentData = data.slice(startIndex, endIndex);
 
+  console.log(data);
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
+  // getBookmarkedArticleAction();
   const renderEmptyState = () => {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
