@@ -448,6 +448,83 @@ export async function getNewsApi(query = "human resources nigeria") {
     };
   }
 }
+import fetch from "node-fetch";
+
+export interface YoutubeVideoResponse {
+  items: any[];
+  pageInfo: {
+    totalResults: number;
+    resultsPerPage: number;
+  };
+}
+
+export async function getChannelVideos(pageToken?: string) {
+  const params = new URLSearchParams({
+    key: "AIzaSyAgkjT6oizjsDCJoAX0gvpzKKcoBwhmu9g",
+    channelId: "UCSLhEyzZTLUsFtm0g4_ZpLg",
+    part: "snippet,id",
+    maxResults: "20",
+    order: "date",
+  });
+
+  if (pageToken) {
+    params.append("pageToken", pageToken);
+  }
+
+  const res = await fetch(
+    `https://www.googleapis.com/youtube/v3/search?${params.toString()}`
+  );
+
+  if (!res.ok) {
+    throw new Error(`YouTube API Error: ${res.statusText}`);
+  }
+
+  const data = await res.json();
+
+  // Mapping to your format
+  const mappedItems = data.items.map((item: any) => {
+    const videoId = item.id.videoId;
+
+    return {
+      id: videoId,
+      title: item.snippet.title,
+      description: item.snippet.description,
+      videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+
+      thumbnailImage:
+        item.snippet.thumbnails?.high?.url ||
+        item.snippet.thumbnails?.medium?.url ||
+        item.snippet.thumbnails?.default?.url ||
+        "",
+
+      duration: null, // requires "videos" endpoint, not available here
+
+      type: "kracada_tv",
+
+      categories: JSON.stringify(["Personal Development", "Content Strategy"]),
+
+      author: item.snippet.channelTitle?.trim() || "Unknown",
+
+      status: "published",
+
+      viewCount: 0,
+      likeCount: 0,
+
+      createdBy: "system",
+
+      publishedAt: item.snippet.publishTime,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  });
+
+  return {
+    items: mappedItems,
+    nextPageToken: data.nextPageToken ?? null,
+    prevPageToken: data.prevPageToken ?? null,
+    totalResults: data.pageInfo?.totalResults ?? null,
+  };
+}
 
 /**
  * Get a single news post by ID or slug

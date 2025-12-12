@@ -11,7 +11,10 @@ import {
 import { EntertainmentQuizBanner } from "@/components/specific/entertainment/EntertainmentQuizBanner";
 import { EntertainmentKracadaTV } from "@/components/specific/entertainment/EntertainmentKracadaTV";
 import { getKracadaTVVideosAction } from "./(dashboard)/actions/video-actions";
-import { getNewsApi } from "./(dashboard)/actions/news-actions";
+import {
+  getChannelVideos,
+  getNewsApi,
+} from "./(dashboard)/actions/news-actions";
 
 export default async function Home() {
   // Fetch latest jobs, lifestyle posts, and news posts data
@@ -26,8 +29,13 @@ export default async function Home() {
 
   const newNews = await getNewsApi();
 
+  const youtubeVideos = await getChannelVideos();
+  // const next = await getChannelVideos(firstPage.nextPageToken); const previous = await getChannelVideos(firstPage.prevPageToken);
+  console.log(youtubeVideos, "gg");
+
   // Fetch Kracada TV videos (limit to 3)
   const kracadaTVResult = await getKracadaTVVideosAction({ limit: 3 });
+  console.log(kracadaTVResult);
   const kracadaTVVideos = kracadaTVResult.success
     ? kracadaTVResult.data || []
     : [];
@@ -38,7 +46,7 @@ export default async function Home() {
       <NewsSection latestNews={latestNews} newNews={newNews.articles} />
       <EntertainmentQuizBanner />
       <JobsSection latestJobs={latestJobs} />
-      <EntertainmentKracadaTV videos={kracadaTVVideos} />
+      <EntertainmentKracadaTV videos={youtubeVideos.items.slice(0, 3)} />
       <ArticlesSection latestPosts={latestPosts} />
       <TravelSection />
     </>

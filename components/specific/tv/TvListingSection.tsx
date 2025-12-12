@@ -396,7 +396,7 @@ export const TvListingSection = ({
                 transition={{ duration: 0.6 }}
                 className="text-3xl font-bold text-neutral-900 dark:text-white mb-8"
               >
-                All News Posts
+                All Video Posts
               </motion.h2>
             </div>
 
