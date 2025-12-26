@@ -38,7 +38,7 @@ export default async function NewsPage({
   return (
     <div className="min-h-screen">
       <NewsHeroSection />
-      <NewsListingHeader totalResults={pagination.total} />
+      {/* <NewsListingHeader totalResults={pagination.total} /> */}
       <NewsListingSection
         initialPosts={posts}
         initialPagination={pagination}

@@ -3,6 +3,7 @@ import { TvHeroSection } from "@/components/specific/tv/TvHeroSection";
 import { TvListingSection } from "@/components/specific/tv/TvListingSection";
 
 import {
+  getChannelVideos,
   getNewsApi,
   getNewsPostsAction,
 } from "@/app/(dashboard)/actions/news-actions";
@@ -32,6 +33,8 @@ export default async function TvPage({
   const posts = postsResult.success ? postsResult.data?.posts || [] : [];
   const tvPosts = kracadaTVResult.success ? kracadaTVResult.data || [] : [];
 
+  const youtubeVideos = await getChannelVideos();
+
   const pagination =
     postsResult.success && postsResult.data?.pagination
       ? postsResult.data.pagination
@@ -41,7 +44,8 @@ export default async function TvPage({
     <div className="min-h-screen">
       <TvHeroSection />
       {/* <TvListingHeader totalResults={pagination.total} /> */}
-      <TvListingSection videos={tvPosts} />
+      {/* <TvListingSection videos={tvPosts} /> */}
+      <TvListingSection videos={youtubeVideos.items.slice(0, 9)} />
 
       <EntertainmentQuizBanner />
     </div>

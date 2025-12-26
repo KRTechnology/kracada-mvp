@@ -150,9 +150,7 @@ export function NewsArticleCard({ article, index }: NewsArticleCardProps) {
           onClick={() => {
             console.log(article);
           }}
-        >
-          clicky
-        </p>
+        ></p>
 
         {/* Categories */}
         <div className="flex flex-wrap gap-2 mt-auto">

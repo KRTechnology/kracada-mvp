@@ -319,7 +319,7 @@ export const TvListingSection = ({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <Input
                 type="text"
-                placeholder="Q Search..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-10 bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 focus:ring-2 focus:ring-warm-200 dark:focus:ring-warm-200"
@@ -396,7 +396,7 @@ export const TvListingSection = ({
                 transition={{ duration: 0.6 }}
                 className="text-3xl font-bold text-neutral-900 dark:text-white mb-8"
               >
-                All News Posts
+                All Video Posts
               </motion.h2>
             </div>
 

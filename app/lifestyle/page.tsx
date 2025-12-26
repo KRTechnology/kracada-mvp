@@ -15,14 +15,14 @@ export default async function LifestylePage({
   // Fetch posts from database
   const postsResult = await getLifestylePostsAction({
     page,
-    limit: 6,
+    limit: 12,
     status: "published",
   });
 
   const posts = postsResult.success ? postsResult.data?.posts || [] : [];
   const pagination = postsResult.success
     ? postsResult.data?.pagination
-    : { page: 1, limit: 6, total: 0, totalPages: 0 };
+    : { page: 1, limit: 12, total: 0, totalPages: 0 };
 
   return (
     <LifestyleListingSection
