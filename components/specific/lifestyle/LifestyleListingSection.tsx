@@ -58,12 +58,6 @@ interface LifestyleListingSectionProps {
   };
 }
 
-// const sortOptions = [
-//   "Most Recent",
-//   "Oldest First",
-//   "Most Popular",
-//   "Alphabetical",
-// ];
 const sortOptions = [
   { value: "recent", label: "Most Recent" },
   { value: "oldest", label: "Oldest" },
@@ -174,7 +168,7 @@ export const LifestyleListingSection = ({
 
     return sorted;
   }, [posts, searchQuery, selectedCategory, sortBy]);
-  console.log(filteredAndSortedPosts);
+
   const categories = useMemo(() => {
     const allCategories = new Set<string>();
     posts.forEach((post) => {
@@ -214,10 +208,10 @@ export const LifestyleListingSection = ({
     isVideo: false,
   }));
 
-  const lifestyleTabs = [
-    { id: "All posts" as TabType, label: "All posts" },
-    { id: "Videos" as TabType, label: "Videos" },
-  ];
+  // const lifestyleTabs = [
+  //   { id: "All posts" as TabType, label: "All posts" },
+  //   { id: "Videos" as TabType, label: "Videos" },
+  // ];
 
   return (
     <>
@@ -234,7 +228,7 @@ export const LifestyleListingSection = ({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <Input
                 type="text"
-                placeholder="Q Search..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-10 bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 focus:ring-2 focus:ring-warm-200 dark:focus:ring-warm-200"
