@@ -458,9 +458,110 @@ export interface YoutubeVideoResponse {
   };
 }
 
+interface Video {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnailImage: string;
+  duration: string;
+  videoUrl: string;
+}
+
+// Fallback dummy videos
+const FALLBACK_VIDEOS: Video[] = [
+  {
+    id: "dummy-1",
+    title: "Welcome to Kracada TV - Getting Started",
+    description:
+      "Learn how to make the most of your Kracada TV experience. This introductory video covers all the basics you need to know.",
+    thumbnailImage:
+      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&h=450&fit=crop",
+    duration: "10:25",
+    videoUrl: "#",
+  },
+  {
+    id: "dummy-2",
+    title: "Personal Development Strategies for Success",
+    description:
+      "Discover proven strategies to accelerate your personal growth and achieve your goals faster.",
+    thumbnailImage:
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=450&fit=crop",
+    duration: "15:42",
+    videoUrl: "#",
+  },
+  {
+    id: "dummy-3",
+    title: "Content Creation Masterclass",
+    description:
+      "Master the art of creating engaging content that resonates with your audience and drives results.",
+    thumbnailImage:
+      "https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=450&fit=crop",
+    duration: "22:18",
+    videoUrl: "#",
+  },
+  {
+    id: "dummy-4",
+    title: "Building Your Online Presence",
+    description:
+      "Step-by-step guide to establishing a strong online presence and growing your digital brand.",
+    thumbnailImage:
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop",
+    duration: "18:33",
+    videoUrl: "#",
+  },
+  {
+    id: "dummy-5",
+    title: "Time Management for Creators",
+    description:
+      "Learn effective time management techniques specifically designed for content creators and entrepreneurs.",
+    thumbnailImage:
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&h=450&fit=crop",
+    duration: "12:56",
+    videoUrl: "#",
+  },
+  {
+    id: "dummy-6",
+    title: "Monetization Strategies Explained",
+    description:
+      "Explore various monetization strategies and find the best approach for your content and audience.",
+    thumbnailImage:
+      "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&h=450&fit=crop",
+    duration: "25:10",
+    videoUrl: "#",
+  },
+];
+
 export async function getChannelVideos(pageToken?: string) {
+  const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+
+  // If no API key, return fallback videos
+  if (!apiKey) {
+    console.warn("YouTube API key not configured. Using fallback videos.");
+    return {
+      items: FALLBACK_VIDEOS.map((video) => ({
+        ...video,
+        type: "kracada_tv",
+        categories: JSON.stringify([
+          "Personal Development",
+          "Content Strategy",
+        ]),
+        author: "Kracada TV",
+        status: "published",
+        viewCount: 0,
+        likeCount: 0,
+        createdBy: "system",
+        publishedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })),
+      nextPageToken: null,
+      prevPageToken: null,
+      totalResults: FALLBACK_VIDEOS.length,
+    };
+  }
+
   const params = new URLSearchParams({
-    key: "AIzaSyAgkjT6oizjsDCJoAX0gvpzKKcoBwhmu9g",
+    key: apiKey,
     channelId: "UCSLhEyzZTLUsFtm0g4_ZpLg",
     part: "snippet,id",
     maxResults: "20",
@@ -471,61 +572,138 @@ export async function getChannelVideos(pageToken?: string) {
     params.append("pageToken", pageToken);
   }
 
-  const res = await fetch(
-    `https://www.googleapis.com/youtube/v3/search?${params.toString()}`
-  );
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?${params.toString()}`,
+      {
+        // next: { revalidate: 3600 },
+      }
+    );
 
-  if (!res.ok) {
-    throw new Error(`YouTube API Error: ${res.statusText}`);
-  }
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      console.error("YouTube API Error:", {
+        status: res.status,
+        statusText: res.statusText,
+        error: errorData,
+      });
 
-  const data = await res.json();
+      // Return fallback videos on API error
+      console.warn("YouTube API failed. Using fallback videos.");
+      return {
+        items: FALLBACK_VIDEOS.map((video) => ({
+          ...video,
+          type: "kracada_tv",
+          categories: JSON.stringify([
+            "Personal Development",
+            "Content Strategy",
+          ]),
+          author: "Kracada TV",
+          status: "published",
+          viewCount: 0,
+          likeCount: 0,
+          createdBy: "system",
+          publishedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })),
+        nextPageToken: null,
+        prevPageToken: null,
+        totalResults: FALLBACK_VIDEOS.length,
+      };
+    }
 
-  // Mapping to your format
-  const mappedItems = data.items.map((item: any) => {
-    const videoId = item.id.videoId;
+    const data = await res.json();
+
+    if (!data.items || data.items.length === 0) {
+      // Return fallback videos if no results
+      return {
+        items: FALLBACK_VIDEOS.map((video) => ({
+          ...video,
+          type: "kracada_tv",
+          categories: JSON.stringify([
+            "Personal Development",
+            "Content Strategy",
+          ]),
+          author: "Kracada TV",
+          status: "published",
+          viewCount: 0,
+          likeCount: 0,
+          createdBy: "system",
+          publishedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })),
+        nextPageToken: null,
+        prevPageToken: null,
+        totalResults: FALLBACK_VIDEOS.length,
+      };
+    }
+
+    const mappedItems = data.items
+      .filter((item: any) => item.id.videoId)
+      .map((item: any) => {
+        const videoId = item.id.videoId;
+
+        return {
+          id: videoId,
+          title: item.snippet.title,
+          description: item.snippet.description,
+          videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+          thumbnailImage:
+            item.snippet.thumbnails?.high?.url ||
+            item.snippet.thumbnails?.medium?.url ||
+            item.snippet.thumbnails?.default?.url ||
+            "",
+          duration: null,
+          type: "kracada_tv",
+          categories: JSON.stringify([
+            "Personal Development",
+            "Content Strategy",
+          ]),
+          author: item.snippet.channelTitle?.trim() || "Unknown",
+          status: "published",
+          viewCount: 0,
+          likeCount: 0,
+          createdBy: "system",
+          publishedAt: item.snippet.publishTime,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
 
     return {
-      id: videoId,
-      title: item.snippet.title,
-      description: item.snippet.description,
-      videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
-
-      thumbnailImage:
-        item.snippet.thumbnails?.high?.url ||
-        item.snippet.thumbnails?.medium?.url ||
-        item.snippet.thumbnails?.default?.url ||
-        "",
-
-      duration: null, // requires "videos" endpoint, not available here
-
-      type: "kracada_tv",
-
-      categories: JSON.stringify(["Personal Development", "Content Strategy"]),
-
-      author: item.snippet.channelTitle?.trim() || "Unknown",
-
-      status: "published",
-
-      viewCount: 0,
-      likeCount: 0,
-
-      createdBy: "system",
-
-      publishedAt: item.snippet.publishTime,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      items: mappedItems,
+      nextPageToken: data.nextPageToken ?? null,
+      prevPageToken: data.prevPageToken ?? null,
+      totalResults: data.pageInfo?.totalResults ?? null,
     };
-  });
-
-  return {
-    items: mappedItems,
-    nextPageToken: data.nextPageToken ?? null,
-    prevPageToken: data.prevPageToken ?? null,
-    totalResults: data.pageInfo?.totalResults ?? null,
-  };
+  } catch (error) {
+    console.error("Failed to fetch YouTube videos:", error);
+    // Return fallback videos on any error
+    return {
+      items: FALLBACK_VIDEOS.map((video) => ({
+        ...video,
+        type: "kracada_tv",
+        categories: JSON.stringify([
+          "Personal Development",
+          "Content Strategy",
+        ]),
+        author: "Kracada TV",
+        status: "published",
+        viewCount: 0,
+        likeCount: 0,
+        createdBy: "system",
+        publishedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })),
+      nextPageToken: null,
+      prevPageToken: null,
+      totalResults: FALLBACK_VIDEOS.length,
+    };
+  }
 }
-
 /**
  * Get a single news post by ID or slug
  */
