@@ -51,12 +51,12 @@ export const defaultNavigationConfig: NavigationConfig = {
       patterns: ["/hotels-restaurants"],
       isActive: (path: string) => path.startsWith("/hotels-restaurants"),
     },
-    // {
-    //   href: "/travel-tourism",
-    //   label: "Travel & Tourism",
-    //   patterns: ["/travel-tourism"],
-    //   isActive: (path: string) => path.startsWith("/travel-tourism"),
-    // },
+    {
+      href: "/travel-tourism",
+      label: "Travel & Tourism",
+      patterns: ["/travel-tourism"],
+      isActive: (path: string) => path.startsWith("/travel-tourism"),
+    },
     {
       href: "/tv",
       label: "KracadaTV",
