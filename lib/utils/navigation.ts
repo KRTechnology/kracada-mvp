@@ -45,12 +45,12 @@ export const defaultNavigationConfig: NavigationConfig = {
       patterns: ["/cv-optimization"],
       isActive: (path: string) => path.startsWith("/cv-optimization"),
     },
-    // {
-    //   href: "/hotels-restaurants",
-    //   label: "Hotels & Restaurants",
-    //   patterns: ["/hotels-restaurants"],
-    //   isActive: (path: string) => path.startsWith("/hotels-restaurants"),
-    // },
+    {
+      href: "/hotels-restaurants",
+      label: "Hotels & Restaurants",
+      patterns: ["/hotels-restaurants"],
+      isActive: (path: string) => path.startsWith("/hotels-restaurants"),
+    },
     {
       href: "/travel-tourism",
       label: "Travel & Tourism",
