@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
   CircleUserRound,
+  ExternalLink,
   LogOut,
   Menu,
   Settings,
@@ -114,6 +115,9 @@ const Header = () => {
                 className={getNavigationClasses(navItem, pathname, "desktop")}
               >
                 {navItem.label}
+                {navItem.variant === "button" && (
+                  <ExternalLink className="w-4 h-4" />
+                )}
               </Link>
             ))}
           </nav>
@@ -358,6 +362,9 @@ const Header = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {navItem.label}
+                    {navItem.variant === "button" && (
+                      <ExternalLink className="w-4 h-4" />
+                    )}
                   </Link>
                 ))}
               </nav>

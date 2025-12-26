@@ -21,12 +21,12 @@ interface SubTabItem {
 
 const bookmarksSubTabs: SubTabItem[] = [
   { id: "Jobs", label: "Jobs", path: "/dashboard/bookmarks", count: 0 },
-  {
-    id: "Articles",
-    label: "Articles",
-    path: "/dashboard/bookmarks/articles",
-    count: 0,
-  },
+  // {
+  //   id: "Articles",
+  //   label: "Articles",
+  //   path: "/dashboard/bookmarks/articles",
+  //   count: 0,
+  // },
   {
     id: "Videos",
     label: "Videos",

@@ -4,6 +4,7 @@ export interface NavigationItem {
   patterns: string[];
   isActive: (path: string) => boolean;
   children?: NavigationItem[];
+  variant?: "link" | "button";
 }
 
 export interface NavigationConfig {
@@ -25,12 +26,7 @@ export const defaultNavigationConfig: NavigationConfig = {
       patterns: ["/news"],
       isActive: (path: string) => path.startsWith("/news"),
     },
-    {
-      href: "/tv",
-      label: "KracadaTV",
-      patterns: ["/tv"],
-      isActive: (path: string) => path.startsWith("/tv"),
-    },
+
     {
       href: "/lifestyle",
       label: "Lifestyle",
@@ -55,11 +51,18 @@ export const defaultNavigationConfig: NavigationConfig = {
       patterns: ["/hotels-restaurants"],
       isActive: (path: string) => path.startsWith("/hotels-restaurants"),
     },
+    // {
+    //   href: "/travel-tourism",
+    //   label: "Travel & Tourism",
+    //   patterns: ["/travel-tourism"],
+    //   isActive: (path: string) => path.startsWith("/travel-tourism"),
+    // },
     {
-      href: "/travel-tourism",
-      label: "Travel & Tourism",
-      patterns: ["/travel-tourism"],
-      isActive: (path: string) => path.startsWith("/travel-tourism"),
+      href: "/tv",
+      label: "KracadaTV",
+      patterns: ["/tv"],
+      isActive: (path: string) => path.startsWith("/tv"),
+      variant: "button",
     },
   ],
 };
@@ -80,19 +83,26 @@ export const getNavigationClasses = (
 ): string => {
   const isActive = isNavigationActive(navItem, pathname);
 
+  // 🔥 CTA Button style
+  if (navItem.variant === "button") {
+    return `
+      bg-orange-500 hover:bg-orange-600 text-white font-semibold
+      px-4 py-2 rounded-xl transition-all duration-300
+      transform hover:scale-105 shadow-lg hover:shadow-xl
+      flex items-center gap-2 whitespace-nowrap
+    `;
+  }
+
+  // 👇 Existing logic for normal links
   if (variant === "mobile") {
-    if (isActive) {
-      return "text-warm-200 dark:text-warm-200 text-base font-bold";
-    }
-    return "text-neutral-900 dark:text-neutral-100 text-base font-bold";
+    return isActive
+      ? "text-warm-200 dark:text-warm-200 text-base font-bold"
+      : "text-neutral-900 dark:text-neutral-100 text-base font-bold";
   }
 
-  // Desktop variant
-  if (isActive) {
-    return "text-warm-200 dark:text-warm-200 font-semibold whitespace-nowrap transition-colors";
-  }
-
-  return "text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors";
+  return isActive
+    ? "text-warm-200 dark:text-warm-200 font-semibold whitespace-nowrap transition-colors"
+    : "text-[#414651] dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold whitespace-nowrap transition-colors";
 };
 
 // Function to create a navigation item with custom active logic
