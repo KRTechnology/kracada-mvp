@@ -240,6 +240,7 @@ export const TvListingSection = ({
   };
 
   const categories = extractCategories(videos);
+  console.log(categories, "here");
 
   const filterVideos = (videos: any[]) => {
     let filtered = [...videos];

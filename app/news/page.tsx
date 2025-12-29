@@ -16,32 +16,15 @@ export default async function NewsPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
-  const params = await searchParams;
-  const page = params.page ? parseInt(params.page) : 1;
-
-  // Fetch posts from database
-  const postsResult = await getNewsPostsAction({
-    page,
-    limit: 6,
-    status: "published",
-  });
-
   const apiPosts = await getNewsApi();
-
-  const posts = postsResult.success ? postsResult.data?.posts || [] : [];
-
-  const pagination =
-    postsResult.success && postsResult.data?.pagination
-      ? postsResult.data.pagination
-      : { page: 1, limit: 6, total: 0, totalPages: 0 };
 
   return (
     <div className="min-h-screen">
       <NewsHeroSection />
       {/* <NewsListingHeader totalResults={pagination.total} /> */}
       <NewsListingSection
-        initialPosts={posts}
-        initialPagination={pagination}
+        // initialPosts={}
+        // initialPagination={}
         apiPost={apiPosts}
       />
       <EntertainmentQuizBanner />
