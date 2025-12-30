@@ -448,13 +448,13 @@ export const TvListingSection = ({
               <ExternalLink className="w-4 h-4 ml-2" />
             </Button>
           </motion.div>
-          <div>
+          {/* <div>
             <Pagination
               currentPage={1}
               totalPages={2}
               onPageChange={() => {}}
             />
-          </div>
+          </div> */}
         </div>
       </section>
     </>
