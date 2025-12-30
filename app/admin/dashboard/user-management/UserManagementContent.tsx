@@ -102,7 +102,227 @@ export default function UserManagementContent() {
     name: string;
     type: "user" | "admin";
   } | null>(null);
+  // Add this new function to fetch all data without pagination
+  async function fetchAllDataForExport(
+    activeTab: TabType,
+    search: string,
+    statusFilter: string,
+    accountTypeFilter: string
+  ): Promise<User[] | Admin[]> {
+    try {
+      if (activeTab === "admins") {
+        const result = await getAllAdminsAction({
+          search,
+          status: statusFilter,
+          page: 1,
+          limit: 999999, // Large number to get all records
+        });
+        return result.success && result.admins ? result.admins : [];
+      } else {
+        let typeFilter = accountTypeFilter;
+        let statusOverride = statusFilter;
 
+        if (activeTab === "businesses") {
+          typeFilter = "Business Owner";
+        } else if (activeTab === "reported") {
+          if (statusFilter === "all") {
+            statusOverride = "flagged";
+          }
+        }
+
+        const result = await getAllUsersAction({
+          search,
+          status: statusOverride,
+          accountType: typeFilter,
+          page: 1,
+          limit: 999999, // Large number to get all records
+        });
+        return result.success && result.users ? result.users : [];
+      }
+    } catch (error) {
+      console.error("Error fetching all data:", error);
+      return [];
+    }
+  }
+
+  // Updated download function for users
+  function downloadUsersAsCSV(users: User[], tabType: TabType) {
+    // Define CSV headers
+    const headers = [
+      "Full Name",
+      "Email",
+      "Created At",
+      "Account Type",
+      "Status",
+    ];
+
+    // Convert users to CSV rows
+    const rows = users.map((user) => [
+      user.fullName,
+      user.email,
+      new Date(user.createdAt).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      user.accountType,
+      user.status,
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row
+          .map((cell) => {
+            // Escape cells containing commas, quotes, or newlines
+            const cellStr = String(cell);
+            if (
+              cellStr.includes(",") ||
+              cellStr.includes('"') ||
+              cellStr.includes("\n")
+            ) {
+              return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+          })
+          .join(",")
+      ),
+    ].join("\n");
+
+    // Determine filename based on tab type
+    const getFileName = () => {
+      const date = new Date().toISOString().split("T")[0];
+      switch (tabType) {
+        case "all":
+          return `all_users_${date}.csv`;
+        case "businesses":
+          return `business_owners_${date}.csv`;
+        case "reported":
+          return `reported_flagged_users_${date}.csv`;
+        default:
+          return `users_${date}.csv`;
+      }
+    };
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", getFileName());
+    link.style.visibility = "hidden";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up the URL object
+    URL.revokeObjectURL(url);
+  }
+
+  // Updated download function for admins
+  function downloadAdminsAsCSV(admins: Admin[]) {
+    // Define CSV headers
+    const headers = [
+      "First Name",
+      "Last Name",
+      "Email",
+      "Role",
+      "Status",
+      "Created At",
+      "Last Login",
+    ];
+
+    // Convert admins to CSV rows
+    const rows = admins.map((admin) => [
+      admin.firstName,
+      admin.lastName,
+      admin.email,
+      admin.role,
+      admin.status,
+      new Date(admin.createdAt).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      admin.lastLoginAt
+        ? new Date(admin.lastLoginAt).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "Never",
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row
+          .map((cell) => {
+            // Escape cells containing commas, quotes, or newlines
+            const cellStr = String(cell);
+            if (
+              cellStr.includes(",") ||
+              cellStr.includes('"') ||
+              cellStr.includes("\n")
+            ) {
+              return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+          })
+          .join(",")
+      ),
+    ].join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    const date = new Date().toISOString().split("T")[0];
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", `admins_${date}.csv`);
+    link.style.visibility = "hidden";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up the URL object
+    URL.revokeObjectURL(url);
+  }
+
+  // Add handler function for export button
+  async function handleExport() {
+    toast.promise(
+      async () => {
+        const allData = await fetchAllDataForExport(
+          activeTab,
+          search,
+          statusFilter,
+          accountTypeFilter
+        );
+
+        if (allData.length === 0) {
+          throw new Error("No data to export");
+        }
+
+        if (activeTab === "admins") {
+          downloadAdminsAsCSV(allData as Admin[]);
+        } else {
+          downloadUsersAsCSV(allData as User[], activeTab);
+        }
+      },
+      {
+        loading: "Preparing export...",
+        success: "Data exported successfully!",
+        error: "Failed to export data",
+      }
+    );
+  }
   // Fetch data based on active tab
   useEffect(() => {
     fetchData();
@@ -423,7 +643,10 @@ export default function UserManagementContent() {
               )}
 
               {/* Export Button */}
-              <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-warm-200 to-warm-700 text-white rounded-xl hover:shadow-lg transition-all font-medium">
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-warm-200 to-warm-700 text-white rounded-xl hover:shadow-lg transition-all font-medium"
+              >
                 <Download className="w-4 h-4" />
                 <span className="hidden sm:inline">Export</span>
               </button>
