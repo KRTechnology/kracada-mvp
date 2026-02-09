@@ -41,7 +41,7 @@ export default async function Home() {
     : [];
 
   return (
-    <>
+    <div style={{ scrollBehavior: "smooth" }}>
       <HeroSection />
       <NewsSection latestNews={latestNews} newNews={newNews.articles} />
       <EntertainmentQuizBanner />
@@ -49,6 +49,6 @@ export default async function Home() {
       <EntertainmentKracadaTV videos={youtubeVideos.items.slice(0, 3)} />
       <ArticlesSection latestPosts={latestPosts} />
       <TravelSection />
-    </>
+    </div>
   );
 }
