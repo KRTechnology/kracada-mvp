@@ -36,26 +36,32 @@ const accountTypes = [
   "Contributor",
 ];
 
-const signupSchema = z.object({
-  fullName: z.string().min(2, "Full name is required"),
-  email: z.string().email("Invalid email address"),
-  accountType: z.enum(
-    ["Job Seeker", "Recruiter", "Business Owner", "Contributor"],
-    { required_error: "Account type is required" }
-  ),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Must contain at least 1 uppercase letter")
-    .regex(/[0-9]/, "Must contain at least 1 number")
-    .regex(
-      /[!@#$%^&*(),.?":{}|<>]/,
-      "Must contain at least 1 special character"
+const signupSchema = z
+  .object({
+    fullName: z.string().min(2, "Full name is required"),
+    email: z.string().email("Invalid email address"),
+    accountType: z.enum(
+      ["Job Seeker", "Recruiter", "Business Owner", "Contributor"],
+      { required_error: "Account type is required" },
     ),
-  terms: z.boolean().refine((val) => val, {
-    message: "You must agree to the terms and conditions",
-  }),
-});
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Must contain at least 1 uppercase letter")
+      .regex(/[0-9]/, "Must contain at least 1 number")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Must contain at least 1 special character",
+      ),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+    terms: z.boolean().refine((val) => val, {
+      message: "You must agree to the terms and conditions",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
 
 export default function SignupForm() {
   const router = useRouter();
@@ -69,6 +75,7 @@ export default function SignupForm() {
       email: "",
       accountType: undefined,
       password: "",
+      confirmPassword: "",
       terms: false,
     },
   });
@@ -118,10 +125,19 @@ export default function SignupForm() {
                 <FormControl>
                   <Input
                     placeholder="Input your first & last name"
-                    {...field}
                     autoComplete="name"
-                    className="focus-visible:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
+                    type="text"
                     disabled={isSubmitting}
+                    value={field.value}
+                    onKeyDown={(e) => {
+                      if (/\d/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[0-9]/g, "");
+                      field.onChange(value);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -217,6 +233,30 @@ export default function SignupForm() {
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                  Confirm Password
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Confirm password"
+                      {...field}
+                      autoComplete="new-password"
+                      className="focus-visible:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
+                      disabled={isSubmitting}
+                    />
                   </div>
                 </FormControl>
                 <FormMessage />

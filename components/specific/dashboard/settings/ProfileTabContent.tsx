@@ -107,7 +107,7 @@ export function ProfileTabContent({
     (newExperiences: ExperienceData[]) => {
       setCurrentExperiences(newExperiences);
     },
-    []
+    [],
   );
 
   const handleSave = async () => {

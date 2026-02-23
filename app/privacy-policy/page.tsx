@@ -113,23 +113,6 @@ export default function PrivacyPolicyPage() {
             </motion.p>
 
             {/* Subscription Form */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-              className="max-w-md"
-            >
-              <LifestyleSubscriptionForm />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-              className="flex items-center gap-2 text-white/80"
-            >
-              <FileText className="w-5 h-5" />
-              <span className="text-sm">Last Updated: December 30, 2025</span>
-            </motion.div>
 
             {/* Privacy Policy Text */}
           </motion.div>

@@ -79,7 +79,7 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
         toast.success(
           result.isBookmarked
             ? "Video added to bookmarks"
-            : "Video removed from bookmarks"
+            : "Video removed from bookmarks",
         );
       } else {
         toast.error(result.message || "Failed to update bookmark");
@@ -252,7 +252,7 @@ export const TvListingSection = ({
         (v) =>
           v.title.toLowerCase().includes(q) ||
           (v.description && v.description.toLowerCase().includes(q)) ||
-          (v.author && v.author.toLowerCase().includes(q))
+          (v.author && v.author.toLowerCase().includes(q)),
       );
     }
 
@@ -275,12 +275,12 @@ export const TvListingSection = ({
     if (sortBy === "Most Recent") {
       filtered = filtered.sort(
         (a, b) =>
-          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
       );
     } else if (sortBy === "Oldest") {
       filtered = filtered.sort(
         (a, b) =>
-          new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()
+          new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
       );
     } else if (sortBy === "A-Z") {
       // Fixed: removed spaces
@@ -342,7 +342,8 @@ export const TvListingSection = ({
 
             {/* Results Count */}
             <div className="text-sm text-neutral-600 dark:text-neutral-400">
-              Displaying {2} {totalResults === 1 ? "result" : "results"}
+              Displaying {filterVideos(videos).length}{" "}
+              {filterVideos(videos).length === 1 ? "result" : "results"}
             </div>
 
             {/* Sort Dropdown */}

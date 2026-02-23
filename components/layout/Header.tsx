@@ -107,7 +107,7 @@ const Header = () => {
         <div className="flex items-center min-w-0">
           <Logo />
           {/* Responsive Navigation: spacing and scroll */}
-          <nav className="hidden md:flex items-center ml-5 space-x-4 xl:space-x-8 overflow-x-auto scrollbar-none min-w-0">
+          <nav className="hidden md:flex items-center ml-1 space-x-3 xl:space-x-8 overflow-x-auto scrollbar-none min-w-0">
             {defaultNavigationConfig.items.map((navItem) => (
               <Link
                 key={navItem.href}
@@ -124,7 +124,7 @@ const Header = () => {
         </div>
 
         {/* Auth Buttons or User Profile */}
-        <div className="hidden md:flex items-center space-x-4 ml-8">
+        <div className="hidden md:flex items-center space-x-4 ml-2">
           {!user && !isLoading ? (
             // Unauthenticated state - show login/signup buttons and theme toggle
             <>
@@ -162,16 +162,14 @@ const Header = () => {
               </button>
 
               {/* Notifications Icon */}
-              <button
+              {/* <button
                 onClick={() => {
-                  /* Handle notifications */
                 }}
                 className="w-10 h-10 rounded-full flex items-center justify-center text-[#A4A7AE] hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors relative"
               >
                 <Bell className="w-5 h-5" />
-                {/* Optional notification dot */}
                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
+              </button> */}
 
               {/* Dark Mode Toggle */}
               <ThemeToggle />
@@ -357,7 +355,7 @@ const Header = () => {
                     className={getNavigationClasses(
                       navItem,
                       pathname,
-                      "mobile"
+                      "mobile",
                     )}
                     onClick={() => setIsMenuOpen(false)}
                   >
