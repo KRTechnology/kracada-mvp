@@ -19,7 +19,7 @@ const signupSchema = z.object({
   email: z.string().email("Invalid email address"),
   accountType: z.enum(
     ["Job Seeker", "Recruiter", "Business Owner", "Contributor"],
-    { required_error: "Account type is required" }
+    { required_error: "Account type is required" },
   ),
   password: z
     .string()
@@ -28,8 +28,9 @@ const signupSchema = z.object({
     .regex(/[0-9]/, "Must contain at least 1 number")
     .regex(
       /[!@#$%^&*(),.?":{}|<>]/,
-      "Must contain at least 1 special character"
+      "Must contain at least 1 special character",
     ),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
   terms: z.boolean().refine((val) => val, {
     message: "You must agree to the terms and conditions",
   }),
@@ -51,7 +52,7 @@ const resetPasswordSchema = z
       .regex(/[0-9]/, "Must contain at least 1 number")
       .regex(
         /[!@#$%^&*(),.?":{}|<>]/,
-        "Must contain at least 1 special character"
+        "Must contain at least 1 special character",
       ),
     confirmPassword: z.string(),
   })
@@ -221,7 +222,7 @@ export async function forgotPasswordAction(data: ForgotPasswordFormData) {
 // Reset password action
 export async function resetPasswordAction(
   token: string,
-  data: ResetPasswordFormData
+  data: ResetPasswordFormData,
 ) {
   try {
     // Validate the data with token
@@ -242,7 +243,7 @@ export async function resetPasswordAction(
     // Reset the password
     const success = await authService.resetPassword(
       validatedData.token,
-      validatedData.password
+      validatedData.password,
     );
 
     if (!success) {
@@ -273,7 +274,7 @@ export async function resetPasswordAction(
 
 // Request verification email action
 export async function requestVerificationEmailAction(
-  data: VerificationEmailFormData
+  data: VerificationEmailFormData,
 ) {
   try {
     // Validate the data

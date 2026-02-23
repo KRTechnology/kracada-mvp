@@ -41,7 +41,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           if (isAdminLogin) {
             const admin = await adminAuthService.authenticateAdmin(
               email,
-              password
+              password,
             );
 
             if (!admin) {
@@ -128,32 +128,73 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       return session;
     },
     // Add signIn callback to create session record
+    // async signIn({ user, account, profile, email, credentials }) {
+    //   // Skip session tracking for admin users
+    //   const isAdminLogin = (credentials as any)?.isAdmin === "true";
+
+    //   if (user?.id && !isAdminLogin) {
+    //     try {
+    //       // Get request headers for user agent and IP
+    //       const headersList = await headers();
+    //       const userAgent = headersList.get("user-agent") || "";
+    //       const forwardedFor = headersList.get("x-forwarded-for");
+    //       const realIp = headersList.get("x-real-ip");
+    //       const ipAddress = forwardedFor?.split(",")[0] || realIp || "";
+
+    //       // Create session record
+    //       await createUserSession({
+    //         userId: user.id,
+    //         sessionToken: createId(), // Generate a unique session token
+    //         userAgent,
+    //         ipAddress,
+    //         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+    //       });
+    //     } catch (error) {
+    //       console.error("Failed to create session record:", error);
+    //       // Don't fail the sign in for session tracking errors
+    //     }
+    //   }
+    //   return true;
+    // },
     async signIn({ user, account, profile, email, credentials }) {
-      // Skip session tracking for admin users
       const isAdminLogin = (credentials as any)?.isAdmin === "true";
 
+      // 🔒 Block login if email is not verified (for non-admin users)
+      if (!isAdminLogin) {
+        // If you're using a custom "emailVerified" boolean field:
+        if (!user?.emailVerified) {
+          console.log("Blocked login: Email not verified");
+          return false;
+        }
+
+        // If you're using NextAuth's default emailVerified (Date | null):
+        // if (!user?.emailVerified) {
+        //   return false;
+        // }
+      }
+
+      // ✅ Only create session after verification check passes
       if (user?.id && !isAdminLogin) {
         try {
-          // Get request headers for user agent and IP
           const headersList = await headers();
           const userAgent = headersList.get("user-agent") || "";
           const forwardedFor = headersList.get("x-forwarded-for");
           const realIp = headersList.get("x-real-ip");
           const ipAddress = forwardedFor?.split(",")[0] || realIp || "";
 
-          // Create session record
           await createUserSession({
             userId: user.id,
-            sessionToken: createId(), // Generate a unique session token
+            sessionToken: createId(),
             userAgent,
             ipAddress,
-            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           });
         } catch (error) {
           console.error("Failed to create session record:", error);
-          // Don't fail the sign in for session tracking errors
+          // Don't fail login for session tracking errors
         }
       }
+
       return true;
     },
   },

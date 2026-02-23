@@ -98,7 +98,7 @@ export function EmployerEditProfileClient({
     (newExperiences: ExperienceData[]) => {
       setCurrentExperiences(newExperiences);
     },
-    []
+    [],
   );
 
   const handleSave = async () => {
@@ -187,7 +187,7 @@ export function EmployerEditProfileClient({
           disabled={isSaving}
           className="bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
         >
-          {isSaving ? "Saving..." : "Save Changes"}
+          {isSaving ? "Saving..." : "Save Changddes"}
         </Button>
       </motion.div>
     </div>

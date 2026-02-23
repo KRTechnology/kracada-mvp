@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Input } from "../common/input";
 import { Button } from "../common/button";
+import { subscribeToMailingListAction } from "@/app/(dashboard)/actions/mailing-list-actions";
+import { toast } from "sonner";
 
 interface NewsletterProps {
   title?: string;
@@ -19,12 +21,49 @@ const Newsletter = ({
 }: NewsletterProps) => {
   const [email, setEmail] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   // Here you would typically implement newsletter subscription logic
+  //   console.log(`Subscribing email: ${email}`);
+  //   setEmail("");
+  //   // Add actual API call for subscription here
+  // };
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically implement newsletter subscription logic
-    console.log(`Subscribing email: ${email}`);
-    setEmail("");
-    // Add actual API call for subscription here
+
+    try {
+      // setIsSubmitting(true);
+
+      // Get user info for analytics
+      const userAgent =
+        typeof navigator !== "undefined" ? navigator.userAgent : undefined;
+
+      const result = await subscribeToMailingListAction({
+        email,
+        source: "lifestyle_page",
+        userAgent,
+      });
+
+      if (result.success) {
+        // setIsSubmitted(true);
+        setEmail("");
+
+        toast.success(result.message);
+
+        // Reset success state after 5 seconds
+        setTimeout(() => {
+          // setIsSubmitted(false);
+        }, 5000);
+      } else {
+        // toast.error(result.message || "Failed to subscribe");
+      }
+    } catch (error) {
+      console.error("Subscription error:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      // setIsSubmitting(false);
+    }
   };
 
   return (

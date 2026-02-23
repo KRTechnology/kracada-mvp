@@ -75,14 +75,14 @@ export function EditLifestylePostForm({
   const [isDeleting, setIsDeleting] = useState(false);
   const [editorContent, setEditorContent] = useState(post.content || "");
   const [featuredImage, setFeaturedImage] = useState<string | null>(
-    post.featuredImage || null
+    post.featuredImage || null,
   );
   const [featuredImageKey, setFeaturedImageKey] = useState<string | null>(
-    post.featuredImageKey || null
+    post.featuredImageKey || null,
   );
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    post.categories || []
+    post.categories || [],
   );
   const [customCategory, setCustomCategory] = useState("");
   const [isGeneratingSlug, setIsGeneratingSlug] = useState(false);
@@ -134,7 +134,7 @@ export function EditLifestylePostForm({
 
   // Handle featured image upload
   const handleFeaturedImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -218,7 +218,7 @@ export function EditLifestylePostForm({
     setSelectedCategories((prev) =>
       prev.includes(category)
         ? prev.filter((c) => c !== category)
-        : [...prev, category]
+        : [...prev, category],
     );
   };
 
@@ -285,7 +285,7 @@ export function EditLifestylePostForm({
   // Delete post
   const handleDeletePost = async () => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this post? This action cannot be undone."
+      "Are you sure you want to delete this post? This action cannot be undone.",
     );
 
     if (!confirmed) return;

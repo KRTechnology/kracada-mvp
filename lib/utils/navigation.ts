@@ -1,3 +1,5 @@
+import { restaurants } from "../db/schema";
+
 export interface NavigationItem {
   href: string;
   label: string;
@@ -47,16 +49,33 @@ export const defaultNavigationConfig: NavigationConfig = {
     },
     {
       href: "/hotels-restaurants",
-      label: "Hotels & Restaurants",
+      label: "Hospitality & Tourism",
       patterns: ["/hotels-restaurants"],
       isActive: (path: string) => path.startsWith("/hotels-restaurants"),
+      children: [
+        {
+          href: "/cv-optimization",
+          label: "CV Optimization",
+          patterns: ["/cv-optimization"],
+          isActive: (path: string) => path.startsWith("/cv-optimization"),
+        },
+        {
+          href: "/cv-optimization",
+          label: "CV Optimization",
+          patterns: ["/cv-optimization"],
+          isActive: (path: string) => path.startsWith("/cv-optimization"),
+        },
+      ],
+
+      // hotels & restaurants
+      // Travel & Tourism
     },
-    {
-      href: "/travel-tourism",
-      label: "Travel & Tourism",
-      patterns: ["/travel-tourism"],
-      isActive: (path: string) => path.startsWith("/travel-tourism"),
-    },
+    // {
+    //   href: "/travel-tourism",
+    //   label: "Travel & Tourism",
+    //   patterns: ["/travel-tourism"],
+    //   isActive: (path: string) => path.startsWith("/travel-tourism"),
+    // },
     {
       href: "/tv",
       label: "KracadaTV",
@@ -70,7 +89,7 @@ export const defaultNavigationConfig: NavigationConfig = {
 // Utility function to check if a navigation item is active
 export const isNavigationActive = (
   navItem: NavigationItem,
-  pathname: string
+  pathname: string,
 ): boolean => {
   return navItem.isActive(pathname);
 };
@@ -79,7 +98,7 @@ export const isNavigationActive = (
 export const getNavigationClasses = (
   navItem: NavigationItem,
   pathname: string,
-  variant: "desktop" | "mobile" = "desktop"
+  variant: "desktop" | "mobile" = "desktop",
 ): string => {
   const isActive = isNavigationActive(navItem, pathname);
 
@@ -110,7 +129,7 @@ export const createNavigationItem = (
   href: string,
   label: string,
   patterns: string[],
-  customActiveLogic?: (path: string) => boolean
+  customActiveLogic?: (path: string) => boolean,
 ): NavigationItem => {
   return {
     href,
@@ -123,7 +142,7 @@ export const createNavigationItem = (
 // Function to add a new navigation item to the config
 export const addNavigationItem = (
   config: NavigationConfig,
-  item: NavigationItem
+  item: NavigationItem,
 ): NavigationConfig => {
   return {
     ...config,
@@ -134,7 +153,7 @@ export const addNavigationItem = (
 // Function to remove a navigation item from the config
 export const removeNavigationItem = (
   config: NavigationConfig,
-  href: string
+  href: string,
 ): NavigationConfig => {
   return {
     ...config,
@@ -146,12 +165,12 @@ export const removeNavigationItem = (
 export const updateNavigationItem = (
   config: NavigationConfig,
   href: string,
-  updates: Partial<NavigationItem>
+  updates: Partial<NavigationItem>,
 ): NavigationConfig => {
   return {
     ...config,
     items: config.items.map((item) =>
-      item.href === href ? { ...item, ...updates } : item
+      item.href === href ? { ...item, ...updates } : item,
     ),
   };
 };

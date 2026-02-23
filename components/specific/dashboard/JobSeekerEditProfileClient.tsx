@@ -88,12 +88,13 @@ export function JobSeekerEditProfileClient({
     });
   }, []);
 
+  console.log("Current User Data in Edit Profile:", currentUserData);
   // Callback to update experiences
   const handleExperiencesUpdate = useCallback(
     (newExperiences: ExperienceData[]) => {
       setCurrentExperiences(newExperiences);
     },
-    []
+    [],
   );
 
   const handleSave = async () => {
