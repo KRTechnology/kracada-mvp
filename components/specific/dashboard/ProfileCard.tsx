@@ -283,7 +283,7 @@ export const ProfileCard = forwardRef<ProfileCardRef, ProfileCardProps>(
         userData.location,
         userData.bio,
         userData.yearsOfExperience,
-      ]
+      ],
     );
 
     const {
@@ -592,5 +592,5 @@ export const ProfileCard = forwardRef<ProfileCardRef, ProfileCardProps>(
         )}
       </motion.div>
     );
-  }
+  },
 );

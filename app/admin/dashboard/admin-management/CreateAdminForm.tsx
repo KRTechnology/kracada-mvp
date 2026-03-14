@@ -25,9 +25,27 @@ import {
   DialogTitle,
 } from "@/components/common/dialog";
 
+const nameRegex = /^[A-Za-z]+(?:[-'][A-Za-z]+)*$/;
+
 const createAdminSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  firstName: z
+    .string()
+    .trim()
+    .min(1, "First name is required")
+    .regex(
+      nameRegex,
+      "First name must contain only letters and may include hyphens or apostrophes",
+    ),
+
+  lastName: z
+    .string()
+    .trim()
+    .min(1, "Last name is required")
+    .regex(
+      nameRegex,
+      "Last name must contain only letters and may include hyphens or apostrophes",
+    ),
+
   email: z.string().email("Invalid email address"),
 });
 

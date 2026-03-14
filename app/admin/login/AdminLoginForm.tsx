@@ -1,6 +1,8 @@
 "use client";
 
 import { Input } from "@/components/common/input";
+import Link from "next/link";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
@@ -39,7 +41,7 @@ export default function AdminLoginForm() {
         email: z.string().email({ message: "Invalid email address" }),
         password: z.string().min(1, "Password is required"),
         rememberMe: z.boolean().optional(),
-      })
+      }),
     ),
     defaultValues: {
       email: "",
@@ -164,19 +166,27 @@ export default function AdminLoginForm() {
             control={form.control}
             name="rememberMe"
             render={({ field }) => (
-              <FormItem className="flex items-center gap-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={isSubmitting}
-                    className="border-warm-300 dark:border-warm-600 data-[state=checked]:bg-warm-200 data-[state=checked]:border-warm-200"
-                  />
-                </FormControl>
-                <FormLabel className="text-sm font-medium text-warm-700 dark:text-warm-300 cursor-pointer">
-                  Remember me for 30 days
-                </FormLabel>
-              </FormItem>
+              <>
+                <FormItem className="flex items-center gap-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isSubmitting}
+                      className="border-warm-300 dark:border-warm-600 data-[state=checked]:bg-warm-200 data-[state=checked]:border-warm-200"
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm font-medium text-warm-700 dark:text-warm-300 cursor-pointer">
+                    Remember me for 30 days
+                  </FormLabel>
+                </FormItem>
+                <Link
+                  href="/forgot-password"
+                  className="text-warm-200 hover:underline text-sm block mt-2"
+                >
+                  Forgot your password?
+                </Link>
+              </>
             )}
           />
 

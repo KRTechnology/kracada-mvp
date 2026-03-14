@@ -88,7 +88,6 @@ export function JobSeekerEditProfileClient({
     });
   }, []);
 
-  console.log("Current User Data in Edit Profile:", currentUserData);
   // Callback to update experiences
   const handleExperiencesUpdate = useCallback(
     (newExperiences: ExperienceData[]) => {
@@ -99,6 +98,7 @@ export function JobSeekerEditProfileClient({
 
   const handleSave = async () => {
     setIsSaving(true);
+
     try {
       // Trigger ExperienceCard save if it has unsaved changes
       if (experienceCardRef.current) {

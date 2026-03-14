@@ -12,7 +12,7 @@ interface LifestyleArticlePageClientProps {
 export function LifestyleArticlePageClient({
   post,
 }: LifestyleArticlePageClientProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);

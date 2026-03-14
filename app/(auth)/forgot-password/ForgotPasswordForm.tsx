@@ -43,7 +43,9 @@ export default function ForgotPasswordForm() {
       const result = await forgotPasswordAction(values);
 
       if (result.success) {
-        toast.success("Reset link sent to your email");
+        toast.success(
+          "If an account with that email exists, a password reset link has been sent.",
+        );
         router.push("/forgot-password/confirmation");
       } else {
         toast.error(result.message);
