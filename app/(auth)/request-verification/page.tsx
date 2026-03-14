@@ -8,7 +8,7 @@ export default function RequestVerificationPage() {
       <AuthSidebar heading="Your one stop shop for everything that is important to you" />
 
       {/* Right side: verification request form */}
-      <div className="w-full md:w-2/5 flex flex-col justify-center items-center px-8 py-16 bg-white">
+      <div className="w-full md:w-2/5 flex flex-col justify-center items-center px-8 py-16 bg-white dark:bg-neutral-900">
         <div className="w-full md:w-[68%]">
           <RequestVerificationForm />
         </div>

@@ -1,122 +1,54 @@
-"use client";
+import HeroSection from "@/components/specific/landing/HeroSection";
+import NewsSection from "@/components/specific/landing/NewsSection";
+import JobsSection from "@/components/specific/landing/JobsSection";
+import ArticlesSection from "@/components/specific/landing/ArticlesSection";
+import TravelSection from "@/components/specific/landing/TravelSection";
+import {
+  getLatestJobsAction,
+  getLatestLifestylePostsAction,
+  getLatestNewsPostsAction,
+} from "@/app/actions/home-actions";
+import { EntertainmentQuizBanner } from "@/components/specific/entertainment/EntertainmentQuizBanner";
+import { EntertainmentKracadaTV } from "@/components/specific/entertainment/EntertainmentKracadaTV";
+import { getKracadaTVVideosAction } from "./(dashboard)/actions/video-actions";
+import {
+  getChannelVideos,
+  getNewsApi,
+} from "./(dashboard)/actions/news-actions";
 
-import MainLayout from "@/components/layout/MainLayout";
-import { motion } from "framer-motion";
+export default async function Home() {
+  // Fetch latest jobs, lifestyle posts, and news posts data
+  const jobsResult = await getLatestJobsAction();
+  const latestJobs = jobsResult.success ? jobsResult.data || [] : [];
 
-export default function Home() {
+  const postsResult = await getLatestLifestylePostsAction();
+  const latestPosts = postsResult.success ? postsResult.data || [] : [];
+
+  const newsResult = await getLatestNewsPostsAction();
+  const latestNews = newsResult.success ? newsResult.data || [] : [];
+
+  const newNews = await getNewsApi();
+
+  const youtubeVideos = await getChannelVideos();
+  // const next = await getChannelVideos(firstPage.nextPageToken); const previous = await getChannelVideos(firstPage.prevPageToken);
+  console.log(youtubeVideos, "gg");
+
+  // Fetch Kracada TV videos (limit to 3)
+  const kracadaTVResult = await getKracadaTVVideosAction({ limit: 3 });
+  console.log(kracadaTVResult);
+  const kracadaTVVideos = kracadaTVResult.success
+    ? kracadaTVResult.data || []
+    : [];
+
   return (
-    <MainLayout>
-      <div className="min-h-screen bg-gradient-to-br from-warm-50 via-peach-50 to-coral-50 flex items-center justify-center px-4">
-        <div className="max-w-2xl text-center">
-          {/* Logo/Brand Animation */}
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mb-8"
-          >
-            <img
-              src="/images/kracada_logo_large.png"
-              alt="Kracada"
-              className="mx-auto h-20 w-auto"
-            />
-          </motion.div>
-
-          {/* Main Message */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="mb-8"
-          >
-            <h2 className="text-3xl font-semibold text-neutral-600 mb-4">
-              We're Building Something Amazing
-            </h2>
-            <p className="text-lg text-neutral-500 leading-relaxed">
-              Our team is working hard to bring you an exceptional experience. A
-              one-stop for jobs, news, lifestyle, and entertainment, all in one
-              place. Stay tuned. A new way to explore and thrive is just around
-              the corner!
-            </p>
-          </motion.div>
-
-          {/* Animated Construction Icon */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-            className="mb-8"
-          >
-            <motion.div
-              animate={{
-                rotate: [0, 5, -5, 0],
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="inline-block"
-            >
-              <div className="w-16 h-16 mx-auto bg-gradient-to-br from-warm-200 to-peach-200 rounded-full flex items-center justify-center shadow-lg">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                  className="w-8 h-8 border-3 border-warm-400 border-t-transparent rounded-full"
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* Progress Bar */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-            className="mb-8"
-          >
-            <div className="bg-neutral-200 rounded-full h-3 overflow-hidden">
-              <motion.div
-                initial={{ width: "0%" }}
-                animate={{ width: "75%" }}
-                transition={{ duration: 2, delay: 1, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-warm-300 via-peach-300 to-coral-300 rounded-full"
-              />
-            </div>
-            <p className="text-sm text-neutral-500 mt-2">Almost there...</p>
-          </motion.div>
-
-          {/* Floating Particles */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{
-                  opacity: 0,
-                  x: Math.random() * 1200,
-                  y: Math.random() * 800,
-                }}
-                animate={{
-                  opacity: [0, 0.3, 0],
-                  x: Math.random() * 1200,
-                  y: Math.random() * 800,
-                }}
-                transition={{
-                  duration: Math.random() * 10 + 10,
-                  repeat: Infinity,
-                  delay: Math.random() * 5,
-                }}
-                className="absolute w-2 h-2 bg-warm-200 rounded-full"
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </MainLayout>
+    <div style={{ scrollBehavior: "smooth" }}>
+      <HeroSection />
+      <NewsSection latestNews={latestNews} newNews={newNews.articles} />
+      <EntertainmentQuizBanner />
+      <JobsSection latestJobs={latestJobs} />
+      <EntertainmentKracadaTV videos={youtubeVideos.items.slice(0, 3)} />
+      <ArticlesSection latestPosts={latestPosts} />
+      <TravelSection />
+    </div>
   );
 }

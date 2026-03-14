@@ -1,0 +1,1510 @@
+"use server";
+
+import {
+  cloudflareUploadService,
+  UploadResult,
+} from "@/lib/cloudflare/upload-service";
+import { z } from "zod";
+
+// Validation schemas
+const profilePictureSchema = z.object({
+  file: z.instanceof(File),
+  userId: z.string().min(1),
+});
+
+const cvUploadSchema = z.object({
+  file: z.instanceof(File),
+  userId: z.string().min(1),
+});
+
+const coverLetterUploadSchema = z.object({
+  file: z.instanceof(File),
+  userId: z.string().min(1),
+});
+
+// Types for client-side usage
+export type ProfilePictureUploadResult = {
+  success: boolean;
+  url?: string;
+  error?: string;
+  key?: string;
+};
+
+export type CVUploadResult = {
+  success: boolean;
+  url?: string;
+  error?: string;
+  key?: string;
+};
+
+export type CompanyLogoUploadResult = {
+  success: boolean;
+  url?: string;
+  error?: string;
+  key?: string;
+};
+
+export type MultimediaContentUploadResult = {
+  success: boolean;
+  url?: string;
+  error?: string;
+  key?: string;
+};
+
+export type CoverLetterUploadResult = {
+  success: boolean;
+  url?: string;
+  error?: string;
+  key?: string;
+};
+
+/**
+ * Upload profile picture
+ */
+export async function uploadProfilePicture(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    // Extract data from FormData
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const fullName = formData.get("fullName") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (1MB limit for images)
+    const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 1MB limit.",
+      };
+    }
+
+    // Create custom path with user-id-full-name format
+    const sanitizedName = fullName
+      ? fullName
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+      : "unknown";
+    const customPath = `profile-pictures/${userId}-${sanitizedName}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `profile-picture-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    // TODO: Update user profile picture in database
+    // await updateUserProfilePicture(userId, result.url);
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Profile picture upload error:", error);
+
+    // Check if it's an environment variable error
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload CV file
+ */
+export async function uploadCV(formData: FormData): Promise<CVUploadResult> {
+  try {
+    // Extract data from FormData
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const fullName = formData.get("fullName") as string;
+
+    // Validate input
+    const validation = cvUploadSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (PDF only)
+    if (file.type !== "application/pdf") {
+      return {
+        success: false,
+        error: "Invalid file type. Please upload a PDF file.",
+      };
+    }
+
+    // Validate file size (10MB limit for CVs)
+    const MAX_CV_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_CV_SIZE) {
+      return {
+        success: false,
+        error: "CV file size exceeds 10MB limit.",
+      };
+    }
+
+    // Create custom path with user-id-full-name format
+    const sanitizedName = fullName
+      ? fullName
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+      : "unknown";
+    const customPath = `cvs/${userId}-${sanitizedName}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `cv-${Date.now()}.pdf`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    // TODO: Update user CV in database
+    // await updateUserCV(userId, result.url);
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("CV upload error:", error);
+
+    // Check if it's an environment variable error
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload company logo
+ */
+export async function uploadCompanyLogo(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    // Extract data from FormData
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const fullName = formData.get("fullName") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (1MB limit for logos)
+    const MAX_LOGO_SIZE = 1 * 1024 * 1024; // 1MB
+    if (file.size > MAX_LOGO_SIZE) {
+      return {
+        success: false,
+        error: "Logo size exceeds 1MB limit.",
+      };
+    }
+
+    // Create custom path with user-id-full-name format
+    const sanitizedName = fullName
+      ? fullName
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+      : "unknown";
+    const customPath = `company-logos/${userId}-${sanitizedName}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `company-logo-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Company logo upload error:", error);
+
+    // Check if it's an environment variable error
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload multimedia content (images, videos, documents)
+ */
+export async function uploadMultimediaContent(
+  formData: FormData
+): Promise<MultimediaContentUploadResult> {
+  try {
+    // Extract data from FormData
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const fullName = formData.get("fullName") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images, videos, documents)
+    const allowedFileTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "video/mp4",
+      "video/webm",
+      "video/ogg",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedFileTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid file (images, videos, or documents).",
+      };
+    }
+
+    // Validate file size (10MB limit for multimedia content)
+    const MAX_MULTIMEDIA_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_MULTIMEDIA_SIZE) {
+      return {
+        success: false,
+        error: "File size exceeds 10MB limit.",
+      };
+    }
+
+    // Create custom path with user-id-full-name format
+    const sanitizedName = fullName
+      ? fullName
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+      : "unknown";
+    const customPath = `multimedia-content/${userId}-${sanitizedName}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `multimedia-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Multimedia content upload error:", error);
+
+    // Check if it's an environment variable error
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload cover letter for job application
+ */
+export async function uploadCoverLetter(
+  formData: FormData
+): Promise<CoverLetterUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const fullName = formData.get("fullName") as string;
+
+    // Validate file existence
+    if (!file || file.size === 0) {
+      return {
+        success: false,
+        error: "No file provided",
+      };
+    }
+
+    // Validate file type (PDF only)
+    if (file.type !== "application/pdf") {
+      return {
+        success: false,
+        error: "Only PDF files are allowed for cover letters",
+      };
+    }
+
+    // Validate file size (1MB max)
+    const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        success: false,
+        error: "Cover letter file size exceeds 1MB limit",
+      };
+    }
+
+    // Validate input data
+    const validation = coverLetterUploadSchema.safeParse({
+      file,
+      userId,
+    });
+
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Create custom path
+    const customPath = `users/${userId}/cover-letters`;
+
+    const result = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `cover-letter-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Cover letter upload error:", error);
+
+    // Check if it's an environment variable error
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload lifestyle post featured image
+ */
+export async function uploadLifestyleFeaturedImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const postTitle = formData.get("postTitle") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (5MB limit for featured images)
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 5MB limit.",
+      };
+    }
+
+    // Create custom path for lifestyle featured images
+    const sanitizedTitle = postTitle
+      ? postTitle
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+          .substring(0, 50) // Limit length
+      : "untitled";
+    const customPath = `lifestyle-posts/${userId}/${sanitizedTitle}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `featured-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Lifestyle featured image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload lifestyle post editor image (for images within the post content)
+ */
+export async function uploadLifestyleEditorImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const postId = formData.get("postId") as string; // Optional, for organizing images
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (3MB limit for editor images)
+    const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 3MB limit.",
+      };
+    }
+
+    // Create custom path for lifestyle editor images
+    const customPath = postId
+      ? `lifestyle-posts/${userId}/content/${postId}`
+      : `lifestyle-posts/${userId}/content/temp`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `editor-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Lifestyle editor image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload news post featured image (for admin news posts)
+ */
+export async function uploadNewsFeaturedImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const adminId = formData.get("adminId") as string;
+    const postTitle = formData.get("postTitle") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({
+      file,
+      userId: adminId,
+    });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (5MB limit for featured images)
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 5MB limit.",
+      };
+    }
+
+    // Create custom path for news featured images
+    const sanitizedTitle = postTitle
+      ? postTitle
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+          .substring(0, 50) // Limit length
+      : "untitled";
+    const customPath = `news-posts/${adminId}/${sanitizedTitle}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `featured-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("News featured image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload news post editor image (for images within the news post content)
+ */
+export async function uploadNewsEditorImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const adminId = formData.get("adminId") as string;
+    const postId = formData.get("postId") as string; // Optional, for organizing images
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({
+      file,
+      userId: adminId,
+    });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (3MB limit for editor images)
+    const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 3MB limit.",
+      };
+    }
+
+    // Create custom path for news editor images
+    const customPath = postId
+      ? `news-posts/${adminId}/content/${postId}`
+      : `news-posts/${adminId}/content/temp`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `editor-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("News editor image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload hotel featured image
+ */
+export async function uploadHotelFeaturedImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const hotelName = formData.get("hotelName") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (5MB limit for featured images)
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 5MB limit.",
+      };
+    }
+
+    // Create custom path for hotel featured images
+    const sanitizedName = hotelName
+      ? hotelName
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+          .substring(0, 50) // Limit length
+      : "untitled";
+    const customPath = `hotels/${userId}/${sanitizedName}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `featured-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Hotel featured image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload hotel gallery image
+ */
+export async function uploadHotelGalleryImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const hotelId = formData.get("hotelId") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (3MB limit for gallery images)
+    const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 3MB limit.",
+      };
+    }
+
+    // Create custom path for hotel gallery images
+    const customPath = hotelId
+      ? `hotels/${userId}/gallery/${hotelId}`
+      : `hotels/${userId}/gallery/temp`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `gallery-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Hotel gallery image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload restaurant featured image
+ */
+export async function uploadRestaurantFeaturedImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const restaurantName = formData.get("restaurantName") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (5MB limit for featured images)
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 5MB limit.",
+      };
+    }
+
+    // Create custom path for restaurant featured images
+    const sanitizedName = restaurantName
+      ? restaurantName
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+          .substring(0, 50) // Limit length
+      : "untitled";
+    const customPath = `restaurants/${userId}/${sanitizedName}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `featured-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Restaurant featured image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload restaurant gallery image
+ */
+export async function uploadRestaurantGalleryImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+    const restaurantId = formData.get("restaurantId") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({ file, userId });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (3MB limit for gallery images)
+    const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 3MB limit.",
+      };
+    }
+
+    // Create custom path for restaurant gallery images
+    const customPath = restaurantId
+      ? `restaurants/${userId}/gallery/${restaurantId}`
+      : `restaurants/${userId}/gallery/temp`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `gallery-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Restaurant gallery image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload quiz featured image (for admin quiz creation)
+ */
+export async function uploadQuizFeaturedImage(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const adminId = formData.get("adminId") as string;
+    const quizTitle = formData.get("quizTitle") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({
+      file,
+      userId: adminId,
+    });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (5MB limit for featured images)
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 5MB limit.",
+      };
+    }
+
+    // Create custom path for quiz featured images
+    const sanitizedTitle = quizTitle
+      ? quizTitle
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+          .substring(0, 50) // Limit length
+      : "untitled";
+    const customPath = `quizzes/${adminId}/${sanitizedTitle}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `featured-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Quiz featured image upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Upload video thumbnail image (for admin video creation)
+ */
+export async function uploadVideoThumbnail(
+  formData: FormData
+): Promise<ProfilePictureUploadResult> {
+  try {
+    const file = formData.get("file") as File;
+    const adminId = formData.get("adminId") as string;
+    const videoTitle = formData.get("videoTitle") as string;
+
+    // Validate input
+    const validation = profilePictureSchema.safeParse({
+      file,
+      userId: adminId,
+    });
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Invalid input data",
+      };
+    }
+
+    // Validate file type (images only)
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedImageTypes.includes(file.type)) {
+      return {
+        success: false,
+        error:
+          "Invalid file type. Please upload a valid image file (JPEG, PNG, WebP, or GIF).",
+      };
+    }
+
+    // Validate file size (5MB limit for video thumbnails)
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      return {
+        success: false,
+        error: "Image size exceeds 5MB limit.",
+      };
+    }
+
+    // Create custom path for video thumbnails
+    const sanitizedTitle = videoTitle
+      ? videoTitle
+          .replace(/[^a-zA-Z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+          .substring(0, 50) // Limit length
+      : "untitled";
+    const customPath = `videos/${adminId}/${sanitizedTitle}`;
+
+    // Upload file
+    const result: UploadResult = await cloudflareUploadService.uploadFile({
+      file,
+      customPath,
+      filename: `thumbnail-${Date.now()}`,
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Upload failed",
+      };
+    }
+
+    return {
+      success: true,
+      url: result.url,
+      key: result.key,
+    };
+  } catch (error) {
+    console.error("Video thumbnail upload error:", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing required environment variable")
+    ) {
+      return {
+        success: false,
+        error:
+          "Cloudflare R2 is not configured. Please set up environment variables.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during upload.",
+    };
+  }
+}
+
+/**
+ * Delete uploaded file
+ */
+export async function deleteUploadedFile(
+  key: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const result = await cloudflareUploadService.deleteFile(key);
+    return result;
+  } catch (error) {
+    console.error("File deletion error:", error);
+    return {
+      success: false,
+      error: "Failed to delete file",
+    };
+  }
+}

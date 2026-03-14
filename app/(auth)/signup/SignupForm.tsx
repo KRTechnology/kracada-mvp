@@ -31,31 +31,37 @@ import { signupAction, type SignupFormData } from "../actions";
 
 const accountTypes = [
   "Job Seeker",
-  "Employer",
+  "Recruiter",
   "Business Owner",
   "Contributor",
 ];
 
-const signupSchema = z.object({
-  fullName: z.string().min(2, "Full name is required"),
-  email: z.string().email("Invalid email address"),
-  accountType: z.enum(
-    ["Job Seeker", "Employer", "Business Owner", "Contributor"],
-    { required_error: "Account type is required" }
-  ),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Must contain at least 1 uppercase letter")
-    .regex(/[0-9]/, "Must contain at least 1 number")
-    .regex(
-      /[!@#$%^&*(),.?":{}|<>]/,
-      "Must contain at least 1 special character"
+const signupSchema = z
+  .object({
+    fullName: z.string().min(2, "Full name is required"),
+    email: z.string().email("Invalid email address"),
+    accountType: z.enum(
+      ["Job Seeker", "Recruiter", "Business Owner", "Contributor"],
+      { required_error: "Account type is required" },
     ),
-  terms: z.boolean().refine((val) => val, {
-    message: "You must agree to the terms and conditions",
-  }),
-});
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Must contain at least 1 uppercase letter")
+      .regex(/[0-9]/, "Must contain at least 1 number")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Must contain at least 1 special character",
+      ),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+    terms: z.boolean().refine((val) => val, {
+      message: "You must agree to the terms and conditions",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
 
 export default function SignupForm() {
   const router = useRouter();
@@ -69,6 +75,7 @@ export default function SignupForm() {
       email: "",
       accountType: undefined,
       password: "",
+      confirmPassword: "",
       terms: false,
     },
   });
@@ -97,8 +104,10 @@ export default function SignupForm() {
   return (
     <>
       <div className="text-center">
-        <h2 className="text-2xl font-bold mb-2 text-neutral-900">Sign up</h2>
-        <p className="mb-6 text-neutral-500">
+        <h2 className="text-2xl font-bold mb-2 text-neutral-900 dark:text-neutral-200">
+          Sign up
+        </h2>
+        <p className="mb-6 text-neutral-500 dark:text-neutral-400">
           Sign up for free and become a member.
         </p>
       </div>
@@ -110,14 +119,25 @@ export default function SignupForm() {
             name="fullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                  Full Name
+                </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Input your first & last name"
-                    {...field}
                     autoComplete="name"
-                    className="focus-visible:ring-warm-200"
+                    type="text"
                     disabled={isSubmitting}
+                    value={field.value}
+                    onKeyDown={(e) => {
+                      if (/\d/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[0-9]/g, "");
+                      field.onChange(value);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -130,14 +150,16 @@ export default function SignupForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                  Email
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="email"
                     placeholder="example@domain.com"
                     {...field}
                     autoComplete="email"
-                    className="focus-visible:ring-warm-200"
+                    className="focus-visible:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
                     disabled={isSubmitting}
                   />
                 </FormControl>
@@ -151,20 +173,26 @@ export default function SignupForm() {
             name="accountType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Account Type</FormLabel>
+                <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                  Account Type
+                </FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                   disabled={isSubmitting}
                 >
                   <FormControl>
-                    <SelectTrigger className="focus:ring-warm-200">
+                    <SelectTrigger className="focus:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200">
                       <SelectValue placeholder="Select account type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
                     {accountTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
+                      <SelectItem
+                        key={type}
+                        value={type}
+                        className="text-neutral-900 dark:text-neutral-200"
+                      >
                         {type}
                       </SelectItem>
                     ))}
@@ -180,7 +208,9 @@ export default function SignupForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                  Password
+                </FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -188,12 +218,12 @@ export default function SignupForm() {
                       placeholder="Password"
                       {...field}
                       autoComplete="new-password"
-                      className="focus-visible:ring-warm-200"
+                      className="focus-visible:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
                       disabled={isSubmitting}
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
                       onClick={() => setShowPassword(!showPassword)}
                       tabIndex={-1}
                       aria-label={
@@ -203,6 +233,30 @@ export default function SignupForm() {
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                  Confirm Password
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Confirm password"
+                      {...field}
+                      autoComplete="new-password"
+                      className="focus-visible:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
+                      disabled={isSubmitting}
+                    />
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -223,7 +277,7 @@ export default function SignupForm() {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel className="text-sm text-neutral-700 font-normal">
+                  <FormLabel className="text-sm text-neutral-700 dark:text-neutral-300 font-normal">
                     By signing up, you agree to our{" "}
                     <Link
                       href="/terms-and-conditions"
@@ -250,7 +304,7 @@ export default function SignupForm() {
 
           <Button
             type="submit"
-            className="w-full h-12 mt-2 bg-warm-200 hover:bg-warm-300 flex justify-center items-center"
+            className="w-full h-12 mt-2 bg-warm-200 hover:bg-warm-300 text-white dark:text-dark flex justify-center items-center"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
@@ -265,7 +319,7 @@ export default function SignupForm() {
         </form>
       </Form>
 
-      <p className="mt-6 text-center text-neutral-500 text-sm">
+      <p className="mt-6 text-center text-neutral-500 dark:text-neutral-400 text-sm">
         Already have an account?{" "}
         <Link
           href="/login"

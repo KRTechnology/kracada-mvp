@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import ConditionalLayout from "@/components/layout/ConditionalLayout";
 
 // Geist Sans (already correctly configured in your code)
 const geistSans = Geist({
@@ -55,14 +57,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased font-sans`}
       >
-        <SessionProvider>
-          <Toaster richColors />
-          {children}
-        </SessionProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SessionProvider>
+            <ConditionalLayout>
+              <Toaster richColors />
+              {children}
+            </ConditionalLayout>
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,0 +1,153 @@
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ProfileTabContent } from "./settings/ProfileTabContent";
+import { PasswordTabContent } from "./settings/PasswordTabContent";
+import { NotificationsTabContent } from "./settings/NotificationsTabContent";
+
+type TabType = "profile" | "password" | "notifications";
+
+interface UserData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  location: string | null;
+  bio: string | null;
+  yearsOfExperience: string | null;
+  skills: string[];
+  jobPreferences: string[];
+  profilePicture: string | null;
+  cv: string | null;
+  hasCompletedProfile: boolean;
+  accountType: string;
+  website: string | null;
+  portfolio: string | null;
+  // Employer-specific fields (optional for Job Seeker)
+  recruiterExperience?: string | null;
+  companyLogo?: string | null;
+  companyName?: string | null;
+  companyDescription?: string | null;
+  companyWebsite?: string | null;
+  companyEmail?: string | null;
+}
+
+interface ExperienceData {
+  id: string;
+  jobTitle: string;
+  employmentType: string;
+  company: string;
+  currentlyWorking: boolean;
+  startMonth: string | null;
+  startYear: string | null;
+  endMonth: string | null;
+  endYear: string | null;
+  description: string | null;
+  skills: string[];
+}
+
+interface NotificationCategory {
+  id: string;
+  title: string;
+  description: string;
+  settings: NotificationSetting[];
+}
+
+interface NotificationSetting {
+  id: string;
+  category: string;
+  event: string;
+  noneEnabled: boolean;
+  inAppEnabled: boolean;
+  emailEnabled: boolean;
+  eventDescription: string;
+  categoryDescription: string;
+  displayOrder: number;
+}
+
+interface JobSeekerSettingsClientProps {
+  userData: UserData;
+  experiences: ExperienceData[];
+  notificationPreferences: NotificationCategory[];
+}
+
+export function JobSeekerSettingsClient({
+  userData,
+  experiences,
+  notificationPreferences,
+}: JobSeekerSettingsClientProps) {
+  const [activeTab, setActiveTab] = useState<TabType>("profile");
+
+  const tabs = [
+    { id: "profile", label: "Profile" },
+    { id: "password", label: "Password" },
+    { id: "notifications", label: "Notifications" },
+  ] as const;
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "profile":
+        return (
+          <ProfileTabContent userData={userData} experiences={experiences} />
+        );
+      case "password":
+        return <PasswordTabContent />;
+      case "notifications":
+        return (
+          <NotificationsTabContent
+            initialPreferences={notificationPreferences}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Tabs */}
+      <div className="flex space-x-6 border-b border-neutral-200 dark:border-neutral-700">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`relative pb-3 text-sm font-medium transition-colors ${
+              activeTab === tab.id
+                ? "text-[#334155] dark:text-neutral-100"
+                : "text-[#64748B] dark:text-neutral-400 hover:text-[#334155] dark:hover:text-neutral-300"
+            }`}
+          >
+            {tab.label}
+            {activeTab === tab.id && (
+              <motion.div
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-warm-200"
+                layoutId="activeTab"
+                initial={false}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          {renderTabContent()}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}

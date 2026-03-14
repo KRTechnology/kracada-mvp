@@ -1,4 +1,6 @@
 import { db } from "@/lib/db/drizzle";
+import { ilike } from "drizzle-orm";
+
 import {
   users,
   passwordResetTokens,
@@ -19,7 +21,7 @@ export async function hashPassword(password: string): Promise<string> {
 // Verify a password against a hash
 export async function verifyPassword(
   password: string,
-  hashedPassword: string
+  hashedPassword: string,
 ): Promise<boolean> {
   return bcrypt.compare(password, hashedPassword);
 }
@@ -33,7 +35,7 @@ export function generateToken(): string {
 export const authService = {
   // Create a new user
   async createUser(
-    userData: Omit<NewUser, "id" | "passwordHash"> & { password: string }
+    userData: Omit<NewUser, "id" | "passwordHash"> & { password: string },
   ): Promise<{ id: string }> {
     const passwordHash = await hashPassword(userData.password);
 
@@ -54,15 +56,18 @@ export const authService = {
   },
 
   // Find a user by email
+  // Find a user by email (case-insensitive)
   async getUserByEmail(email: string) {
+    const normalizedEmail = email.toLowerCase();
+
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.email, email))
+      .where(ilike(users.email, normalizedEmail))
       .limit(1);
+
     return user || null;
   },
-
   // Find a user by ID
   async getUserById(id: string) {
     const [user] = await db

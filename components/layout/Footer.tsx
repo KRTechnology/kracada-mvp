@@ -67,7 +67,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/cv-review"
+                  href="/cv-optimization"
                   className="text-peach-50 font-semibold hover:text-white"
                 >
                   CV Review
@@ -75,10 +75,10 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/articles"
+                  href="/news"
                   className="text-peach-50 font-semibold hover:text-white"
                 >
-                  Articles
+                  News
                 </Link>
               </li>
             </ul>

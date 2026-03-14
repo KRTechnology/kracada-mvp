@@ -52,7 +52,7 @@ export const ProfilePictureSection = () => {
         {/* Profile Picture Upload */}
         <div>
           <p className="text-neutral-700 mb-3 text-sm font-medium">
-            Upload your profile picture
+            Upload your profile picturesss
           </p>
           <div className="flex items-start space-x-4">
             <div className="relative w-[100px] h-[100px] rounded-full bg-neutral-100 flex items-center justify-center overflow-hidden">

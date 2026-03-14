@@ -83,8 +83,10 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   return (
     <div className="w-full space-y-6">
       <div className="text-left">
-        <h1 className="text-3xl font-bold">Reset password</h1>
-        <p className="text-gray-500 mt-2">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-200">
+          Reset password
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">
           Create a new password for your account.
         </p>
       </div>
@@ -96,31 +98,39 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                  Password
+                </FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder=""
-                      className="focus-visible:ring-warm-200"
+                      className="focus-visible:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
                       disabled={isSubmitting}
                       {...field}
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
                       onClick={() => setShowPassword(!showPassword)}
                       disabled={isSubmitting}
                     >
                       {showPassword ? (
-                        <EyeOff size={18} className="text-gray-500" />
+                        <EyeOff
+                          size={18}
+                          className="text-gray-500 dark:text-gray-400"
+                        />
                       ) : (
-                        <Eye size={18} className="text-gray-500" />
+                        <Eye
+                          size={18}
+                          className="text-gray-500 dark:text-gray-400"
+                        />
                       )}
                     </button>
                   </div>
                 </FormControl>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   At least 8 characters and one number.
                 </p>
                 <FormMessage />
@@ -133,28 +143,36 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm password</FormLabel>
+                <FormLabel className="text-neutral-700 dark:text-neutral-300">
+                  Confirm password
+                </FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder=""
-                      className="focus-visible:ring-warm-200"
+                      className="focus-visible:ring-warm-200 bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-200"
                       disabled={isSubmitting}
                       {...field}
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
                       disabled={isSubmitting}
                     >
                       {showConfirmPassword ? (
-                        <EyeOff size={18} className="text-gray-500" />
+                        <EyeOff
+                          size={18}
+                          className="text-gray-500 dark:text-gray-400"
+                        />
                       ) : (
-                        <Eye size={18} className="text-gray-500" />
+                        <Eye
+                          size={18}
+                          className="text-gray-500 dark:text-gray-400"
+                        />
                       )}
                     </button>
                   </div>
@@ -168,8 +186,8 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             type="submit"
             className={`w-full flex justify-center items-center ${
               isFormValid
-                ? "bg-warm-200 hover:bg-warm-300"
-                : "bg-[#E2E8F0] text-[#64748B] cursor-not-allowed"
+                ? "bg-warm-200 hover:bg-warm-300 text-white dark:text-dark"
+                : "bg-[#E2E8F0] dark:bg-neutral-700 text-[#64748B] dark:text-neutral-400 cursor-not-allowed"
             }`}
             disabled={isSubmitting || !isFormValid}
           >

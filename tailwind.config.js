@@ -10,13 +10,16 @@ module.exports = {
     extend: {
       colors: {
         warm: {
-          50: "#FFE3DE",
-          100: "#FFAD97",
+          50: "#FFF7ED",
+          100: "#FFEDD5",
           200: "#FF6F00",
           300: "#C45400",
           400: "#8D3A00",
           500: "#592200",
           600: "#2A0C00",
+          700: "#EA580C",
+          800: "#9A3412",
+          900: "#7C2D12",
         },
         peach: {
           50: "#FFECE8",
@@ -44,6 +47,131 @@ module.exports = {
           400: "#585251",
           500: "#363231",
           600: "#171514",
+        },
+        slate: {
+          300: "#CBD5E1",
+          500: "#64748B",
+          600: "#475569",
+        },
+        gray: {
+          50: "#F8FAFC",
+          100: "#F3F4F6",
+          200: "#E5E7EB",
+          300: "#D1D5DB",
+          400: "#9CA3AF",
+          500: "#6B7280",
+          600: "#4B5563",
+          700: "#374151",
+          800: "#1F2937",
+          900: "#111827",
+        },
+        skillPill: {
+          light: {
+            bg: "#E2E8F0",
+            text: "#334155",
+          },
+          dark: {
+            bg: "#18212E",
+            text: "#C5C1C0",
+          },
+        },
+        goBackButton: {
+          light: {
+            border: "#E2E8F0",
+            text: "#334155",
+          },
+          dark: {
+            border: "#585251",
+            text: "#FFE3DE",
+          },
+        },
+        sectionBorder: {
+          light: "#EBE9E9",
+          dark: "#585251",
+          darkSecondary: "#222020",
+        },
+        statusPill: {
+          light: {
+            border: "#D5D7DA",
+            text: "#414651",
+          },
+          dark: {
+            border: "#313337",
+            text: "#414651",
+          },
+        },
+        dark: {
+          DEFAULT: "#0D0D0D",
+          bg: "#222020",
+          container: "#121212",
+        },
+        tab: {
+          light: {
+            bg: "#FAFAFA",
+            border: "#E9EAEB",
+            active: {
+              bg: "#FFF",
+              text: "#414651",
+            },
+            inactive: {
+              text: "#717680",
+            },
+          },
+          dark: {
+            bg: "#121212",
+            border: "#202123",
+            active: {
+              bg: "#363231",
+              text: "#FFE3DE",
+            },
+            inactive: {
+              text: "#A39997",
+            },
+          },
+        },
+        // Job post pill colors
+        jobPill: {
+          applicants: {
+            light: {
+              bg: "#ECFDF3",
+              border: "#ABEFC6",
+              dot: "#17B26A",
+              text: "#067647",
+            },
+            dark: {
+              bg: "#171717",
+              border: "#136A36",
+              dot: "#17B26A",
+              text: "#078F56",
+            },
+          },
+          views: {
+            light: {
+              bg: "#FAFAFA",
+              border: "#E9EAEB",
+              dot: "#717680",
+              text: "#414651",
+            },
+            dark: {
+              bg: "#171717",
+              border: "#202123",
+              dot: "#717680",
+              text: "#414651",
+            },
+          },
+        },
+        // View applications button colors
+        viewButton: {
+          light: {
+            bg: "#FFFFFF",
+            border: "#D5D7DA",
+            text: "#414651",
+          },
+          dark: {
+            bg: "#0D0D0D",
+            border: "#313337",
+            text: "#414651",
+          },
         },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -96,7 +224,118 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      typography: (theme) => ({
+        DEFAULT: {
+          css: {
+            maxWidth: "none",
+            color: theme("colors.neutral.700"),
+            h1: {
+              fontSize: "2.25rem",
+              fontWeight: "700",
+              marginTop: "2rem",
+              marginBottom: "1rem",
+              lineHeight: "2.5rem",
+            },
+            h2: {
+              fontSize: "1.875rem",
+              fontWeight: "700",
+              marginTop: "1.5rem",
+              marginBottom: "0.75rem",
+              lineHeight: "2.25rem",
+            },
+            h3: {
+              fontSize: "1.5rem",
+              fontWeight: "700",
+              marginTop: "1.25rem",
+              marginBottom: "0.75rem",
+              lineHeight: "2rem",
+            },
+            p: {
+              marginTop: "0",
+              marginBottom: "1rem",
+              lineHeight: "1.75",
+            },
+            a: {
+              color: theme("colors.orange.500"),
+              textDecoration: "underline",
+              "&:hover": {
+                color: theme("colors.orange.600"),
+              },
+            },
+            strong: {
+              color: theme("colors.neutral.900"),
+              fontWeight: "700",
+            },
+            em: {
+              fontStyle: "italic",
+            },
+            code: {
+              backgroundColor: theme("colors.neutral.100"),
+              padding: "0.125rem 0.25rem",
+              borderRadius: "0.25rem",
+              fontSize: "0.875em",
+            },
+            blockquote: {
+              borderLeftWidth: "4px",
+              borderLeftColor: theme("colors.orange.500"),
+              paddingLeft: "1rem",
+              fontStyle: "italic",
+              color: theme("colors.neutral.600"),
+              marginTop: "1rem",
+              marginBottom: "1rem",
+            },
+            ul: {
+              listStyleType: "disc",
+              paddingLeft: "1.5rem",
+              marginTop: "1rem",
+              marginBottom: "1rem",
+              li: {
+                marginTop: "0.5rem",
+                marginBottom: "0.5rem",
+              },
+            },
+            ol: {
+              listStyleType: "decimal",
+              paddingLeft: "1.5rem",
+              marginTop: "1rem",
+              marginBottom: "1rem",
+              li: {
+                marginTop: "0.5rem",
+                marginBottom: "0.5rem",
+              },
+            },
+            img: {
+              borderRadius: "0.5rem",
+              marginTop: "1rem",
+              marginBottom: "1rem",
+            },
+          },
+        },
+        dark: {
+          css: {
+            color: theme("colors.neutral.300"),
+            h1: {
+              color: theme("colors.white"),
+            },
+            h2: {
+              color: theme("colors.white"),
+            },
+            h3: {
+              color: theme("colors.white"),
+            },
+            strong: {
+              color: theme("colors.white"),
+            },
+            code: {
+              backgroundColor: theme("colors.neutral.800"),
+            },
+            blockquote: {
+              color: theme("colors.neutral.400"),
+            },
+          },
+        },
+      }),
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 };
