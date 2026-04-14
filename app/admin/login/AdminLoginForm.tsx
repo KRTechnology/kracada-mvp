@@ -86,7 +86,7 @@ export default function AdminLoginForm() {
         <h1 className="text-3xl font-bold bg-gradient-to-r from-warm-600 to-warm-700 dark:from-warm-300 dark:to-warm-400 bg-clip-text text-transparent">
           Admin Portal
         </h1>
-        <p className="text-warm-600 dark:text-warm-400 mt-2 font-medium">
+        <p className="text-warm-600 dark:text-warm-200 mt-2 font-medium">
           Secure access to your dashboard
         </p>
       </div>
@@ -104,7 +104,7 @@ export default function AdminLoginForm() {
                 <FormControl>
                   <Input
                     placeholder="admin@kracada.com"
-                    className="focus-visible:ring-warm-200 focus-visible:border-warm-300 bg-warm-50/50 dark:bg-neutral-700/50 border-warm-200 dark:border-warm-600 text-neutral-900 dark:text-neutral-200 placeholder:text-warm-400 dark:placeholder:text-warm-500 transition-colors"
+                    className="focus-visible:ring-warm-200 focus-visible:border-warm-300 bg-warm-50/50 dark:bg-neutral-700/50 border-warm-200 dark:border-warm-600 text-neutral-900 dark:text-neutral-200 placeholder:text-warm-200 dark:placeholder:text-warm-200 transition-colors"
                     autoComplete="email"
                     disabled={isSubmitting}
                     {...field}
@@ -128,14 +128,14 @@ export default function AdminLoginForm() {
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      className="focus-visible:ring-warm-200 focus-visible:border-warm-300 bg-warm-50/50 dark:bg-neutral-700/50 border-warm-200 dark:border-warm-600 text-neutral-900 dark:text-neutral-200 placeholder:text-warm-400 dark:placeholder:text-warm-500 transition-colors pr-12"
+                      className="focus-visible:ring-warm-200 focus-visible:border-warm-300 bg-warm-50/50 dark:bg-neutral-700/50 border-warm-200 dark:border-warm-600 text-neutral-900 dark:text-neutral-200 placeholder:text-warm-200 dark:placeholder:text-warm-200 transition-colors pr-12"
                       autoComplete="current-password"
                       disabled={isSubmitting}
                       {...field}
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-warm-500 dark:text-warm-400 hover:text-warm-600 dark:hover:text-warm-300 transition-colors"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-warm-500 dark:text-warm-200 hover:text-warm-600 dark:hover:text-warm-300 transition-colors"
                       onClick={() => setShowPassword(!showPassword)}
                       disabled={isSubmitting}
                       tabIndex={-1}
@@ -146,12 +146,12 @@ export default function AdminLoginForm() {
                       {showPassword ? (
                         <EyeOff
                           size={18}
-                          className="text-warm-500 dark:text-warm-400"
+                          className="text-warm-500 dark:text-warm-200"
                         />
                       ) : (
                         <Eye
                           size={18}
-                          className="text-warm-500 dark:text-warm-400"
+                          className="text-warm-500 dark:text-warm-200"
                         />
                       )}
                     </button>
