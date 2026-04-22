@@ -66,7 +66,7 @@ export function ContributorSetupClient({
   });
 
   const [experiences, setExperiences] = useState<ExperienceData[]>(
-    profileData.experiences || []
+    profileData.experiences || [],
   );
   const [isContinuing, setIsContinuing] = useState(false);
   const router = useRouter();
@@ -93,31 +93,42 @@ export function ContributorSetupClient({
         return prevData;
       });
     },
-    []
+    [],
   );
 
   // Check if all required fields are completed
   const isProfileComplete =
-    userData &&
-    userData.firstName &&
-    userData.lastName &&
-    userData.email &&
-    userData.phone &&
-    userData.location &&
-    userData.bio &&
-    userData.profilePicture && // Profile picture is required
-    userData.cv; // CV is required
+    !!userData.firstName?.trim() &&
+    !!userData.lastName?.trim() &&
+    !!userData.email?.trim() &&
+    !!userData.phone?.trim() &&
+    !!userData.location?.trim() &&
+    !!userData.bio?.trim() &&
+    !!userData.profilePicture?.trim() &&
+    !!userData.cv?.trim();
 
   const isSkillsComplete =
-    userData &&
-    userData.skills.length > 0 &&
-    userData.jobPreferences.length > 0;
+    userData.skills.length > 0 && userData.jobPreferences.length > 0;
 
   const isExperiencesComplete = experiences.length > 0;
 
-  const canContinue =
-    isProfileComplete && isSkillsComplete && isExperiencesComplete;
-
+  const canContinue = Boolean(
+    isProfileComplete && isSkillsComplete && isExperiencesComplete,
+  );
+  console.log({
+    firstName: !!userData.firstName?.trim(),
+    lastName: !!userData.lastName?.trim(),
+    email: !!userData.email?.trim(),
+    phone: !!userData.phone?.trim(),
+    location: !!userData.location?.trim(),
+    bio: !!userData.bio?.trim(),
+    profilePicture: !!userData.profilePicture?.trim(),
+    cv: !!userData.cv?.trim(),
+    skills: userData.skills.length > 0,
+    jobPreferences: userData.jobPreferences.length > 0,
+    experiences: experiences.length > 0,
+    canContinue,
+  });
   const handleContinue = async () => {
     if (!canContinue) return;
 

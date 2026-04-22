@@ -17,12 +17,6 @@ export interface NavigationConfig {
 export const defaultNavigationConfig: NavigationConfig = {
   items: [
     {
-      href: "/jobs",
-      label: "Jobs",
-      patterns: ["/jobs", "/jobs/[id]", "/jobs/applications"],
-      isActive: (path: string) => path.startsWith("/jobs"),
-    },
-    {
       href: "/news",
       label: "News",
       patterns: ["/news"],
@@ -40,6 +34,12 @@ export const defaultNavigationConfig: NavigationConfig = {
       label: "Entertainment",
       patterns: ["/entertainment"],
       isActive: (path: string) => path.startsWith("/entertainment"),
+    },
+    {
+      href: "/jobs",
+      label: "Jobs",
+      patterns: ["/jobs", "/jobs/[id]", "/jobs/applications"],
+      isActive: (path: string) => path.startsWith("/jobs"),
     },
     {
       href: "/cv-optimization",
