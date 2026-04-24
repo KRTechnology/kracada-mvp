@@ -8,8 +8,8 @@ import HeroImage from "./HeroImage";
 const HeroSection = () => {
   return (
     <section className="relative overflow-hidden">
-      <div className="container mx-auto px-4 py-16 lg:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+      <div className="container mx-auto px-4 py-8 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-16 items-center">
           {/* Hero Content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}

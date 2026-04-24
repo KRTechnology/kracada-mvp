@@ -85,9 +85,9 @@ export function NewsArticleCard({ article, index }: NewsArticleCardProps) {
     : { href: `/news/${article.id}`, className: "h-full" };
 
   return (
-    <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer h-full flex flex-col">
+    <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer flex flex-col max-h-[400px]">
       {/* Article Image */}
-      <div className="relative w-full h-48 overflow-hidden">
+      <div className="relative w-full h-48 overflow-hidden shrink-0">
         <Image
           src={article.image}
           alt={article.title}
@@ -97,12 +97,14 @@ export function NewsArticleCard({ article, index }: NewsArticleCardProps) {
       </div>
 
       {/* Article Content */}
-      <div className="p-6 space-y-4 flex-1 flex flex-col">
+      <div className="p-4 flex-1 flex flex-col min-h-0 gap-2">
         {/* Author and Date */}
-        <div className="flex items-center text-sm">
-          <span className="text-orange-500 font-medium">{article.author}</span>
+        <div className="flex items-center text-sm shrink-0">
+          <span className="text-orange-500 font-medium truncate max-w-[120px]">
+            {article.author}
+          </span>
           <span className="text-neutral-500 dark:text-neutral-400 mx-2">•</span>
-          <span className="text-neutral-500 dark:text-neutral-400">
+          <span className="text-neutral-500 dark:text-neutral-400 shrink-0">
             {article.date}
           </span>
           {session?.user?.id && (
@@ -111,7 +113,7 @@ export function NewsArticleCard({ article, index }: NewsArticleCardProps) {
               whileTap={{ scale: 0.95 }}
               onClick={handleBookmarkClick}
               disabled={isBookmarkLoading}
-              className={`p-1 rounded-full transition-colors flex items-center justify-center  ml-auto ${
+              className={`p-1 rounded-full transition-colors flex items-center justify-center ml-auto ${
                 isBookmarked
                   ? "bg-warm-200 text-white hover:bg-warm-300"
                   : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -131,39 +133,39 @@ export function NewsArticleCard({ article, index }: NewsArticleCardProps) {
         </div>
 
         {/* Title with External Link Icon */}
-        <div className="flex items-start justify-between">
-          <h3 className="text-xl font-bold text-neutral-900 dark:text-white leading-tight flex-1 pr-2">
+        <div className="flex items-start justify-between shrink-0">
+          <h3 className="text-base font-bold text-neutral-900 dark:text-white leading-tight flex-1 pr-2 line-clamp-3">
             {article.title}
           </h3>
           {article.link && (
             <Wrapper {...wrapperProps}>
-              <ExternalLink className="w-5 h-5 text-neutral-400 dark:text-neutral-500 flex-shrink-0 mt-1" />
+              <ExternalLink className="w-4 h-4 text-neutral-400 dark:text-neutral-500 flex-shrink-0 mt-0.5" />
             </Wrapper>
           )}
         </div>
 
         {/* Description */}
-        <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed flex-1">
+        <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed line-clamp-2 flex-1 min-h-0">
           {article.description}
         </p>
-        <p
-          onClick={() => {
-            console.log(article);
-          }}
-        ></p>
 
         {/* Categories */}
-        <div className="flex flex-wrap gap-2 mt-auto">
-          {article.categories.map((category, categoryIndex) => (
+        <div className="flex flex-wrap gap-1.5 shrink-0">
+          {article.categories.slice(0, 3).map((category, categoryIndex) => (
             <span
               key={categoryIndex}
-              className={`px-3 py-1 text-xs font-medium rounded-full capitalize ${getCategoryColor(
-                categoryIndex
+              className={`px-2 py-0.5 text-xs font-medium rounded-full capitalize ${getCategoryColor(
+                categoryIndex,
               )}`}
             >
               {category}
             </span>
           ))}
+          {article.categories.length > 3 && (
+            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400">
+              +{article.categories.length - 3}
+            </span>
+          )}
         </div>
       </div>
     </div>

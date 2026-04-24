@@ -11,6 +11,7 @@ import {
 import { eq, and, desc, sql, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { cache } from "react";
 
 // Note: This uses admin authentication instead of regular user auth
 // You'll need to import and use admin auth when available
@@ -177,8 +178,8 @@ export async function updateNewsPostAction(data: UpdateNewsData) {
       .where(
         and(
           eq(newsPosts.id, validatedData.id),
-          eq(newsPosts.authorId, admin.id)
-        )
+          eq(newsPosts.authorId, admin.id),
+        ),
       )
       .limit(1);
 
@@ -407,7 +408,7 @@ export async function getNewsPostsAction(params?: {
   }
 }
 
-export async function getNewsApi(query = "human resources nigeria") {
+export const getNewsApi = cache(async (query = "human resources nigeria") => {
   const apiKey = process.env.NEWSDATA_API_KEY;
 
   if (!apiKey) {
@@ -424,7 +425,7 @@ export async function getNewsApi(query = "human resources nigeria") {
 
     if (!response.ok) {
       throw new Error(
-        `News API error: ${response.status} ${response.statusText}`
+        `News API error: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -447,7 +448,7 @@ export async function getNewsApi(query = "human resources nigeria") {
       articles: [],
     };
   }
-}
+});
 import fetch from "node-fetch";
 
 export interface YoutubeVideoResponse {
@@ -577,7 +578,7 @@ export async function getChannelVideos(pageToken?: string) {
       `https://www.googleapis.com/youtube/v3/search?${params.toString()}`,
       {
         // next: { revalidate: 3600 },
-      }
+      },
     );
 
     if (!res.ok) {
@@ -791,7 +792,7 @@ export async function toggleNewsPostLikeAction(postId: string) {
       .select()
       .from(newsPostLikes)
       .where(
-        and(eq(newsPostLikes.postId, postId), eq(newsPostLikes.userId, userId))
+        and(eq(newsPostLikes.postId, postId), eq(newsPostLikes.userId, userId)),
       )
       .limit(1);
 
@@ -802,8 +803,8 @@ export async function toggleNewsPostLikeAction(postId: string) {
         .where(
           and(
             eq(newsPostLikes.postId, postId),
-            eq(newsPostLikes.userId, userId)
-          )
+            eq(newsPostLikes.userId, userId),
+          ),
         );
 
       // Decrement like count
@@ -867,7 +868,7 @@ export async function checkNewsPostLikedAction(postId: string) {
       .select()
       .from(newsPostLikes)
       .where(
-        and(eq(newsPostLikes.postId, postId), eq(newsPostLikes.userId, userId))
+        and(eq(newsPostLikes.postId, postId), eq(newsPostLikes.userId, userId)),
       )
       .limit(1);
 
@@ -1059,8 +1060,8 @@ export async function getAdminNewsPostsAction(params?: {
       conditions.push(
         or(
           ilike(newsPosts.title, `%${params.search}%`),
-          ilike(newsPosts.description, `%${params.search}%`)
-        )
+          ilike(newsPosts.description, `%${params.search}%`),
+        ),
       );
     }
 
