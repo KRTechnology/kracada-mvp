@@ -47,29 +47,29 @@ export const defaultNavigationConfig: NavigationConfig = {
       patterns: ["/cv-optimization"],
       isActive: (path: string) => path.startsWith("/cv-optimization"),
     },
-    {
-      href: "/hotels-restaurants",
-      label: "Hospitality & Tourism",
-      patterns: ["/hotels-restaurants"],
-      isActive: (path: string) => path.startsWith("/hotels-restaurants"),
-      children: [
-        {
-          href: "/cv-optimization",
-          label: "CV Optimization",
-          patterns: ["/cv-optimization"],
-          isActive: (path: string) => path.startsWith("/cv-optimization"),
-        },
-        {
-          href: "/cv-optimization",
-          label: "CV Optimization",
-          patterns: ["/cv-optimization"],
-          isActive: (path: string) => path.startsWith("/cv-optimization"),
-        },
-      ],
+ //   {
+ //     href: "/hotels-restaurants",
+ //     label: "Hospitality & Tourism",
+ //     patterns: ["/hotels-restaurants"],
+ //     isActive: (path: string) => path.startsWith("/hotels-restaurants"),
+ //     children: [
+ //       {
+ //         href: "/cv-optimization",
+ //         label: "CV Optimization",
+ //         patterns: ["/cv-optimization"],
+ //         isActive: (path: string) => path.startsWith("/cv-optimization"),
+ //       },
+ //       {
+ //         href: "/cv-optimization",
+ //        label: "CV Optimization",
+ //         patterns: ["/cv-optimization"],
+ //         isActive: (path: string) => path.startsWith("/cv-optimization"),
+ //       },
+ //     ],
 
       // hotels & restaurants
       // Travel & Tourism
-    },
+ //   },
     // {
     //   href: "/travel-tourism",
     //   label: "Travel & Tourism",
