@@ -75,6 +75,14 @@ export default function RootLayout({
           </SessionProvider>
         </ThemeProvider>
       </body>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V5BB7HB943"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-V5BB7HB943');
+</script>
     </html>
   );
 }

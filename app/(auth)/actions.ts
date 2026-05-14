@@ -96,7 +96,11 @@ export async function loginAction(data: LoginFormData) {
       // Handle known auth errors
       switch (error.type) {
         case "CredentialsSignin":
-          return { success: false, message: "Invalid email or password" };
+          return {
+            success: false,
+            message:
+              "This email address is not registered in our system. Please enter a valid email address.",
+          };
         case "CallbackRouteError":
           return { success: false, message: "Invalid credentials" };
         default:
