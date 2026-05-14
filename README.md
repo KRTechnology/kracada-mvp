@@ -87,7 +87,7 @@ The platform uses role-based access control with separate admin and user authent
 - Guest and authenticated user support
 - Score tracking and attempt history
 - Comments on quizzes
-- Featured images
+- Featured images.
 
 #### 🏨 Hotels & Restaurants
 
