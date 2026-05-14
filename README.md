@@ -1032,7 +1032,7 @@ When adding new features:
 5. Write documentation for complex features
 6. Update this README if adding major features
 7. Test with both user and admin accounts
-8. Ensure mobile responsiveness
+8. Ensure mobile responsiveness.
 
 ## License
 
