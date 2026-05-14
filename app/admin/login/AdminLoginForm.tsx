@@ -62,7 +62,10 @@ export default function AdminLoginForm() {
       });
 
       if (result?.error) {
-        toast.error("Invalid email or password");
+        toast.error(
+          "This email address is not registered in our system. Please enter a valid email address.",
+        );
+
         setIsSubmitting(false);
       } else if (result?.ok) {
         toast.success("Login successful");
