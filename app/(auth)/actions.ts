@@ -80,7 +80,15 @@ export async function loginAction(data: LoginFormData) {
   try {
     // Validate the data
     const validatedData = loginSchema.parse(data);
-
+    const isVerified = await authService.isEmailVerified({
+      email: validatedData.email,
+    });
+    if (!isVerified) {
+      return {
+        success: false,
+        message: "Please verify your email address before logging in.",
+      };
+    }
     // Attempt to sign in the user
     await signIn("credentials", {
       email: validatedData.email,
@@ -96,7 +104,11 @@ export async function loginAction(data: LoginFormData) {
       // Handle known auth errors
       switch (error.type) {
         case "CredentialsSignin":
-          return { success: false, message: "Invalid email or password" };
+          return {
+            success: false,
+            message:
+              "This email address is not registered in our system. Please enter a valid email address.",
+          };
         case "CallbackRouteError":
           return { success: false, message: "Invalid credentials" };
         default:

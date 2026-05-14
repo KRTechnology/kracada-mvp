@@ -40,7 +40,7 @@ export default function LoginForm() {
         email: z.string().email({ message: "Invalid email address" }),
         password: z.string().min(1, "Password is required"),
         rememberMe: z.boolean().optional(),
-      })
+      }),
     ),
     defaultValues: {
       email: "",
@@ -60,7 +60,9 @@ export default function LoginForm() {
       });
 
       if (result?.error) {
-        toast.error("Invalid email or password");
+        toast.error(
+          "This email address is not registered in our system. Please enter a valid email address.",
+        );
       } else {
         toast.success("Login successful");
 

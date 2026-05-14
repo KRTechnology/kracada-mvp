@@ -78,7 +78,7 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
 
       if (result.success && result.data) {
         toast.success("Admin created successfully!");
-        setNewAdminEmail(values.email);
+        setNewAdminEmail(values.email.toLowerCase());
         setGeneratedPassword(result.data.defaultPassword);
         setShowPasswordDialog(true);
         form.reset();

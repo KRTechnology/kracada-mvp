@@ -4,6 +4,8 @@ import { Logo } from "@/components/common/Logo";
 import { Spinner } from "@/components/common/spinner";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTheme } from "next-themes";
+
 import {
   BookOpen,
   ChevronLeft,
@@ -126,11 +128,13 @@ export default function AdminSidebar() {
   };
 
   const admin = session?.user;
+  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
       await signOut({ callbackUrl: "/admin/login" });
+      setTheme("light"); // Reset to light theme on sign out
     } catch (error) {
       console.error("Sign out error:", error);
       toast.error("Failed to sign out");

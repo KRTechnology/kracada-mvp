@@ -55,11 +55,12 @@ export default function AdminLoginForm() {
 
     try {
       const result = await signIn("credentials", {
-        email: values.email,
+        email: values.email.toLowerCase(),
         password: values.password,
         isAdmin: "true", // Flag to indicate admin login
         redirect: false,
       });
+      localStorage.setItem("theme", "light");
 
       if (result?.error) {
         toast.error("Invalid email or password");
