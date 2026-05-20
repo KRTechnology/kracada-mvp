@@ -58,11 +58,17 @@ export default function LoginForm() {
         password: values.password,
         redirect: false,
       });
+      console.log("SignIn result:", result);
 
       if (result?.error) {
-        toast.error(
-          "This email address is not registered in our system. Please enter a valid email address.",
-        );
+        if (result.code === "EMAIL_NOT_VERIFIED") {
+          toast.error("Please verify your email address before logging in.");
+        } else {
+          toast.error(
+            "This email address is not registered in our system. Please enter a valid email address.",
+          );
+        }
+        setIsSubmitting(false);
       } else {
         toast.success("Login successful");
 

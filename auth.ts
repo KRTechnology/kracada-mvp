@@ -3,6 +3,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authService } from "@/lib/auth/auth-service";
 import { adminAuthService } from "@/lib/auth/admin-auth-service";
+
 import {
   createUserSession,
   updateSessionLastActive,
@@ -22,6 +23,11 @@ type ExtendedUser = {
   adminRole?: string;
 };
 
+import { CredentialsSignin } from "next-auth";
+
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "EMAIL_NOT_VERIFIED";
+}
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
   providers: [
@@ -164,7 +170,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         // If you're using a custom "emailVerified" boolean field:
         if (!user?.emailVerified) {
           console.log("Blocked login: Email not verified");
-          return false;
+          throw new EmailNotVerifiedError();
         }
 
         // If you're using NextAuth's default emailVerified (Date | null):
