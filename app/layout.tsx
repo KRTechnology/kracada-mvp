@@ -1,26 +1,19 @@
 import { Toaster } from "@/components/common/sonner";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
-
-// Geist Sans (already correctly configured in your code)
+import { RecaptchaProvider } from "@/components/providers/RecaptchaProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-// Geist Mono (already correctly configured in your code)
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Adding Inter if you want to use it
-const inter = Inter({
-  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -40,7 +33,7 @@ export const metadata: Metadata = {
     "entertainment",
     "cv optimization",
   ],
-  metadataBase: new URL("https://kracada.com"), // Replace with actual domain when available
+  metadataBase: new URL("https://kracada.com"),
   openGraph: {
     type: "website",
     locale: "en_NG",
@@ -59,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased font-sans`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >
         <ThemeProvider
           attribute="class"
@@ -70,10 +63,24 @@ export default function RootLayout({
           <SessionProvider>
             <ConditionalLayout>
               <Toaster richColors />
-              {children}
+              <RecaptchaProvider>{children}</RecaptchaProvider>
             </ConditionalLayout>
           </SessionProvider>
         </ThemeProvider>
+
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-V5BB7HB943"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-V5BB7HB943');
+          `}
+        </Script>
       </body>
     </html>
   );

@@ -86,7 +86,7 @@ export default function LifestyleManagementContent() {
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
+      setDebouncedSearchTerm(searchTerm.toLowerCase());
     }, 500);
 
     return () => clearTimeout(timer);

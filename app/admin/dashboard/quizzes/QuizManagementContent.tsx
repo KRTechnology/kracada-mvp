@@ -79,14 +79,14 @@ const quizSchema = z.object({
             z.object({
               optionText: z.string().min(1, "Option text is required"),
               isCorrect: z.boolean(),
-            })
+            }),
           )
           .length(4, "Each question must have exactly 4 options")
           .refine(
             (options) => options.filter((opt) => opt.isCorrect).length === 1,
-            "Each question must have exactly one correct answer"
+            "Each question must have exactly one correct answer",
           ),
-      })
+      }),
     )
     .min(1, "Quiz must have at least 1 question"),
 });
@@ -187,7 +187,7 @@ export default function QuizManagementContent() {
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
+      setDebouncedSearchTerm(searchTerm.toLowerCase());
     }, 500);
 
     return () => clearTimeout(timer);
@@ -1014,7 +1014,7 @@ export default function QuizManagementContent() {
                     </Label>
                     {[0, 1, 2, 3].map((optionIndex) => {
                       const isCorrect = watch(
-                        `questions.${questionIndex}.options.${optionIndex}.isCorrect`
+                        `questions.${questionIndex}.options.${optionIndex}.isCorrect`,
                       );
                       return (
                         <div
@@ -1034,7 +1034,7 @@ export default function QuizManagementContent() {
                               [0, 1, 2, 3].forEach((i) => {
                                 setValue(
                                   `questions.${questionIndex}.options.${i}.isCorrect`,
-                                  i === optionIndex
+                                  i === optionIndex,
                                 );
                               });
                             }}
@@ -1042,7 +1042,7 @@ export default function QuizManagementContent() {
                           />
                           <Input
                             {...register(
-                              `questions.${questionIndex}.options.${optionIndex}.optionText`
+                              `questions.${questionIndex}.options.${optionIndex}.optionText`,
                             )}
                             placeholder={`Option ${optionIndex + 1}`}
                             className="flex-1 border-0 focus:ring-0 bg-transparent"

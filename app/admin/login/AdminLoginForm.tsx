@@ -55,7 +55,7 @@ export default function AdminLoginForm() {
 
     try {
       const result = await signIn("credentials", {
-        email: values.email.toLowerCase(),
+        email: values.email.toLowerCase(), // Ensure email is lowercase for admin login
         password: values.password,
         isAdmin: "true", // Flag to indicate admin login
         redirect: false,
@@ -63,7 +63,10 @@ export default function AdminLoginForm() {
       localStorage.setItem("theme", "light");
 
       if (result?.error) {
-        toast.error("Invalid email or password");
+        toast.error(
+          "This email address is not registered in our system. Please enter a valid email address.",
+        );
+
         setIsSubmitting(false);
       } else if (result?.ok) {
         toast.success("Login successful");

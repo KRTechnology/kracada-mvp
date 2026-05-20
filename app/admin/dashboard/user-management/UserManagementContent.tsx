@@ -86,6 +86,8 @@ export default function UserManagementContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [isExport, setIsExport] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [counts, setCounts] = useState({
     total: 0,
     jobSeekers: 0,
@@ -102,12 +104,40 @@ export default function UserManagementContent() {
     name: string;
     type: "user" | "admin";
   } | null>(null);
+
+  function handleExportClick() {
+    if (!isExport) {
+      setIsExport(true);
+      setSelectedIds(new Set());
+      return;
+    }
+
+    // Already in export mode — validate selection
+    if (selectedIds.size === 0) {
+      toast.warning("Please select at least one record to export.");
+      return;
+    }
+
+    // Filter to selected records and export
+    if (activeTab === "admins") {
+      const selected = admins.filter((a) => selectedIds.has(a.id));
+      downloadAdminsAsCSV(selected);
+    } else {
+      const selected = users.filter((u) => selectedIds.has(u.id));
+      downloadUsersAsCSV(selected, activeTab);
+    }
+
+    setIsExport(false);
+    setSelectedIds(new Set());
+    toast.success("Data exported successfully!");
+  }
   // Add this new function to fetch all data without pagination
+
   async function fetchAllDataForExport(
     activeTab: TabType,
     search: string,
     statusFilter: string,
-    accountTypeFilter: string
+    accountTypeFilter: string,
   ): Promise<User[] | Admin[]> {
     try {
       if (activeTab === "admins") {
@@ -186,7 +216,7 @@ export default function UserManagementContent() {
             }
             return cellStr;
           })
-          .join(",")
+          .join(","),
       ),
     ].join("\n");
 
@@ -273,7 +303,7 @@ export default function UserManagementContent() {
             }
             return cellStr;
           })
-          .join(",")
+          .join(","),
       ),
     ].join("\n");
 
@@ -303,7 +333,7 @@ export default function UserManagementContent() {
           activeTab,
           search,
           statusFilter,
-          accountTypeFilter
+          accountTypeFilter,
         );
 
         if (allData.length === 0) {
@@ -320,7 +350,7 @@ export default function UserManagementContent() {
         loading: "Preparing export...",
         success: "Data exported successfully!",
         error: "Failed to export data",
-      }
+      },
     );
   }
   // Fetch data based on active tab
@@ -399,7 +429,7 @@ export default function UserManagementContent() {
   async function handleStatusChange(
     id: string,
     newStatus: "Active" | "Suspended" | "Inactive",
-    type: "user" | "admin"
+    type: "user" | "admin",
   ) {
     try {
       const result =
@@ -421,7 +451,7 @@ export default function UserManagementContent() {
 
   async function handleRoleChange(
     adminId: string,
-    newRole: "Super Admin" | "Admin"
+    newRole: "Super Admin" | "Admin",
   ) {
     try {
       const result = await updateAdminRoleAction(adminId, newRole);
@@ -489,8 +519,8 @@ export default function UserManagementContent() {
             }}
             className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
               activeTab === "all"
-                ? "border-warm-700 text-warm-700 dark:text-warm-300 bg-warm-50/30 dark:bg-warm-900/10"
-                : "border-transparent text-neutral-600 dark:text-neutral-400 hover:text-warm-700 dark:hover:text-warm-300"
+                ? "border-warm-700 text-warm-700 dark:text-warm-300 bg-warm-50/50 dark:bg-warm-800/30"
+                : "border-transparent text-neutral-700 dark:text-neutral-200 hover:text-warm-700 dark:hover:text-white"
             }`}
           >
             <Users className="w-4 h-4" />
@@ -500,7 +530,7 @@ export default function UserManagementContent() {
                 className={`px-2 py-0.5 rounded-full text-xs ${
                   activeTab === "all"
                     ? "bg-warm-700 text-white"
-                    : "bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
+                    : "bg-neutral-200 dark:bg-neutral-600 text-neutral-800 dark:text-neutral-100"
                 }`}
               >
                 {counts.total}
@@ -515,8 +545,8 @@ export default function UserManagementContent() {
             }}
             className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
               activeTab === "businesses"
-                ? "border-warm-700 text-warm-700 dark:text-warm-300 bg-warm-50/30 dark:bg-warm-900/10"
-                : "border-transparent text-neutral-600 dark:text-neutral-400 hover:text-warm-700 dark:hover:text-warm-300"
+                ? "border-warm-700 text-warm-700 dark:text-warm-300 bg-warm-50/50 dark:bg-warm-800/30"
+                : "border-transparent text-neutral-700 dark:text-neutral-200 hover:text-warm-700 dark:hover:text-white"
             }`}
           >
             <Briefcase className="w-4 h-4" />
@@ -526,7 +556,7 @@ export default function UserManagementContent() {
                 className={`px-2 py-0.5 rounded-full text-xs ${
                   activeTab === "businesses"
                     ? "bg-warm-700 text-white"
-                    : "bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
+                    : "bg-neutral-200 dark:bg-neutral-600 text-neutral-800 dark:text-neutral-100"
                 }`}
               >
                 {counts.businessOwners}
@@ -541,8 +571,8 @@ export default function UserManagementContent() {
             }}
             className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
               activeTab === "reported"
-                ? "border-warm-700 text-warm-700 dark:text-warm-300 bg-warm-50/30 dark:bg-warm-900/10"
-                : "border-transparent text-neutral-600 dark:text-neutral-400 hover:text-warm-700 dark:hover:text-warm-300"
+                ? "border-warm-700 text-warm-700 dark:text-warm-300 bg-warm-50/50 dark:bg-warm-800/30"
+                : "border-transparent text-neutral-700 dark:text-neutral-200 hover:text-warm-700 dark:hover:text-white"
             }`}
           >
             <Flag className="w-4 h-4" />
@@ -552,7 +582,7 @@ export default function UserManagementContent() {
                 className={`px-2 py-0.5 rounded-full text-xs ${
                   activeTab === "reported"
                     ? "bg-warm-700 text-white"
-                    : "bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
+                    : "bg-neutral-200 dark:bg-neutral-600 text-neutral-800 dark:text-neutral-100"
                 }`}
               >
                 {counts.flagged}
@@ -568,8 +598,8 @@ export default function UserManagementContent() {
               }}
               className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
                 activeTab === "admins"
-                  ? "border-warm-700 text-warm-700 dark:text-warm-300 bg-warm-50/30 dark:bg-warm-900/10"
-                  : "border-transparent text-neutral-600 dark:text-neutral-400 hover:text-warm-700 dark:hover:text-warm-300"
+                  ? "border-warm-700 text-warm-700 dark:text-warm-300 bg-warm-50/50 dark:bg-warm-800/30"
+                  : "border-transparent text-neutral-700 dark:text-neutral-200 hover:text-warm-700 dark:hover:text-white"
               }`}
             >
               <UserCog className="w-4 h-4" />
@@ -579,7 +609,7 @@ export default function UserManagementContent() {
                   className={`px-2 py-0.5 rounded-full text-xs ${
                     activeTab === "admins"
                       ? "bg-warm-700 text-white"
-                      : "bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
+                      : "bg-neutral-200 dark:bg-neutral-600 text-neutral-800 dark:text-neutral-100"
                   }`}
                 >
                   {counts.superAdmins + counts.regularAdmins}
@@ -643,13 +673,43 @@ export default function UserManagementContent() {
               )}
 
               {/* Export Button */}
-              <button
+              {/* <button
                 onClick={handleExport}
                 className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-warm-200 to-warm-700 text-white rounded-xl hover:shadow-lg transition-all font-medium"
               >
                 <Download className="w-4 h-4" />
                 <span className="hidden sm:inline">Export</span>
-              </button>
+              </button> */}
+              <div className="flex items-center gap-2">
+                {isExport && (
+                  <button
+                    onClick={() => {
+                      setIsExport(false);
+                      setSelectedIds(new Set());
+                    }}
+                    className="flex items-center gap-2 px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-all font-medium text-sm"
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button
+                  onClick={handleExportClick}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all text-sm ${
+                    isExport && selectedIds.size > 0
+                      ? "bg-green-600 hover:bg-green-700 text-white shadow-md"
+                      : "bg-gradient-to-r from-warm-200 to-warm-700 text-white hover:shadow-lg"
+                  }`}
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="hidden sm:inline">
+                    {isExport
+                      ? selectedIds.size > 0
+                        ? `Export (${selectedIds.size})`
+                        : "Export"
+                      : "Export"}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -727,6 +787,20 @@ export default function UserManagementContent() {
               onStatusChange={handleStatusChange}
               onDelete={openDeleteDialog}
               isSuperAdmin={isSuperAdmin}
+              isExport={isExport}
+              selectedIds={selectedIds}
+              onToggleSelect={(id) =>
+                setSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  next.has(id) ? next.delete(id) : next.add(id);
+                  return next;
+                })
+              }
+              onToggleAll={(checked) =>
+                setSelectedIds(
+                  checked ? new Set(users.map((u) => u.id)) : new Set(),
+                )
+              }
             />
           )}
         </div>
@@ -737,7 +811,7 @@ export default function UserManagementContent() {
             <button
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-warm-50 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-800 dark:text-neutral-100 hover:bg-warm-50 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               <ChevronLeft className="w-4 h-4" />
               Previous
@@ -753,7 +827,7 @@ export default function UserManagementContent() {
                     className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
                       currentPage === pageNumber
                         ? "bg-gradient-to-r from-warm-200 to-warm-700 text-white shadow-sm"
-                        : "text-neutral-700 dark:text-neutral-300 hover:bg-warm-50 dark:hover:bg-neutral-800"
+                        : "text-neutral-800 dark:text-neutral-100 hover:bg-warm-50 dark:hover:bg-neutral-800"
                     }`}
                   >
                     {pageNumber}
@@ -767,7 +841,7 @@ export default function UserManagementContent() {
                 setCurrentPage((prev) => Math.min(totalPages, prev + 1))
               }
               disabled={currentPage === totalPages}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-warm-50 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-800 dark:text-neutral-100 hover:bg-warm-50 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               Next
               <ChevronRight className="w-4 h-4" />
@@ -808,36 +882,61 @@ function UsersTable({
   onStatusChange,
   onDelete,
   isSuperAdmin,
+  isExport = false,
+  selectedIds,
+  onToggleSelect,
+  onToggleAll,
 }: {
   users: User[];
   onStatusChange: (
     id: string,
     status: "Active" | "Suspended" | "Inactive",
-    type: "user"
+    type: "user",
   ) => void;
   onDelete: (id: string, name: string, type: "user") => void;
   isSuperAdmin: boolean;
+  isExport?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
+  onToggleAll?: (checked: boolean) => void;
 }) {
+  const allSelected =
+    users.length > 0 && users.every((u) => selectedIds?.has(u.id));
   return (
     <table className="w-full">
-      <thead className="bg-gradient-to-r from-warm-50 to-warm-100/30 dark:from-neutral-800 dark:to-neutral-800/50">
+      <thead className="bg-gradient-to-r from-warm-50 to-warm-100/30 dark:from-neutral-900 dark:to-neutral-800">
         <tr>
-          <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+          {isExport && (
+            <th className="px-6 py-4 text-left text-xs font-bold text-warm-800 dark:text-white uppercase tracking-wider">
+              <input
+                type="checkbox"
+                className="h-4 w-4 text-warm-600 focus:ring-warm-500 border-neutral-300 rounded"
+                checked={allSelected}
+                onChange={(e) => onToggleAll?.(e.target.checked)}
+              />
+            </th>
+          )}
+          <th className="px-6 py-4 text-left text-xs font-bold text-warm-800 dark:text-white uppercase tracking-wider">
             User's Name
           </th>
-          <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+
+          <th className="px-6 py-4 text-left text-xs font-bold text-warm-800 dark:text-white uppercase tracking-wider">
             Email Address
           </th>
-          <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+
+          <th className="px-6 py-4 text-left text-xs font-bold text-warm-800 dark:text-white uppercase tracking-wider">
             Creation Date
           </th>
-          <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+
+          <th className="px-6 py-4 text-left text-xs font-bold text-warm-800 dark:text-white uppercase tracking-wider">
             Account Type
           </th>
-          <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+
+          <th className="px-6 py-4 text-left text-xs font-bold text-warm-800 dark:text-white uppercase tracking-wider">
             Status
           </th>
-          <th className="px-6 py-4 text-left text-xs font-semibold text-warm-800 dark:text-warm-200 uppercase tracking-wider">
+
+          <th className="px-6 py-4 text-left text-xs font-bold text-warm-800 dark:text-white uppercase tracking-wider">
             Actions
           </th>
         </tr>
@@ -848,6 +947,16 @@ function UsersTable({
             key={user.id}
             className="hover:bg-warm-50/30 dark:hover:bg-neutral-800/50 transition-colors"
           >
+            {isExport && (
+              <td className="px-6 py-4">
+                <input
+                  type="checkbox"
+                  checked={selectedIds?.has(user.id) ?? false}
+                  onChange={() => onToggleSelect?.(user.id)}
+                  className="h-4 w-4 text-warm-600 focus:ring-warm-500 border-neutral-300 rounded cursor-pointer"
+                />
+              </td>
+            )}
             <td className="px-6 py-4 whitespace-nowrap">
               <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                 {user.fullName}
@@ -875,7 +984,7 @@ function UsersTable({
                     ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200"
                     : user.status === "Suspended"
                       ? "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200"
-                      : "bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200"
+                      : "bg-neutral-100 dark:bg-neutral-600 text-neutral-800 dark:text-neutral-200"
                 }`}
               >
                 {user.status === "Active" ? (
@@ -961,7 +1070,7 @@ function AdminsTable({
   onStatusChange: (
     id: string,
     status: "Active" | "Suspended" | "Inactive",
-    type: "admin"
+    type: "admin",
   ) => void;
   onRoleChange: (id: string, role: "Super Admin" | "Admin") => void;
   onDelete: (id: string, name: string, type: "admin") => void;
@@ -1030,7 +1139,7 @@ function AdminsTable({
                     ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200"
                     : admin.status === "Suspended"
                       ? "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200"
-                      : "bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200"
+                      : "bg-neutral-100 dark:bg-neutral-600 text-neutral-800 dark:text-neutral-200"
                 }`}
               >
                 {admin.status === "Active" ? (
@@ -1104,7 +1213,7 @@ function AdminsTable({
                       onDelete(
                         admin.id,
                         `${admin.firstName} ${admin.lastName}`,
-                        "admin"
+                        "admin",
                       )
                     }
                     className="cursor-pointer text-red-600 focus:text-red-600"

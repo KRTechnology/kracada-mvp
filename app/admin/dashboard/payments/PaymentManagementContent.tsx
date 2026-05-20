@@ -79,7 +79,7 @@ export default function PaymentManagementContent() {
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
+      setDebouncedSearchTerm(searchTerm.toLowerCase());
     }, 500);
 
     return () => clearTimeout(timer);
@@ -120,17 +120,17 @@ export default function PaymentManagementContent() {
       setStats({
         total: allTransactions.length,
         success: allTransactions.filter(
-          (t: any) => t.paystackStatus === "success"
+          (t: any) => t.paystackStatus === "success",
         ).length,
         pending: allTransactions.filter(
           (t: any) =>
             !t.paystackStatus ||
             t.paystackStatus === "pending" ||
-            t.paystackStatus === "ongoing"
+            t.paystackStatus === "ongoing",
         ).length,
         failed: allTransactions.filter(
           (t: any) =>
-            t.paystackStatus === "failed" || t.paystackStatus === "abandoned"
+            t.paystackStatus === "failed" || t.paystackStatus === "abandoned",
         ).length,
         totalAmount,
       });
@@ -521,7 +521,7 @@ export default function PaymentManagementContent() {
                         <span className="text-sm font-semibold text-neutral-900 dark:text-white">
                           {format(
                             new Date(transaction.createdAt),
-                            "MMM dd, yyyy"
+                            "MMM dd, yyyy",
                           )}
                         </span>
                         <span className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -607,7 +607,7 @@ export default function PaymentManagementContent() {
                     <p className="text-lg font-bold text-neutral-900 dark:text-white">
                       {formatAmount(
                         selectedTransaction.amount,
-                        selectedTransaction.currency
+                        selectedTransaction.currency,
                       )}
                     </p>
                   </div>
@@ -698,7 +698,7 @@ export default function PaymentManagementContent() {
                     <p className="text-sm text-neutral-900 dark:text-white">
                       {format(
                         new Date(selectedTransaction.createdAt),
-                        "MMM dd, yyyy 'at' h:mm a"
+                        "MMM dd, yyyy 'at' h:mm a",
                       )}
                     </p>
                   </div>
@@ -710,7 +710,7 @@ export default function PaymentManagementContent() {
                       <p className="text-sm text-neutral-900 dark:text-white">
                         {format(
                           new Date(selectedTransaction.verifiedAt),
-                          "MMM dd, yyyy 'at' h:mm a"
+                          "MMM dd, yyyy 'at' h:mm a",
                         )}
                       </p>
                     </div>
