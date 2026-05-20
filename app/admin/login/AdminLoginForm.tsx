@@ -60,12 +60,14 @@ export default function AdminLoginForm() {
         isAdmin: "true", // Flag to indicate admin login
         redirect: false,
       });
-
       if (result?.error) {
-        toast.error(
-          "This email address is not registered in our system. Please enter a valid email address.",
-        );
-
+        if (result.error === "EMAIL_NOT_VERIFIED") {
+          toast.error("Please verify your email address before logging in.");
+        } else {
+          toast.error(
+            "This email address is not registered in our system. Please enter a valid email address.",
+          );
+        }
         setIsSubmitting(false);
       } else if (result?.ok) {
         toast.success("Login successful");
