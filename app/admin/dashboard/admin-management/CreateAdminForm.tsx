@@ -46,7 +46,7 @@ const createAdminSchema = z.object({
       "Last name must contain only letters and may include hyphens or apostrophes",
     ),
 
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Invalid email address").toLowerCase(),
 });
 
 type CreateAdminFormData = z.infer<typeof createAdminSchema>;
@@ -74,7 +74,10 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await createAdminAction(values);
+      const result = await createAdminAction({
+        ...values,
+        email: values.email.toLowerCase(),
+      });
 
       if (result.success && result.data) {
         toast.success("Admin created successfully!");

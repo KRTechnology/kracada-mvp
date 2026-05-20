@@ -55,7 +55,7 @@ export default function AdminLoginForm() {
 
     try {
       const result = await signIn("credentials", {
-        email: values.email,
+        email: values.email.toLowerCase(), // Ensure email is lowercase for admin login
         password: values.password,
         isAdmin: "true", // Flag to indicate admin login
         redirect: false,

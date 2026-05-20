@@ -84,7 +84,7 @@ export default function VideosManagementContent() {
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
+      setDebouncedSearchTerm(searchTerm.toLowerCase());
     }, 500);
 
     return () => clearTimeout(timer);
@@ -507,7 +507,7 @@ export default function VideosManagementContent() {
                           {video.publishedAt
                             ? format(
                                 new Date(video.publishedAt),
-                                "MMM dd, yyyy"
+                                "MMM dd, yyyy",
                               )
                             : "Not published"}
                         </span>
@@ -537,7 +537,7 @@ export default function VideosManagementContent() {
                           <DropdownMenuItem
                             onClick={() =>
                               router.push(
-                                `/admin/dashboard/videos/edit/${video.id}`
+                                `/admin/dashboard/videos/edit/${video.id}`,
                               )
                             }
                           >

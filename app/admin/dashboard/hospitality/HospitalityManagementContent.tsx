@@ -117,7 +117,7 @@ export default function HospitalityManagementContent() {
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
+      setDebouncedSearchTerm(searchTerm.toLowerCase());
     }, 500);
 
     return () => clearTimeout(timer);
@@ -226,7 +226,7 @@ export default function HospitalityManagementContent() {
   const handleDeleteClick = (
     id: string,
     name: string,
-    type: "hotel" | "restaurant"
+    type: "hotel" | "restaurant",
   ) => {
     setItemToDelete({ id, name, type });
     setIsDeleteModalOpen(true);
@@ -259,7 +259,7 @@ export default function HospitalityManagementContent() {
 
   const handleTogglePublish = async (
     id: string,
-    type: "hotel" | "restaurant"
+    type: "hotel" | "restaurant",
   ) => {
     const result =
       type === "hotel"
@@ -552,7 +552,7 @@ export default function HospitalityManagementContent() {
                           <DropdownMenuItem
                             onClick={() =>
                               router.push(
-                                `/hotels-restaurants/${activeView}/${item.id}`
+                                `/hotels-restaurants/${activeView}/${item.id}`,
                               )
                             }
                           >
@@ -563,7 +563,9 @@ export default function HospitalityManagementContent() {
                             onClick={() =>
                               handleTogglePublish(
                                 item.id,
-                                activeView === "hotels" ? "hotel" : "restaurant"
+                                activeView === "hotels"
+                                  ? "hotel"
+                                  : "restaurant",
                               )
                             }
                           >
@@ -584,7 +586,9 @@ export default function HospitalityManagementContent() {
                               handleDeleteClick(
                                 item.id,
                                 item.name,
-                                activeView === "hotels" ? "hotel" : "restaurant"
+                                activeView === "hotels"
+                                  ? "hotel"
+                                  : "restaurant",
                               )
                             }
                             className="text-red-600 dark:text-red-400"

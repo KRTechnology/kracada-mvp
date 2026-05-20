@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/common/button";
 import { Checkbox } from "@/components/common/checkbox";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import {
   Form,
   FormControl,
@@ -64,6 +65,7 @@ const signupSchema = z
   });
 
 export default function SignupForm() {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,10 +83,16 @@ export default function SignupForm() {
   });
 
   const onSubmit = async (data: SignupFormData) => {
+    if (!executeRecaptcha) {
+      toast.error("reCAPTCHA not ready");
+      return;
+    }
     setIsSubmitting(true);
 
     try {
-      const result = await signupAction(data);
+      // Get the token — pass an action name for analytics in the reCAPTCHA dashboard
+      const recaptchaToken = await executeRecaptcha("signup");
+      const result = await signupAction({ ...data, recaptchaToken });
 
       if (result.success) {
         toast.success(result.message);

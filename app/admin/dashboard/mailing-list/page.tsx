@@ -1,3 +1,4 @@
+"use client";
 import MailingListManagementContent from "./MailingListManagementContent";
 
 export default function MailingListManagementPage() {

@@ -6,7 +6,7 @@ import "./globals.css";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
-
+import { RecaptchaProvider } from "@/components/providers/RecaptchaProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -63,7 +63,7 @@ export default function RootLayout({
           <SessionProvider>
             <ConditionalLayout>
               <Toaster richColors />
-              {children}
+              <RecaptchaProvider>{children}</RecaptchaProvider>
             </ConditionalLayout>
           </SessionProvider>
         </ThemeProvider>

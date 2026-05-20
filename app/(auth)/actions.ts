@@ -125,8 +125,23 @@ const getBaseUrl = () => {
 };
 
 // Sign up action
-export async function signupAction(data: SignupFormData) {
+export async function signupAction(
+  data: SignupFormData & { recaptchaToken: string },
+) {
   try {
+    const res = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${data.recaptchaToken}`,
+      { method: "POST" },
+    );
+    const recaptcha = await res.json();
+
+    // score ranges 0.0 (bot) → 1.0 (human); 0.5 is a common threshold
+    if (!recaptcha.success || recaptcha.score < 0.5) {
+      return {
+        success: false,
+        message: "Failed bot verification. Please try again.",
+      };
+    }
     // Validate the data
     const validatedData = signupSchema.parse(data);
 

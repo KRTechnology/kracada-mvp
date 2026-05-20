@@ -15,7 +15,6 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Filter,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -44,7 +43,6 @@ import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
 import { Spinner } from "@/components/common/spinner";
 import { Pagination } from "@/components/specific/dashboard/Pagination";
-import { Checkbox } from "@/components/common/checkbox";
 
 interface Subscriber {
   id: string;
@@ -88,20 +86,21 @@ export default function MailingListManagementContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [selectedSubscribers, setSelectedSubscribers] = useState<string[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [subscriberToDelete, setSubscriberToDelete] =
     useState<Subscriber | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Export selection state (mirrors UserManagement pattern)
+  const [isExportMode, setIsExportMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isExporting, setIsExporting] = useState(false);
-  const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
 
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
+      setDebouncedSearchTerm(searchTerm.toLowerCase());
     }, 500);
-
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
@@ -146,6 +145,93 @@ export default function MailingListManagementContent() {
     }
     setIsLoading(false);
   };
+
+  // ─── Export helpers ────────────────────────────────────────────────────────
+
+  function downloadSubscribersAsCSV(subs: Subscriber[]) {
+    const headers = ["Email", "Status", "Source", "Subscribed At", "Verified"];
+    const rows = subs.map((sub) => [
+      sub.email,
+      sub.status,
+      sub.source,
+      format(new Date(sub.subscribedAt), "yyyy-MM-dd HH:mm:ss"),
+      sub.isVerified ? "Yes" : "No",
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row
+          .map((cell) => {
+            const s = String(cell);
+            return s.includes(",") || s.includes('"') || s.includes("\n")
+              ? `"${s.replace(/"/g, '""')}"`
+              : s;
+          })
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `mailing-list-${format(new Date(), "yyyy-MM-dd")}.csv`,
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  /**
+   * First click  → enter selection mode
+   * Second click → validate selection then export
+   */
+  function handleExportClick() {
+    if (!isExportMode) {
+      setIsExportMode(true);
+      setSelectedIds(new Set());
+      return;
+    }
+
+    if (selectedIds.size === 0) {
+      toast.warning("Please select at least one subscriber to export.");
+      return;
+    }
+
+    const selected = subscribers.filter((s) => selectedIds.has(s.id));
+    downloadSubscribersAsCSV(selected);
+
+    setIsExportMode(false);
+    setSelectedIds(new Set());
+    toast.success("Mailing list exported successfully!");
+  }
+
+  function cancelExportMode() {
+    setIsExportMode(false);
+    setSelectedIds(new Set());
+  }
+
+  function toggleSelectAll(checked: boolean) {
+    setSelectedIds(checked ? new Set(subscribers.map((s) => s.id)) : new Set());
+  }
+
+  function toggleSelectOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  const allSelected =
+    subscribers.length > 0 && subscribers.every((s) => selectedIds.has(s.id));
+
+  // ─── Status / source badges ────────────────────────────────────────────────
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -200,6 +286,8 @@ export default function MailingListManagementContent() {
     );
   };
 
+  // ─── Delete ────────────────────────────────────────────────────────────────
+
   const handleDeleteClick = (subscriber: Subscriber) => {
     setSubscriberToDelete(subscriber);
     setIsDeleteModalOpen(true);
@@ -223,102 +311,11 @@ export default function MailingListManagementContent() {
     setIsDeleting(false);
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedSubscribers(subscribers.map((s) => s.id));
-    } else {
-      setSelectedSubscribers([]);
-    }
-  };
-
-  const handleSelectSubscriber = (subscriberId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedSubscribers([...selectedSubscribers, subscriberId]);
-    } else {
-      setSelectedSubscribers(
-        selectedSubscribers.filter((id) => id !== subscriberId)
-      );
-    }
-  };
-
-  const handleBulkAction = async (
-    action: "delete" | "unsubscribe" | "resubscribe"
-  ) => {
-    if (selectedSubscribers.length === 0) {
-      toast.error("Please select at least one subscriber");
-      return;
-    }
-
-    const confirmed = confirm(
-      `Are you sure you want to ${action} ${selectedSubscribers.length} subscriber(s)?`
-    );
-    if (!confirmed) return;
-
-    setIsBulkActionLoading(true);
-    const result = await bulkSubscriberActionAction({
-      subscriberIds: selectedSubscribers,
-      action,
-    });
-
-    if (result.success) {
-      toast.success(result.message);
-      setSelectedSubscribers([]);
-      fetchSubscribers();
-      fetchStats();
-    } else {
-      toast.error(result.message || "Failed to perform bulk action");
-    }
-    setIsBulkActionLoading(false);
-  };
-
-  const handleExport = async () => {
-    setIsExporting(true);
-    const result = await exportSubscribersAction({
-      status: statusFilter !== "all" ? statusFilter : undefined,
-      source: sourceFilter !== "all" ? sourceFilter : undefined,
-    });
-
-    if (result.success && result.data) {
-      // Convert to CSV
-      const headers = [
-        "Email",
-        "Status",
-        "Source",
-        "Subscribed At",
-        "Verified",
-      ];
-      const rows = result.data.map((sub: any) => [
-        sub.email,
-        sub.status,
-        sub.source,
-        format(new Date(sub.subscribedAt), "yyyy-MM-dd HH:mm:ss"),
-        sub.isVerified ? "Yes" : "No",
-      ]);
-
-      const csv = [
-        headers.join(","),
-        ...rows.map((row: string[]) => row.join(",")),
-      ].join("\n");
-
-      // Download CSV
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `mailing-list-${format(new Date(), "yyyy-MM-dd")}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Mailing list exported successfully");
-    } else {
-      toast.error("Failed to export mailing list");
-    }
-    setIsExporting(false);
-  };
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-6">
-      {/* Header with gradient */}
+      {/* Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-warm-200 via-warm-700 to-warm-800 rounded-2xl p-8 shadow-lg">
         <div className="relative z-10">
           <h1 className="text-4xl font-bold text-white mb-2">
@@ -328,8 +325,8 @@ export default function MailingListManagementContent() {
             Manage newsletter subscribers and email campaigns
           </p>
         </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24" />
       </div>
 
       {/* Stats Cards */}
@@ -443,74 +440,51 @@ export default function MailingListManagementContent() {
             <option value="other">Other</option>
           </select>
 
-          {/* Export Button */}
-          <Button
-            onClick={handleExport}
-            disabled={isExporting}
-            variant="outline"
-            className="border-warm-300 dark:border-warm-700"
-          >
-            {isExporting ? (
-              <>
-                <Spinner className="w-4 h-4 mr-2" />
-                Exporting...
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
-              </>
+          {/* Export Button — two-step pattern from UserManagement */}
+          <div className="flex items-center gap-2">
+            {isExportMode && (
+              <Button
+                variant="outline"
+                onClick={cancelExportMode}
+                className="border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200"
+              >
+                Cancel
+              </Button>
             )}
-          </Button>
-        </div>
-
-        {/* Bulk Actions */}
-        {selectedSubscribers.length > 0 && (
-          <div className="mt-4 flex items-center gap-4 p-4 bg-warm-50 dark:bg-warm-900/20 rounded-lg border border-warm-200 dark:border-warm-800">
-            <span className="text-sm font-medium text-warm-900 dark:text-warm-300">
-              {selectedSubscribers.length} selected
-            </span>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleBulkAction("unsubscribe")}
-                disabled={isBulkActionLoading}
-                className="border-gray-300 dark:border-gray-600"
-              >
-                <UserX className="w-4 h-4 mr-1" />
-                Unsubscribe
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleBulkAction("resubscribe")}
-                disabled={isBulkActionLoading}
-                className="border-green-300 dark:border-green-600"
-              >
-                <UserCheck className="w-4 h-4 mr-1" />
-                Resubscribe
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleBulkAction("delete")}
-                disabled={isBulkActionLoading}
-                className="border-red-300 dark:border-red-600 text-red-600 dark:text-red-400"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Delete
-              </Button>
-            </div>
+            <Button
+              onClick={handleExportClick}
+              disabled={isExporting}
+              className={
+                isExportMode && selectedIds.size > 0
+                  ? "bg-green-600 hover:bg-green-700 text-white shadow-md border-0"
+                  : "bg-gradient-to-r from-warm-200 to-warm-700 text-white hover:shadow-lg border-0"
+              }
+            >
+              {isExporting ? (
+                <>
+                  <Spinner className="w-4 h-4 mr-2" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  {isExportMode
+                    ? selectedIds.size > 0
+                      ? `Export (${selectedIds.size})`
+                      : "Export"
+                    : "Export CSV"}
+                </>
+              )}
+            </Button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Subscribers Table */}
       <div className="bg-white dark:bg-neutral-800 rounded-xl border border-warm-100 dark:border-neutral-700 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-warm-700"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-warm-700" />
           </div>
         ) : subscribers.length === 0 ? (
           <div className="text-center py-12">
@@ -529,15 +503,17 @@ export default function MailingListManagementContent() {
             <table className="w-full">
               <thead className="bg-gradient-to-r from-warm-50 to-orange-50 dark:from-neutral-900 dark:to-neutral-800 border-b-2 border-warm-200 dark:border-warm-800">
                 <tr>
-                  <th className="px-4 py-4 text-left w-12">
-                    <Checkbox
-                      checked={
-                        selectedSubscribers.length === subscribers.length &&
-                        subscribers.length > 0
-                      }
-                      onCheckedChange={handleSelectAll}
-                    />
-                  </th>
+                  {/* Checkbox column — only visible in export mode */}
+                  {isExportMode && (
+                    <th className="px-4 py-4 text-left w-12">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={(e) => toggleSelectAll(e.target.checked)}
+                        className="h-4 w-4 text-warm-600 focus:ring-warm-500 border-neutral-300 rounded cursor-pointer"
+                      />
+                    </th>
+                  )}
                   <th className="px-4 py-4 text-left text-xs font-semibold text-warm-900 dark:text-warm-100 uppercase tracking-wider">
                     Email
                   </th>
@@ -568,17 +544,17 @@ export default function MailingListManagementContent() {
                         : "bg-neutral-50/30 dark:bg-neutral-850/30"
                     }`}
                   >
-                    <td className="px-4 py-4">
-                      <Checkbox
-                        checked={selectedSubscribers.includes(subscriber.id)}
-                        onCheckedChange={(checked) =>
-                          handleSelectSubscriber(
-                            subscriber.id,
-                            checked as boolean
-                          )
-                        }
-                      />
-                    </td>
+                    {/* Per-row checkbox — only visible in export mode */}
+                    {isExportMode && (
+                      <td className="px-4 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(subscriber.id)}
+                          onChange={() => toggleSelectOne(subscriber.id)}
+                          className="h-4 w-4 text-warm-600 focus:ring-warm-500 border-neutral-300 rounded cursor-pointer"
+                        />
+                      </td>
+                    )}
                     <td className="px-4 py-4">
                       <div className="flex flex-col">
                         <span className="font-medium text-neutral-900 dark:text-white">
@@ -609,7 +585,7 @@ export default function MailingListManagementContent() {
                         <span className="text-sm font-semibold text-neutral-900 dark:text-white">
                           {format(
                             new Date(subscriber.subscribedAt),
-                            "MMM dd, yyyy"
+                            "MMM dd, yyyy",
                           )}
                         </span>
                         <span className="text-xs text-neutral-500 dark:text-neutral-400">
