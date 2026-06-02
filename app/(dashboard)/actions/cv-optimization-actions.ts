@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { eq, and, desc } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { z } from "zod";
+import { emailService } from "@/lib/email/email.service";
 
 // Package definitions (matching the frontend)
 const packages = {
@@ -65,7 +66,7 @@ export type VerifyPaymentResult = {
  */
 export async function createCVOptimizationOrder(
   packageType: "deluxe" | "supreme" | "premium",
-  paymentReference: string
+  paymentReference: string,
 ): Promise<CreateOrderResult> {
   try {
     const session = await auth();
@@ -149,7 +150,7 @@ export async function createCVOptimizationOrder(
  * Verify payment and update order status
  */
 export async function verifyPaymentAndUpdateOrder(
-  paymentReference: string
+  paymentReference: string,
 ): Promise<VerifyPaymentResult> {
   try {
     const session = await auth();
@@ -179,8 +180,8 @@ export async function verifyPaymentAndUpdateOrder(
       .where(
         and(
           eq(cvOptimizationOrders.paymentReference, paymentReference),
-          eq(cvOptimizationOrders.userId, session.user.id)
-        )
+          eq(cvOptimizationOrders.userId, session.user.id),
+        ),
       )
       .limit(1);
 
@@ -364,8 +365,8 @@ export async function getOrderByPaymentReference(paymentReference: string) {
       .where(
         and(
           eq(cvOptimizationOrders.paymentReference, paymentReference),
-          eq(cvOptimizationOrders.userId, session.user.id)
-        )
+          eq(cvOptimizationOrders.userId, session.user.id),
+        ),
       )
       .limit(1);
 
@@ -408,8 +409,8 @@ export async function getOrderById(orderId: string) {
       .where(
         and(
           eq(cvOptimizationOrders.id, orderId),
-          eq(cvOptimizationOrders.userId, session.user.id)
-        )
+          eq(cvOptimizationOrders.userId, session.user.id),
+        ),
       )
       .limit(1);
 
@@ -440,7 +441,7 @@ export async function updateOrderWithCV(
   orderId: string,
   cvFileUrl: string,
   cvFileKey: string,
-  customerNotes?: string
+  customerNotes?: string,
 ) {
   try {
     const session = await auth();
@@ -458,8 +459,8 @@ export async function updateOrderWithCV(
       .where(
         and(
           eq(cvOptimizationOrders.id, orderId),
-          eq(cvOptimizationOrders.userId, session.user.id)
-        )
+          eq(cvOptimizationOrders.userId, session.user.id),
+        ),
       )
       .limit(1);
 
@@ -491,7 +492,12 @@ export async function updateOrderWithCV(
         updatedAt: new Date(),
       })
       .where(eq(cvOptimizationOrders.id, orderId));
-
+    await emailService.sendCVReceivedEmail({
+      email: session.user.email!,
+      fullName: session.user.name || "Valued Customer",
+      packageName: order.packageName, // ✅ use `order` from DB
+      orderReference: order.paymentReference ?? orderId, // ✅ fallback to orderId if null
+    });
     return {
       success: true,
     };
@@ -519,7 +525,7 @@ async function verifyPaystackPayment(reference: string): Promise<{
       process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
     if (!secretKey) {
       console.error(
-        "Paystack secret key not found. Checked PAYSTACK_SECRET_KEY and NEXT_PUBLIC_PAYSTACK_SECRET_KEY"
+        "Paystack secret key not found. Checked PAYSTACK_SECRET_KEY and NEXT_PUBLIC_PAYSTACK_SECRET_KEY",
       );
       return {
         success: false,
@@ -535,7 +541,7 @@ async function verifyPaystackPayment(reference: string): Promise<{
           Authorization: `Bearer ${secretKey}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const result = await response.json();

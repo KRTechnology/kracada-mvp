@@ -83,6 +83,47 @@ export class EmailService {
       throw error;
     }
   }
+  async sendCVReceivedEmail(params: {
+    email: string;
+    fullName: string;
+    packageName: string;
+    orderReference: string;
+  }) {
+    const { email, fullName, packageName, orderReference } = params;
+
+    try {
+      const { data, error } = await this.resend.emails.send({
+        from: `Kracada <${process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"}>`,
+        to: email,
+        subject: "We've Received Your CV - Kracada CV Optimization",
+        react: await this.renderCVReceivedEmail({
+          fullName,
+          packageName,
+          orderReference,
+        }),
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Failed to send CV received email:", error);
+      throw error;
+    }
+  }
+
+  private async renderCVReceivedEmail(props: {
+    fullName: string;
+    packageName: string;
+    orderReference: string;
+  }) {
+    const { default: CVReceivedEmail } = await import(
+      "./templates/cv-received-email"
+    );
+    return CVReceivedEmail(props);
+  }
 
   // Dynamic imports to avoid server component issues
   private async renderWelcomeEmail(props: {

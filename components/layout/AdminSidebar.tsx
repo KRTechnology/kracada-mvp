@@ -51,11 +51,6 @@ const navItems: NavItem[] = [
     icon: <Users className="w-5 h-5" />,
   },
   {
-    href: "/admin/dashboard/news",
-    label: "News Management",
-    icon: <FileText className="w-5 h-5" />,
-  },
-  {
     href: "/admin/dashboard/lifestyle",
     label: "Lifestyle Management",
     icon: <BookOpen className="w-5 h-5" />,
