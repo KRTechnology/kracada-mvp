@@ -6,7 +6,10 @@ import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { createCVOptimizationOrder } from "@/app/(dashboard)/actions/cv-optimization-actions";
+import {
+  createCVOptimizationOrder,
+  getUserCVOptimizationOrders,
+} from "@/app/(dashboard)/actions/cv-optimization-actions";
 import dynamic from "next/dynamic";
 
 // Dynamically import PaystackButton to avoid SSR issues
@@ -19,7 +22,7 @@ const PaystackButton = dynamic(
         Loading...
       </div>
     ),
-  }
+  },
 );
 
 interface PricingPackage {
@@ -96,15 +99,40 @@ export default function CVOptimizationContent() {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isMounted, setIsMounted] = useState(false);
+  const [unfulfilledOrder, setUnfulfilledOrder] = useState<any[]>();
+  const [isCheckingOrders, setIsCheckingOrders] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
 
   const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
+  const getUnfulfilledOrderForPackage = (packageId: string) => {
+    return (
+      unfulfilledOrder?.find((order) => order.packageType === packageId) ?? null
+    );
+  };
 
   // Handle mounting to avoid hydration mismatches
   useEffect(() => {
     setIsMounted(true);
   }, []);
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const checkOrders = async () => {
+      setIsCheckingOrders(true);
+      const { orders } = await getUserCVOptimizationOrders();
+      const unfulfilled =
+        orders?.filter((order) =>
+          ["payment_verified", "cv_uploaded", "in_progress"].includes(
+            order.orderStatus,
+          ),
+        ) ?? [];
+      setUnfulfilledOrder(unfulfilled);
+      setIsCheckingOrders(false);
+    };
+
+    checkOrders();
+  }, [session?.user]);
 
   const handlePackageSelect = (packageId: string) => {
     if (!session?.user) {
@@ -130,7 +158,7 @@ export default function CVOptimizationContent() {
         // Create order in database
         const result = await createCVOptimizationOrder(
           packageType as "deluxe" | "supreme" | "premium",
-          reference.reference
+          reference.reference,
         );
 
         if (result.success) {
@@ -171,7 +199,7 @@ export default function CVOptimizationContent() {
           // Create order in database
           const result = await createCVOptimizationOrder(
             pkg.id as "deluxe" | "supreme" | "premium",
-            reference.reference
+            reference.reference,
           );
 
           if (result.success) {
@@ -300,7 +328,7 @@ export default function CVOptimizationContent() {
                 </div>
 
                 {/* CTA Button */}
-                <div className="w-full mt-auto">
+                {/* <div className="w-full mt-auto">
                   {isMounted && session?.user && getPaystackConfig(pkg) ? (
                     <PaystackButton
                       {...getPaystackConfig(pkg)!}
@@ -322,6 +350,67 @@ export default function CVOptimizationContent() {
                           : "Get started"}
                     </motion.button>
                   )}
+                </div> */}
+                <div className="w-full mt-auto">
+                  {(() => {
+                    const unfulfilledOrder = getUnfulfilledOrderForPackage(
+                      pkg.id,
+                    );
+
+                    if (isCheckingOrders) {
+                      return (
+                        <div className="w-full bg-neutral-300 dark:bg-neutral-600 text-neutral-500 dark:text-neutral-400 font-semibold py-3 lg:py-4 px-6 rounded-xl text-center">
+                          Checking...
+                        </div>
+                      );
+                    }
+
+                    if (unfulfilledOrder) {
+                      return (
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() =>
+                            router.push(
+                              unfulfilledOrder.orderStatus ===
+                                "payment_verified"
+                                ? `/cv-optimization/upload?ref=${unfulfilledOrder.paymentReference}`
+                                : `/cv-optimization/status?ref=${unfulfilledOrder.paymentReference}`,
+                            )
+                          }
+                          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 lg:py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
+                        >
+                          Continue {unfulfilledOrder.packageName}
+                        </motion.button>
+                      );
+                    }
+
+                    if (isMounted && session?.user && getPaystackConfig(pkg)) {
+                      return (
+                        <PaystackButton
+                          {...getPaystackConfig(pkg)!}
+                          className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 lg:py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl border-0 cursor-pointer disabled:opacity-50"
+                          disabled={isPending}
+                        />
+                      );
+                    }
+
+                    return (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handlePackageSelect(pkg.id)}
+                        className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 lg:py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
+                        disabled={!isMounted}
+                      >
+                        {!isMounted
+                          ? "Loading..."
+                          : session?.user
+                            ? "Pay Now"
+                            : "Get started"}
+                      </motion.button>
+                    );
+                  })()}
                 </div>
               </div>
             ))}
@@ -413,27 +502,65 @@ export default function CVOptimizationContent() {
 
                 {/* CTA Button */}
                 <div className="w-full mt-auto">
-                  {isMounted && session?.user && getPaystackConfig(pkg) ? (
-                    <PaystackButton
-                      {...getPaystackConfig(pkg)!}
-                      className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl border-0 cursor-pointer disabled:opacity-50"
-                      disabled={isPending}
-                    />
-                  ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handlePackageSelect(pkg.id)}
-                      className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
-                      disabled={!isMounted}
-                    >
-                      {!isMounted
-                        ? "Loading..."
-                        : session?.user
-                          ? "Pay Now"
-                          : "Get started"}
-                    </motion.button>
-                  )}
+                  {(() => {
+                    const unfulfilledOrder = getUnfulfilledOrderForPackage(
+                      pkg.id,
+                    );
+
+                    if (isCheckingOrders) {
+                      return (
+                        <div className="w-full bg-neutral-300 dark:bg-neutral-600 text-neutral-500 dark:text-neutral-400 font-semibold py-3 lg:py-4 px-6 rounded-xl text-center">
+                          Checking...
+                        </div>
+                      );
+                    }
+
+                    if (unfulfilledOrder) {
+                      return (
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() =>
+                            router.push(
+                              unfulfilledOrder.orderStatus ===
+                                "payment_verified"
+                                ? `/cv-optimization/upload?ref=${unfulfilledOrder.paymentReference}`
+                                : `/cv-optimization/status?ref=${unfulfilledOrder.paymentReference}`,
+                            )
+                          }
+                          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 lg:py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
+                        >
+                          Continue {unfulfilledOrder.packageName}
+                        </motion.button>
+                      );
+                    }
+
+                    if (isMounted && session?.user && getPaystackConfig(pkg)) {
+                      return (
+                        <PaystackButton
+                          {...getPaystackConfig(pkg)!}
+                          className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 lg:py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl border-0 cursor-pointer disabled:opacity-50"
+                          disabled={isPending}
+                        />
+                      );
+                    }
+
+                    return (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handlePackageSelect(pkg.id)}
+                        className="w-full bg-warm-200 hover:bg-warm-300 text-white font-semibold py-3 lg:py-4 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
+                        disabled={!isMounted}
+                      >
+                        {!isMounted
+                          ? "Loading..."
+                          : session?.user
+                            ? "Pay Now"
+                            : "Get started"}
+                      </motion.button>
+                    );
+                  })()}
                 </div>
               </div>
             ))}
