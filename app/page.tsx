@@ -95,7 +95,7 @@ export default async function Home() {
       <JobsSection latestJobs={latestJobs} />
       <EntertainmentKracadaTV videos={youtubeVideos.items.slice(0, 3)} />
       <ArticlesSection latestPosts={latestPosts} />
-      <TravelSection />
+      {/* <TravelSection /> */}
     </div>
   );
 }
