@@ -337,8 +337,8 @@ export const NewsListingSection = ({
                 </span>
               ) : (
                 <>
-                  Displaying {posts.length} of {apiPost.raw.totalResults}{" "}
-                  {apiPost.raw.totalResults === 1 ? "result" : "results"}
+                  Displaying {newsArticleCardData.length} of {posts.length}{" "}
+                  {posts.length === 1 ? "result" : "results"}
                 </>
               )}
             </div>
