@@ -11,7 +11,6 @@ import {
 import { eq, and, desc, sql, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { cache } from "react";
 
 // Note: This uses admin authentication instead of regular user auth
 // You'll need to import and use admin auth when available
@@ -408,7 +407,8 @@ export async function getNewsPostsAction(params?: {
   }
 }
 
-export const getNewsApi = cache(async (query = "human resources nigeria") => {
+export const getNewsApi = async (pageToken?: string) => {
+  const query = "human resources nigeria";
   const apiKey = process.env.NEWSDATA_API_KEY;
 
   if (!apiKey) {
@@ -419,6 +419,9 @@ export const getNewsApi = cache(async (query = "human resources nigeria") => {
 
   url.searchParams.append("apikey", apiKey);
   url.searchParams.append("q", query);
+  if (pageToken) {
+    url.searchParams.append("page", pageToken);
+  }
 
   try {
     const response = await fetch(url.toString());
@@ -448,7 +451,7 @@ export const getNewsApi = cache(async (query = "human resources nigeria") => {
       articles: [],
     };
   }
-});
+};
 import fetch from "node-fetch";
 
 export interface YoutubeVideoResponse {

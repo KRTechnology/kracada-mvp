@@ -5,8 +5,11 @@ import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { NewsArticleCard } from "./NewsArticleCard";
 import { Pagination } from "@/components/common/Pagination";
 import { useRouter } from "next/navigation";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/common/input";
+
+import { getNewsApi } from "@/app/(dashboard)/actions/news-actions";
+
 import {
   Select,
   SelectContent,
@@ -48,7 +51,7 @@ const sortOptions = [
   { value: "alphabetical", label: "Alphabetical (A–Z)" },
 ];
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 10;
 
 // Memoized card component to prevent unnecessary re-renders
 const MemoizedNewsCard = memo(NewsArticleCard);
@@ -59,19 +62,66 @@ export const NewsListingSection = ({
   apiPost,
 }: NewsListingSectionProps) => {
   const router = useRouter();
-  const [posts, setPosts] = useState(initialPosts);
-  const [pagination, setPagination] = useState(initialPagination);
+  const [posts, setPosts] = useState<NewsPost[]>([]);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(true);
 
-  // Update state when props change
+  const [nextToken, setNextToken] = useState<string | null>(null);
+  const [maxPages, setMaxPages] = useState<number | null>(null);
+
+  const fetchPosts = async (pageToken?: string) => {
+    try {
+      setIsProcessing(true);
+      const apiPosts = await getNewsApi(pageToken);
+      setIsProcessing(false);
+
+      if (!apiPosts) return;
+
+      if (apiPosts.raw.nextPage) {
+        setNextToken(apiPosts.raw.nextPage);
+      }
+
+      if (apiPosts.raw.totalResults) {
+        setMaxPages(Math.ceil(apiPosts.raw.totalResults / ITEMS_PER_PAGE));
+      }
+
+      setPosts(
+        (prevPosts: NewsPost[]) =>
+          pageToken
+            ? [...prevPosts, ...apiPosts.articles] // Append when loading more
+            : apiPosts.articles, // Replace on initial load
+      );
+    } catch (error) {
+      console.error("Failed to fetch posts:", error);
+    }
+  };
+
   useEffect(() => {
-    setPosts(initialPosts);
-    setPagination(initialPagination);
-  }, [initialPosts, initialPagination]);
+    fetchPosts();
+  }, []); // Run only once on mount
+
+  const handlePrevious = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prevPage) => prevPage - 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleNext = () => {
+    if (nextToken) {
+      if (maxPages && currentPage >= maxPages) {
+        return;
+      }
+      fetchPosts(nextToken);
+      setCurrentPage((prevPage) => prevPage + 1);
+      console.log("posts", posts);
+    }
+  };
+  // Update state when props change
 
   // Extract unique categories - only recalculate when apiPost changes
   const categories = useMemo(() => {
@@ -93,14 +143,14 @@ export const NewsListingSection = ({
 
   // Pre-process articles once for better performance
   const processedArticles = useMemo(() => {
-    if (!apiPost?.articles) return [];
+    if (!posts) return [];
 
     return apiPost.articles.map((article: any) => ({
       ...article,
       searchText:
         `${article.title || ""} ${article.description || ""}`.toLowerCase(),
       normalizedCategories: (article.category || []).map((cat: string) =>
-        cat.toLowerCase()
+        cat.toLowerCase(),
       ),
       pubDateTime: article.pubDate ? new Date(article.pubDate).getTime() : 0,
     }));
@@ -116,14 +166,14 @@ export const NewsListingSection = ({
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((article: any) =>
-        article.searchText.includes(query)
+        article.searchText.includes(query),
       );
     }
 
     // Apply category filter
     if (selectedCategory !== "all") {
       filtered = filtered.filter((article: any) =>
-        article.normalizedCategories.includes(selectedCategory)
+        article.normalizedCategories.includes(selectedCategory),
       );
     }
 
@@ -151,11 +201,39 @@ export const NewsListingSection = ({
     return filteredAndSortedPosts.slice(startIndex, endIndex);
   }, [filteredAndSortedPosts, currentPage]);
 
-  const totalPages = Math.ceil(filteredAndSortedPosts.length / ITEMS_PER_PAGE);
+  const newsData = posts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
-  // Transform articles for display - memoized to prevent recalculation
   const newsArticleCardData = useMemo(() => {
-    return paginatedPosts.map((article: any) => ({
+    const uniqueMap = new Map<string, any>();
+
+    newsData.forEach((article: any) => {
+      if (!article.title) return;
+
+      // Normalize the title and use the first 5 words as the similarity key
+      const similarityKey = article.title
+        .toLowerCase()
+        .replace(/[^\w\s]/g, "") // Remove punctuation
+        .trim()
+        .split(/\s+/)
+        .slice(0, 5)
+        .join(" ");
+
+      const existing = uniqueMap.get(similarityKey);
+
+      // Keep the most recent article
+      if (
+        !existing ||
+        new Date(article.pubDate).getTime() >
+          new Date(existing.pubDate).getTime()
+      ) {
+        uniqueMap.set(similarityKey, article);
+      }
+    });
+
+    return Array.from(uniqueMap.values()).map((article: any) => ({
       id: article.article_id,
       author: article.creator?.length ? article.creator.join(", ") : "Unknown",
       date: article.pubDate
@@ -172,7 +250,8 @@ export const NewsListingSection = ({
       link: article.link,
       source: article.source_name || "",
     }));
-  }, [paginatedPosts]);
+  }, [newsData]);
+  // Transform articles for display - memoized to prevent recalculation
 
   // Reset to page 1 when filters change - with debouncing effect
   useEffect(() => {
@@ -198,7 +277,7 @@ export const NewsListingSection = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(e.target.value);
     },
-    []
+    [],
   );
 
   return (
@@ -258,9 +337,8 @@ export const NewsListingSection = ({
                 </span>
               ) : (
                 <>
-                  Displaying {paginatedPosts.length} of{" "}
-                  {filteredAndSortedPosts.length}{" "}
-                  {filteredAndSortedPosts.length === 1 ? "result" : "results"}
+                  Displaying {posts.length} of {apiPost.raw.totalResults}{" "}
+                  {apiPost.raw.totalResults === 1 ? "result" : "results"}
                 </>
               )}
             </div>
@@ -307,12 +385,16 @@ export const NewsListingSection = ({
             <div className="flex justify-center items-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
             </div>
-          ) : newsArticleCardData.length === 0 ? (
+          ) : maxPages && currentPage >= maxPages ? (
             <div className="text-center py-12">
               <p className="text-neutral-600 dark:text-neutral-400 text-lg">
-                {searchQuery || selectedCategory !== "all"
-                  ? "No articles match your filters. Try adjusting your search."
-                  : "No news posts available yet. Check back soon!"}
+                {searchQuery || selectedCategory !== "all" ? (
+                  "No articles match your filters. Try adjusting your search."
+                ) : (
+                  <>
+                    <p>No news posts available yet. Check back soon!</p>
+                  </>
+                )}
               </p>
             </div>
           ) : (
@@ -323,27 +405,90 @@ export const NewsListingSection = ({
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch"
               >
-                {newsArticleCardData.map((article: any, index: number) => (
-                  <motion.div
-                    key={article.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="h-full"
-                  >
-                    <MemoizedNewsCard article={article} index={index} />
-                  </motion.div>
-                ))}
+                {isProcessing ? (
+                  <div className="col-span-full flex justify-center items-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
+                  </div>
+                ) : (
+                  newsArticleCardData.map((article: any, index: number) => (
+                    <motion.div
+                      key={article.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                      className="h-full"
+                    >
+                      <MemoizedNewsCard article={article} index={index} />
+                    </motion.div>
+                  ))
+                )}
               </motion.div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="flex items-center justify-center space-x-2 mt-8"
+              >
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handlePrevious()}
+                  disabled={currentPage === 1}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-warm-200 dark:hover:text-warm-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Previous
+                </motion.button>
+
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: currentPage }, (_, index) => {
+                    const page = index + 1;
+
+                    return (
+                      <motion.button
+                        key={page}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          if (page !== currentPage) {
+                            handlePageChange(page);
+                          }
+                        }}
+                        className={`px-3 py-2 text-sm font-medium rounded-full transition-colors ${
+                          page === currentPage
+                            ? "bg-gradient-to-r from-warm-200 to-peach-200 text-white shadow-lg"
+                            : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                        }`}
+                      >
+                        {page}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleNext()}
+                  disabled={
+                    !nextToken ||
+                    (maxPages !== null && currentPage >= maxPages - 1)
+                  }
+                  className="flex items-center px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-warm-200 dark:hover:text-warm-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </motion.button>
+              </motion.div>
+
+              {/* {totalPages > 1 && (
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />
-              )}
+              )} */}
             </>
           )}
         </div>

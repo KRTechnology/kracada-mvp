@@ -1,21 +1,13 @@
 import { EntertainmentQuizBanner } from "@/components/specific/entertainment/EntertainmentQuizBanner";
 import { NewsHeroSection } from "@/components/specific/news/NewsHeroSection";
-import { NewsListingHeader } from "@/components/specific/news/NewsListingHeader";
 import { NewsListingSection } from "@/components/specific/news/NewsListingSection";
 
-import {
-  getNewsApi,
-  getNewsPostsAction,
-} from "@/app/(dashboard)/actions/news-actions";
+import { getNewsApi } from "@/app/(dashboard)/actions/news-actions";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 
-export default async function NewsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
+export default async function NewsPage() {
   const apiPosts = await getNewsApi();
 
   return (
