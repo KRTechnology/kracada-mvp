@@ -7,8 +7,8 @@ import { eq } from "drizzle-orm";
 import { CreateLifestylePostForm } from "@/components/specific/lifestyle/CreateLifestylePostForm";
 
 export const metadata: Metadata = {
-  title: "Create Lifestyle Post | Kracada",
-  description: "Share your lifestyle insights with the community",
+  title: "Publish an Article | Kracada",
+  description: "Share your entertainment insights with the community",
 };
 
 // Force dynamic rendering
@@ -44,7 +44,7 @@ export default async function CreateLifestylePostPage() {
       <CreateLifestylePostForm
         userId={user.id}
         authorName={`${user.firstName || ""} ${user.lastName || ""}`.trim()}
-        type="lifestyle"
+        type="entertainment"
       />
     </div>
   );

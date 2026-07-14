@@ -3,6 +3,9 @@
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { Search, ChevronDown } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
 import Link from "next/link";
@@ -15,194 +18,11 @@ import {
 } from "@/components/common/select";
 import { Pagination } from "@/components/common/Pagination";
 import { EntertainmentArticle } from "@/app/actions/entertainment-actions";
+import { Plus } from "lucide-react";
 
 interface EntertainmentTrendingArticlesProps {
   initialArticles: EntertainmentArticle[];
 }
-
-// Sample fallback data if no real data is available
-const fallbackArticlesData = [
-  {
-    id: 1,
-    author: "Alec Whitten",
-    date: "17 Jan 2025",
-    title: "Bill Walsh leadership lessons",
-    description:
-      "Like to know the secrets of transforming a 2-14 team into a 3x Super Bowl winning Dynasty?",
-    image: "/images/news-sample-image.jpg",
-    categories: ["Leadership", "Sports"],
-  },
-  {
-    id: 2,
-    author: "Demi Wilkinson",
-    date: "16 Jan 2025",
-    title: "PM mental models",
-    description:
-      "Mental models are simple expressions of complex processes or relationships.",
-    image: "/images/landing-hero-image.jpg",
-    categories: ["Business", "Entertainment"],
-  },
-  {
-    id: 3,
-    author: "Sarah Johnson",
-    date: "15 Jan 2025",
-    title: "The Future of Cinema",
-    description:
-      "Exploring how technology is reshaping the movie industry and audience experiences.",
-    image: "/images/news-sample-image.jpg",
-    categories: ["Movies", "Technology"],
-  },
-  {
-    id: 4,
-    author: "Michael Chen",
-    date: "14 Jan 2025",
-    title: "Music Streaming Revolution",
-    description:
-      "How streaming platforms are changing the way we discover and consume music.",
-    image: "/images/landing-hero-image.jpg",
-    categories: ["Music", "Technology"],
-  },
-  {
-    id: 5,
-    author: "Emma Rodriguez",
-    date: "13 Jan 2025",
-    title: "Gaming Industry Trends",
-    description:
-      "Latest trends in gaming from virtual reality to mobile gaming innovations.",
-    image: "/images/news-sample-image.jpg",
-    categories: ["Gaming", "Technology"],
-  },
-  {
-    id: 6,
-    author: "James Wilson",
-    date: "12 Jan 2025",
-    title: "Celebrity Culture Impact",
-    description:
-      "Understanding the influence of celebrity culture on modern society and social media.",
-    image: "/images/landing-hero-image.jpg",
-    categories: ["Celebrity", "Social Media"],
-  },
-  {
-    id: 7,
-    author: "Lisa Park",
-    date: "11 Jan 2025",
-    title: "Netflix Original Series Analysis",
-    description:
-      "Breaking down the success factors behind Netflix's most popular original content.",
-    image: "/images/news-sample-image.jpg",
-    categories: ["Movies", "Streaming"],
-  },
-  {
-    id: 8,
-    author: "David Kim",
-    date: "10 Jan 2025",
-    title: "Podcast Industry Growth",
-    description:
-      "How podcasts are becoming the new radio and what it means for content creators.",
-    image: "/images/landing-hero-image.jpg",
-    categories: ["Podcasts", "Media"],
-  },
-  {
-    id: 9,
-    author: "Maria Garcia",
-    date: "9 Jan 2025",
-    title: "Social Media Influencers",
-    description:
-      "The rise of influencer culture and its impact on traditional entertainment media.",
-    image: "/images/news-sample-image.jpg",
-    categories: ["Social Media", "Influencers"],
-  },
-  {
-    id: 10,
-    author: "Alex Thompson",
-    date: "8 Jan 2025",
-    title: "Virtual Reality Entertainment",
-    description:
-      "Exploring how VR is revolutionizing gaming, movies, and live entertainment experiences.",
-    image: "/images/landing-hero-image.jpg",
-    categories: ["Gaming", "Technology", "VR"],
-  },
-  {
-    id: 11,
-    author: "Rachel Brown",
-    date: "7 Jan 2025",
-    title: "Stand-up Comedy Evolution",
-    description:
-      "How stand-up comedy has adapted to digital platforms and streaming services.",
-    image: "/images/news-sample-image.jpg",
-    categories: ["Comedy", "Streaming"],
-  },
-  {
-    id: 12,
-    author: "Kevin Martinez",
-    date: "6 Jan 2025",
-    title: "Esports Championship Series",
-    description:
-      "The growing popularity of competitive gaming and its impact on traditional sports.",
-    image: "/images/landing-hero-image.jpg",
-    categories: ["Gaming", "Sports", "Esports"],
-  },
-  {
-    id: 13,
-    author: "Sophie Anderson",
-    date: "5 Jan 2025",
-    title: "TikTok Entertainment Trends",
-    description:
-      "How TikTok is reshaping short-form content and creating new entertainment stars.",
-    image: "/images/news-sample-image.jpg",
-    categories: ["Social Media", "TikTok", "Viral"],
-  },
-  {
-    id: 14,
-    author: "Daniel White",
-    date: "4 Jan 2025",
-    title: "Live Streaming Platforms",
-    description:
-      "The rise of Twitch, YouTube Live, and other platforms changing entertainment consumption.",
-    image: "/images/landing-hero-image.jpg",
-    categories: ["Streaming", "Live", "Technology"],
-  },
-  {
-    id: 15,
-    author: "Jessica Moore",
-    date: "3 Jan 2025",
-    title: "Broadway Digital Transformation",
-    description:
-      "How Broadway shows are adapting to digital platforms and virtual performances.",
-    image: "/images/news-sample-image.jpg",
-    categories: ["Theater", "Digital", "Performance"],
-  },
-  {
-    id: 16,
-    author: "Robert Taylor",
-    date: "2 Jan 2025",
-    title: "AI in Entertainment",
-    description:
-      "Artificial intelligence is changing how we create, consume, and interact with entertainment.",
-    image: "/images/landing-hero-image.jpg",
-    categories: ["Technology", "AI", "Innovation"],
-  },
-  {
-    id: 17,
-    author: "Amanda Clark",
-    date: "1 Jan 2025",
-    title: "Reality TV Evolution",
-    description:
-      "From traditional reality shows to social media-based reality content and its impact.",
-    image: "/images/news-sample-image.jpg",
-    categories: ["Reality TV", "Social Media", "Television"],
-  },
-  {
-    id: 18,
-    author: "Marcus Johnson",
-    date: "31 Dec 2024",
-    title: "Music Festival Digital Experience",
-    description:
-      "How music festivals are incorporating virtual and augmented reality experiences.",
-    image: "/images/news-sample-image.jpg",
-    categories: ["Music", "Festivals", "Technology"],
-  },
-];
 
 const categories = [
   "All Categories",
@@ -312,7 +132,7 @@ const ArticleCard = ({ article, index }: ArticleCardProps) => {
               <span
                 key={categoryIndex}
                 className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(
-                  categoryIndex
+                  categoryIndex,
                 )}`}
               >
                 {category}
@@ -335,6 +155,8 @@ export const EntertainmentTrendingArticles = ({
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 6;
   const sectionRef = useRef<HTMLElement>(null);
+  const router = useRouter();
+  const { data: session } = useSession();
 
   // Update articles when initialArticles changes
   useEffect(() => {
@@ -357,7 +179,7 @@ export const EntertainmentTrendingArticles = ({
   const startIndex = (currentPage - 1) * articlesPerPage;
   const currentArticles = filteredArticles.slice(
     startIndex,
-    startIndex + articlesPerPage
+    startIndex + articlesPerPage,
   );
 
   const handlePageChange = (page: number) => {
@@ -372,24 +194,65 @@ export const EntertainmentTrendingArticles = ({
       });
     }
   };
+  // Check if user is a Contributor
+  const isContributor =
+    session?.user && (session.user as any).accountType === "Contributor";
 
   return (
     <section ref={sectionRef} className="py-8 lg:py-12">
       <div className="container mx-auto px-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8"
-        >
-          <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-2">
-            Trending Articles
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-400">
-            Displaying {filteredArticles.length} results
-          </p>
-        </motion.div>
+        <div className="bg-white dark:bg-dark">
+          <div className="container mx-auto px-2 py-8">
+            {/* Header with Title and Create Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="mb-8"
+              >
+                <h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-2">
+                  Trending Articles
+                </h1>
+                <p className="text-neutral-600 dark:text-neutral-400">
+                  Displaying {filteredArticles.length} results
+                </p>
+              </motion.div>
+
+              {isContributor && (
+                <Button
+                  onClick={() => {
+                    router.push("/entertainment/create");
+                  }}
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-3 rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create New Article
+                </Button>
+              )}
+            </motion.div>
+
+            {/* Tab Switcher */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="mb-8"
+            >
+              {/* <TabSwitcher
+                    activeTab={getActiveTab()}
+                    onTabChange={handleTabChange}
+                    customTabs={lifestyleTabs}
+                    removeMargin={true}
+                  /> */}
+            </motion.div>
+          </div>
+        </div>
 
         {/* Search and Filters */}
         <motion.div

@@ -1,29 +1,29 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Upload, X, ArrowLeft, Eye, Save } from "lucide-react";
+import { Upload, X, ArrowLeft, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
 import { Label } from "@/components/common/label";
 import { Textarea } from "@/components/common/textarea";
-import { TiptapEditor } from "./TiptapEditor";
+import { TiptapEditor } from "../lifestyle/TiptapEditor";
 import {
   uploadLifestyleFeaturedImage,
   deleteUploadedFile,
 } from "@/app/(dashboard)/actions/upload-actions";
 import {
-  createLifestylePostAction,
+  updateLifestylePostAction,
+  deleteLifestylePostAction,
   generateUniqueSlugAction,
 } from "@/app/actions/lifestyle-actions";
-import { createEntertainmentPostAction } from "@/app/actions/entertainment-actions";
 
-const createPostFormSchema = z.object({
+const updatePostFormSchema = z.object({
   title: z.string().min(1, "Title is required").max(500, "Title is too long"),
   slug: z.string().min(1, "Slug is required").max(550, "Slug is too long"),
   description: z
@@ -31,16 +31,15 @@ const createPostFormSchema = z.object({
     .max(500, "Description is too long")
     .optional()
     .or(z.literal("")),
-  categories: z.string().optional().or(z.literal("")),
-  status: z.enum(["draft", "published"]),
+  status: z.enum(["draft", "published", "archived"]),
 });
 
-type CreatePostFormData = z.infer<typeof createPostFormSchema>;
+type UpdatePostFormData = z.infer<typeof updatePostFormSchema>;
 
-interface CreateLifestylePostFormProps {
+interface EditLifestylePostFormProps {
   userId: string;
   authorName: string;
-  type?: string;
+  post: any;
 }
 
 const PREDEFINED_CATEGORIES = [
@@ -66,36 +65,41 @@ const PREDEFINED_CATEGORIES = [
   "Minimalism",
 ];
 
-export function CreateLifestylePostForm({
+export function EditLifestylePostForm({
   userId,
   authorName,
-  type,
-}: CreateLifestylePostFormProps) {
+  post,
+}: EditLifestylePostFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [editorContent, setEditorContent] = useState("");
-  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
-  const [featuredImageKey, setFeaturedImageKey] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [editorContent, setEditorContent] = useState(post.content || "");
+  const [featuredImage, setFeaturedImage] = useState<string | null>(
+    post.featuredImage || null,
+  );
+  const [featuredImageKey, setFeaturedImageKey] = useState<string | null>(
+    post.featuredImageKey || null,
+  );
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    post.categories || [],
+  );
   const [customCategory, setCustomCategory] = useState("");
   const [isGeneratingSlug, setIsGeneratingSlug] = useState(false);
-  const isEntertainment = type === "entertainment";
-  const redirectPath = isEntertainment ? "/entertainment" : "/lifestyle";
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
     watch,
-  } = useForm<CreatePostFormData>({
-    resolver: zodResolver(createPostFormSchema),
+  } = useForm<UpdatePostFormData>({
+    resolver: zodResolver(updatePostFormSchema),
     defaultValues: {
-      title: "",
-      slug: "",
-      description: "",
-      categories: "",
-      status: "published",
+      title: post.title || "",
+      slug: post.slug || "",
+      description: post.description || "",
+      status: post.status || "published",
     },
   });
 
@@ -168,9 +172,18 @@ export function CreateLifestylePostForm({
       const result = await uploadLifestyleFeaturedImage(formData);
 
       if (result.success && result.url) {
+        // Delete old image if exists
+        if (featuredImageKey) {
+          try {
+            await deleteUploadedFile(featuredImageKey);
+          } catch (error) {
+            console.error("Error deleting old image:", error);
+          }
+        }
+
         setFeaturedImage(result.url);
         setFeaturedImageKey(result.key || null);
-        toast.success("Featured image uploaded successfully");
+        toast.success("Featured image updated successfully");
       } else {
         toast.error(result.error || "Failed to upload image");
       }
@@ -226,7 +239,7 @@ export function CreateLifestylePostForm({
   };
 
   // Submit form
-  const onSubmit = async (data: CreatePostFormData) => {
+  const onSubmit = async (data: UpdatePostFormData) => {
     if (!editorContent || editorContent.trim().length === 0) {
       toast.error("Please write some content for your post");
       return;
@@ -239,12 +252,8 @@ export function CreateLifestylePostForm({
 
     startTransition(async () => {
       try {
-        const action =
-          type === "entertainment"
-            ? createEntertainmentPostAction
-            : createLifestylePostAction;
-
-        const result = await action({
+        const result = await updateLifestylePostAction({
+          id: post.id,
           title: data.title,
           slug: data.slug,
           description: data.description || undefined,
@@ -256,21 +265,52 @@ export function CreateLifestylePostForm({
           status: data.status,
         });
 
-        if (result.success && result.data) {
+        if (result.success) {
           toast.success(result.message);
-          router.push(`${redirectPath}/${result.data.id}`);
+          router.push(`/lifestyle/${post.id}`);
         } else {
-          toast.error(result.message || "Failed to create post");
+          toast.error(result.message || "Failed to update post");
         }
       } catch (error) {
-        console.error("Create post error:", error);
+        console.error("Update post error:", error);
         const errorMessage =
           error instanceof Error
             ? error.message
-            : "An unexpected error occurred while creating post";
+            : "An unexpected error occurred while updating post";
         toast.error(errorMessage);
       }
     });
+  };
+
+  // Delete post
+  const handleDeletePost = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this post? This action cannot be undone.",
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+
+    try {
+      const result = await deleteLifestylePostAction(post.id);
+
+      if (result.success) {
+        toast.success(result.message);
+        router.push("/lifestyle");
+      } else {
+        toast.error(result.message || "Failed to delete post");
+      }
+    } catch (error) {
+      console.error("Delete post error:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred while deleting post";
+      toast.error(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -291,14 +331,34 @@ export function CreateLifestylePostForm({
           Back
         </Button>
 
-        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
-          {type === "entertainment"
-            ? "Publish an Article"
-            : "Create a Lifestyle Post"}
-        </h1>
-        <p className="text-neutral-600 dark:text-neutral-400">
-          Share your insights and stories with the community
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+              Edit Lifestyle Post
+            </h1>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Update your post content and settings
+            </p>
+          </div>
+
+          <Button
+            variant="destructive"
+            onClick={handleDeletePost}
+            disabled={isDeleting || isPending}
+          >
+            {isDeleting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Post
+              </>
+            )}
+          </Button>
+        </div>
       </motion.div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -319,7 +379,26 @@ export function CreateLifestylePostForm({
                 alt="Featured"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                <label htmlFor="featured-image-upload">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="bg-white text-neutral-900"
+                    disabled={isUploadingImage}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Change Image
+                  </Button>
+                  <input
+                    id="featured-image-upload"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                    onChange={handleFeaturedImageUpload}
+                    className="hidden"
+                    disabled={isUploadingImage}
+                  />
+                </label>
                 <Button
                   type="button"
                   variant="destructive"
@@ -354,14 +433,16 @@ export function CreateLifestylePostForm({
                     accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
                     onChange={handleFeaturedImageUpload}
                     className="hidden"
-                    id="featured-image-upload"
+                    id="featured-image-upload-empty"
                   />
                   <Button
                     type="button"
                     variant="outline"
                     className="mt-4"
                     onClick={() =>
-                      document.getElementById("featured-image-upload")?.click()
+                      document
+                        .getElementById("featured-image-upload-empty")
+                        ?.click()
                     }
                   >
                     Select Image
@@ -416,16 +497,12 @@ export function CreateLifestylePostForm({
               onClick={handleGenerateSlug}
               disabled={isPending || isGeneratingSlug || !watchTitle}
             >
-              {isGeneratingSlug ? "Generating..." : "Generate"}
+              {isGeneratingSlug ? "Generating..." : "Regenerate"}
             </Button>
           </div>
           {errors.slug && (
             <p className="text-red-500 text-sm mt-1">{errors.slug.message}</p>
           )}
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            This will be used in the post URL. Use lowercase letters, numbers,
-            and hyphens only.
-          </p>
         </motion.div>
 
         {/* Description */}
@@ -445,11 +522,6 @@ export function CreateLifestylePostForm({
             rows={3}
             disabled={isPending}
           />
-          {errors.description && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.description.message}
-            </p>
-          )}
         </motion.div>
 
         {/* Categories */}
@@ -536,6 +608,7 @@ export function CreateLifestylePostForm({
             content={editorContent}
             onChange={setEditorContent}
             userId={userId}
+            postId={post.id}
             placeholder="Start writing your post..."
           />
         </motion.div>
@@ -571,6 +644,17 @@ export function CreateLifestylePostForm({
                 Draft
               </span>
             </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                {...register("status")}
+                value="archived"
+                className="w-4 h-4"
+              />
+              <span className="text-neutral-700 dark:text-neutral-300">
+                Archived
+              </span>
+            </label>
           </div>
         </motion.div>
 
@@ -584,21 +668,17 @@ export function CreateLifestylePostForm({
           <Button
             type="submit"
             className="bg-orange-500 hover:bg-orange-600 text-white"
-            disabled={isPending || isUploadingImage}
+            disabled={isPending || isUploadingImage || isDeleting}
           >
             {isPending ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                {watchStatus === "draft" ? "Saving Draft..." : "Publishing..."}
+                Saving Changes...
               </>
             ) : (
               <>
                 <Save className="w-4 h-4 mr-2" />
-                {watchStatus === "draft"
-                  ? "Save as Draft"
-                  : type === "entertainment"
-                    ? "Publish Article"
-                    : "Publish Post"}
+                Save Changes
               </>
             )}
           </Button>
@@ -607,7 +687,7 @@ export function CreateLifestylePostForm({
             type="button"
             variant="outline"
             onClick={() => router.back()}
-            disabled={isPending}
+            disabled={isPending || isDeleting}
           >
             Cancel
           </Button>

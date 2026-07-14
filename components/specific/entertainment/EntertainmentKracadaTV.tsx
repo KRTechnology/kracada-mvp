@@ -77,7 +77,7 @@ const VideoCard = ({ video, index }: VideoCardProps) => {
         toast.success(
           result.isBookmarked
             ? "Video added to bookmarks"
-            : "Video removed from bookmarks"
+            : "Video removed from bookmarks",
         );
       } else {
         toast.error(result.message || "Failed to update bookmark");

@@ -8,6 +8,7 @@ export * from "./cvs";
 export * from "./bookmarks";
 export * from "./cv-optimization";
 export * from "./lifestyle-posts";
+export * from "./entertainment-posts";
 export * from "./news";
 export * from "./hotels";
 export * from "./restaurants";

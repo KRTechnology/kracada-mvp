@@ -18,6 +18,7 @@ import { EntertainmentNews } from "@/app/actions/entertainment-actions";
 
 interface EntertainmentTrendingNewsProps {
   initialNews: EntertainmentNews[];
+  postResults?: any[]; // Replace 'any' with the actual type if available
 }
 
 // Sample fallback news data
@@ -310,7 +311,7 @@ const NewsCard = ({ article, index }: NewsCardProps) => {
               <span
                 key={categoryIndex}
                 className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(
-                  categoryIndex
+                  categoryIndex,
                 )}`}
               >
                 {category}
@@ -325,6 +326,7 @@ const NewsCard = ({ article, index }: NewsCardProps) => {
 
 export const EntertainmentTrendingNews = ({
   initialNews,
+  postResults,
 }: EntertainmentTrendingNewsProps) => {
   const [news, setNews] = useState(initialNews);
   const [searchQuery, setSearchQuery] = useState("");
@@ -355,7 +357,7 @@ export const EntertainmentTrendingNews = ({
   const startIndex = (currentPage - 1) * articlesPerPage;
   const currentNews = filteredNews.slice(
     startIndex,
-    startIndex + articlesPerPage
+    startIndex + articlesPerPage,
   );
 
   const handlePageChange = (page: number) => {

@@ -48,6 +48,8 @@ interface LifestyleVideo {
 type LifestyleContent = LifestyleArticle | LifestyleVideo;
 
 interface LifestyleListingSectionProps {
+  type?: string;
+
   activeTab?: TabType;
   initialPosts?: any[];
   initialPagination?: {
@@ -68,6 +70,7 @@ export const LifestyleListingSection = ({
   activeTab = "All posts",
   initialPosts = [],
   initialPagination = { page: 1, limit: 6, total: 0, totalPages: 0 },
+  type,
 }: LifestyleListingSectionProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -79,6 +82,8 @@ export const LifestyleListingSection = ({
   const [sortBy, setSortBy] = useState("Most Recent");
   const { data: session } = useSession();
   const [currentPage, setCurrentPage] = useState(1);
+  const isEntertainment = type === "entertainment";
+  const redirectPath = isEntertainment ? "/entertainment" : "/lifestyle";
 
   const ITEMS_PER_PAGE = 6;
 
@@ -133,14 +138,14 @@ export const LifestyleListingSection = ({
         (post) =>
           post.title.toLowerCase().includes(query) ||
           post.description?.toLowerCase().includes(query) ||
-          post.content.toLowerCase().includes(query)
+          post.content.toLowerCase().includes(query),
       );
     }
 
     // Apply category filter
     if (selectedCategory !== "All Categories") {
       filtered = filtered.filter((post) =>
-        post.categories.includes(selectedCategory)
+        post.categories.includes(selectedCategory),
       );
     }
 
@@ -199,7 +204,7 @@ export const LifestyleListingSection = ({
         day: "numeric",
         month: "short",
         year: "numeric",
-      }
+      },
     ),
     title: post.title,
     description: post.description || post.content.substring(0, 150) + "...",
@@ -308,12 +313,14 @@ export const LifestyleListingSection = ({
             {isContributor && (
               <Button
                 onClick={() => {
-                  router.push("/lifestyle/create");
+                  router.push(`${redirectPath}/create`);
                 }}
                 className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-3 rounded-lg transition-colors flex items-center gap-2 shadow-sm"
               >
                 <Plus className="w-4 h-4" />
-                Create a lifestyle post
+                {isEntertainment
+                  ? "Publish an Article"
+                  : "Create a lifestyle post"}
               </Button>
             )}
           </motion.div>

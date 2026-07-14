@@ -162,6 +162,13 @@
       "when": 1761134891523,
       "tag": "0022_fantastic_venus",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1783683399998,
+      "tag": "0023_dear_sentinels",
+      "breakpoints": true
     }
   ]
 }
