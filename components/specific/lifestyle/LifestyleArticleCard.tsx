@@ -27,6 +27,8 @@ interface LifestyleArticleCardProps {
   onMove?: (article: LifestyleArticle) => void;
   // /** Called when "Delete" is selected in the context menu */
   onDelete?: (article: LifestyleArticle) => void;
+  isProcessing?: boolean;
+  processingAction?: "move" | "delete" | null;
 }
 
 const LONG_PRESS_MS = 450;
@@ -38,6 +40,8 @@ export function LifestyleArticleCard({
   enableContextMenu = false,
   onDelete,
   onMove,
+  isProcessing = false,
+  processingAction = null,
 }: LifestyleArticleCardProps) {
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -84,7 +88,7 @@ export function LifestyleArticleCard({
   }, [enableContextMenu]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (!enableContextMenu || e.button === 2) return;
+    if (!enableContextMenu || e.button === 2 || isProcessing) return;
     longPressFired.current = false;
     setPressing(true);
     pressTimer.current = setTimeout(openMenu, LONG_PRESS_MS);
@@ -156,13 +160,16 @@ export function LifestyleArticleCard({
         href={href}
         className="h-full block"
         onClick={(e) => {
-          if (longPressFired.current) e.preventDefault();
+          if (longPressFired.current || isProcessing) e.preventDefault();
         }}
+        aria-disabled={isProcessing}
       >
         <motion.div
           animate={{ scale: pressing ? 0.97 : 1 }}
           transition={{ duration: 0.15 }}
-          className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden group cursor-pointer h-full flex flex-col"
+          className={`bg-white dark:bg-neutral-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden group h-full flex flex-col ${
+            isProcessing ? "pointer-events-none" : "cursor-pointer"
+          }`}
         >
           {/* Article Image */}
           <div className="relative w-full h-48 overflow-hidden">

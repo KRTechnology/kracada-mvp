@@ -33,7 +33,7 @@ import {
 
 // Types for content items
 interface LifestyleArticle {
-  id: number;
+  id: string;
   author: string;
   date: string;
   title: string;
@@ -93,6 +93,10 @@ export const LifestyleListingSection = ({
   const [currentPage, setCurrentPage] = useState(1);
   const isEntertainment = type === "entertainment";
   const redirectPath = isEntertainment ? "/entertainment" : "/lifestyle";
+  const [processingItem, setProcessingItem] = useState<{
+    id: string;
+    action: "move" | "delete";
+  } | null>(null);
 
   const ITEMS_PER_PAGE = 6;
 
@@ -152,28 +156,39 @@ export const LifestyleListingSection = ({
   //   // Scroll to top
   //   window.scrollTo({ top: 0, behavior: "smooth" });
   // };
+
   const handleMove = async (article: LifestyleArticle) => {
+    setProcessingItem({ id: article.id, action: "move" });
     try {
       if (isEntertainment) {
         await moveEntertainmentToLifestyleAction(article.id);
       } else {
         await moveLifestyleToEntertainmentAction(article.id);
       }
-      router.refresh();
+      // instant "virtual DOM" update — pull it out of the local list right away
+      setPosts((prev) => prev.filter((p) => p.id !== article.id));
+      router.refresh(); // resyncs server data in the background, no browser reload
     } catch (error) {
       console.error("Error moving article:", error);
+    } finally {
+      setProcessingItem(null);
     }
   };
+
   const handleDelete = async (article: LifestyleArticle) => {
+    setProcessingItem({ id: article.id, action: "delete" });
     try {
       if (isEntertainment) {
         await deleteEntertainmentPostAction(article.id);
       } else {
         await deleteLifestylePostAction(article.id);
       }
+      setPosts((prev) => prev.filter((p) => p.id !== article.id));
       router.refresh();
     } catch (error) {
       console.error("Error deleting article:", error);
+    } finally {
+      setProcessingItem(null);
     }
   };
   const handlePageChange = (page: number) => {
