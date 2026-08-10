@@ -49,7 +49,7 @@ The platform uses role-based access control with separate admin and user authent
 - Job posting by Recruiters and Business Owners
 - Job applications with cover letters and CV uploads
 - Application status tracking (Submitted, Under review, Shortlisted, Rejected, Interviewed, Offer)
-- Job bookmarks and saved searches
+- Job bookmarks and saved searches.
 - Job filtering by location, type, industry, and salary
 
 #### 📰 News & Articles
