@@ -16,7 +16,6 @@ export async function generateMetadata({
   params,
 }: LifestyleArticlePageProps): Promise<Metadata> {
   const { id } = await params;
-  console.log("id", id);
   const result = await getLifestylePostAction(id);
 
   if (!result.success || !result.data) {

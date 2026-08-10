@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getLifestylePostAction } from "@/app/actions/lifestyle-actions";
+import { getEntertainmentPostAction } from "@/app/actions/entertainment-actions";
 import { LifestyleArticlePageClient } from "@/components/specific/lifestyle/LifestyleArticlePageClient";
 
 interface LifestyleArticlePageProps {
@@ -17,7 +17,7 @@ export async function generateMetadata({
 }: LifestyleArticlePageProps): Promise<Metadata> {
   const { id } = await params;
   console.log("id", id);
-  const result = await getLifestylePostAction(id);
+  const result = await getEntertainmentPostAction(id);
 
   if (!result.success || !result.data) {
     return {
@@ -28,7 +28,7 @@ export async function generateMetadata({
   const post = result.data;
 
   return {
-    title: `${post.title} | Kracada Lifestyle`,
+    title: `${post.title} | Kracada Entertainment`,
     description: post.description || post.content.substring(0, 160),
   };
 }
@@ -39,7 +39,7 @@ export default async function LifestyleArticlePage({
   const { id } = await params;
 
   // Fetch post from database
-  const result = await getLifestylePostAction(id);
+  const result = await getEntertainmentPostAction(id);
 
   if (!result.success || !result.data) {
     notFound();

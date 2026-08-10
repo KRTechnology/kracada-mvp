@@ -7,7 +7,16 @@ import { useState, useEffect, useMemo } from "react";
 import { LifestyleArticleCard } from "./LifestyleArticleCard";
 import { Pagination } from "@/components/common/Pagination";
 import { LifestyleVideoCard } from "./LifestyleVideoCard";
-import { getLifestylePostsAction } from "@/app/actions/lifestyle-actions";
+import {
+  getLifestylePostsAction,
+  moveLifestyleToEntertainmentAction,
+  moveEntertainmentToLifestyleAction,
+  deleteLifestylePostAction,
+} from "@/app/actions/lifestyle-actions";
+import {
+  deleteEntertainmentPostAction,
+  getEntertainmentPostsAction,
+} from "@/app/actions/entertainment-actions";
 import { Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -88,13 +97,33 @@ export const LifestyleListingSection = ({
   const ITEMS_PER_PAGE = 6;
 
   // Check if user is a Contributor
+
   const isContributor =
     session?.user && (session.user as any).accountType === "Contributor";
   // Fetch posts when page changes
-  const fetchPosts = async (page: number) => {
+  const fetchEntertainmentPosts = async (page: number) => {
     setIsLoading(true);
     try {
       const result = await getLifestylePostsAction({
+        page,
+        limit: 6,
+        status: "published",
+      });
+
+      if (result.success && result.data) {
+        setPosts(result.data.posts);
+        setPagination(result.data.pagination);
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const fetchPosts = async (page: number) => {
+    setIsLoading(true);
+    try {
+      const result = await getEntertainmentPostsAction({
         page,
         limit: 6,
         status: "published",
@@ -123,7 +152,30 @@ export const LifestyleListingSection = ({
   //   // Scroll to top
   //   window.scrollTo({ top: 0, behavior: "smooth" });
   // };
-
+  const handleMove = async (article: LifestyleArticle) => {
+    try {
+      if (isEntertainment) {
+        await moveEntertainmentToLifestyleAction(article.id);
+      } else {
+        await moveLifestyleToEntertainmentAction(article.id);
+      }
+      router.refresh();
+    } catch (error) {
+      console.error("Error moving article:", error);
+    }
+  };
+  const handleDelete = async (article: LifestyleArticle) => {
+    try {
+      if (isEntertainment) {
+        await deleteEntertainmentPostAction(article.id);
+      } else {
+        await deleteLifestylePostAction(article.id);
+      }
+      router.refresh();
+    } catch (error) {
+      console.error("Error deleting article:", error);
+    }
+  };
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -307,7 +359,9 @@ export const LifestyleListingSection = ({
             className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8"
           >
             <h2 className="text-3xl font-bold text-neutral-900 dark:text-white">
-              All Lifestyle Posts
+              {isEntertainment
+                ? "All Entertainment Articles"
+                : "All Lifestyle Posts"}
             </h2>
 
             {isContributor && (
@@ -375,7 +429,14 @@ export const LifestyleListingSection = ({
                     {activeTab === "Videos" || item.isVideo ? (
                       <LifestyleVideoCard video={item} index={index} />
                     ) : (
-                      <LifestyleArticleCard article={item} index={index} />
+                      <LifestyleArticleCard
+                        article={item}
+                        index={index}
+                        isEntertainment={isEntertainment}
+                        enableContextMenu={isContributor}
+                        onMove={handleMove}
+                        onDelete={handleDelete}
+                      />
                     )}
                   </motion.div>
                 ))}

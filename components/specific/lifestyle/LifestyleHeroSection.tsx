@@ -4,8 +4,20 @@ import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { LifestyleSubscriptionForm } from "@/components/specific/lifestyle/LifestyleSubscriptionForm";
 
-export const LifestyleHeroSection = () => {
+interface LifestyleHeroSectionProps {
+  variant?: "lifestyle" | "entertainment";
+}
+
+export const LifestyleHeroSection = ({
+  variant = "lifestyle",
+}: LifestyleHeroSectionProps) => {
   const { theme } = useTheme();
+
+  const heading = variant === "entertainment" ? "Entertainment" : "Lifestyle";
+  const description =
+    variant === "entertainment"
+      ? "Explore entertainment content covering movies, music, celebrity news and pop culture so you never miss what's trending."
+      : "Explore lifestyle content related to career, health, fashion and personal development so that you can improve your overall well-being.";
 
   return (
     <section
@@ -18,14 +30,14 @@ export const LifestyleHeroSection = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-left space-y-8"
         >
-          {/* Lifestyle Heading */}
+          {/* Heading */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
             className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight"
           >
-            Lifestyle
+            {heading}
           </motion.h1>
 
           {/* Description */}
@@ -35,9 +47,7 @@ export const LifestyleHeroSection = () => {
             transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
             className="text-lg md:text-xl text-white/90 max-w-2xl leading-relaxed"
           >
-            Explore lifestyle content related to career, health, fashion and
-            personal development so that you can improve your overall
-            well-being.
+            {description}
           </motion.p>
 
           {/* Subscription Form */}

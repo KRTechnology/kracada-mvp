@@ -5,6 +5,9 @@ import {
   lifestylePosts,
   lifestyleComments,
   lifestylePostLikes,
+  entertainmentPosts,
+  entertainmentComments,
+  entertainmentPostLikes,
   users,
 } from "@/lib/db/schema";
 import { auth } from "@/auth";
@@ -175,8 +178,8 @@ export async function updateLifestylePostAction(data: UpdatePostData) {
       .where(
         and(
           eq(lifestylePosts.id, validatedData.id),
-          eq(lifestylePosts.authorId, userId)
-        )
+          eq(lifestylePosts.authorId, userId),
+        ),
       )
       .limit(1);
 
@@ -272,7 +275,7 @@ export async function deleteLifestylePostAction(postId: string) {
       .select()
       .from(lifestylePosts)
       .where(
-        and(eq(lifestylePosts.id, postId), eq(lifestylePosts.authorId, userId))
+        and(eq(lifestylePosts.id, postId), eq(lifestylePosts.authorId, userId)),
       )
       .limit(1);
 
@@ -433,8 +436,8 @@ export async function getLifestylePostAction(identifier: string) {
       .where(
         or(
           eq(lifestylePosts.id, identifier),
-          eq(lifestylePosts.slug, identifier)
-        )
+          eq(lifestylePosts.slug, identifier),
+        ),
       )
       .limit(1);
 
@@ -482,8 +485,8 @@ export async function toggleLifestylePostLikeAction(postId: string) {
       .where(
         and(
           eq(lifestylePostLikes.postId, postId),
-          eq(lifestylePostLikes.userId, userId)
-        )
+          eq(lifestylePostLikes.userId, userId),
+        ),
       )
       .limit(1);
 
@@ -494,8 +497,8 @@ export async function toggleLifestylePostLikeAction(postId: string) {
         .where(
           and(
             eq(lifestylePostLikes.postId, postId),
-            eq(lifestylePostLikes.userId, userId)
-          )
+            eq(lifestylePostLikes.userId, userId),
+          ),
         );
 
       // Decrement like count
@@ -555,8 +558,8 @@ export async function checkPostLikedAction(postId: string) {
       .where(
         and(
           eq(lifestylePostLikes.postId, postId),
-          eq(lifestylePostLikes.userId, userId)
-        )
+          eq(lifestylePostLikes.userId, userId),
+        ),
       )
       .limit(1);
 
@@ -739,8 +742,8 @@ export async function getAuthorStatsAndPostsAction(authorId: string) {
       .where(
         and(
           eq(lifestylePosts.authorId, authorId),
-          eq(lifestylePosts.status, "published")
-        )
+          eq(lifestylePosts.status, "published"),
+        ),
       )
       .orderBy(desc(lifestylePosts.publishedAt))
       .limit(5);
@@ -749,11 +752,11 @@ export async function getAuthorStatsAndPostsAction(authorId: string) {
     const totalPosts = authorPosts.length;
     const totalLikes = authorPosts.reduce(
       (sum, post) => sum + (post.likeCount || 0),
-      0
+      0,
     );
     const totalComments = authorPosts.reduce(
       (sum, post) => sum + (post.commentCount || 0),
-      0
+      0,
     );
 
     // Get total count of all posts (not just the 5 shown)
@@ -763,8 +766,8 @@ export async function getAuthorStatsAndPostsAction(authorId: string) {
       .where(
         and(
           eq(lifestylePosts.authorId, authorId),
-          eq(lifestylePosts.status, "published")
-        )
+          eq(lifestylePosts.status, "published"),
+        ),
       );
 
     return {
@@ -790,6 +793,247 @@ export async function getAuthorStatsAndPostsAction(authorId: string) {
     return {
       success: false,
       message: "Failed to fetch author stats",
+    };
+  }
+}
+
+// Helper: only admins (or the post's own author, if you want to allow that)
+// should be able to move content between categories.
+async function requireMovePermission(authorId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Not authenticated");
+  }
+  // Adjust this check to your actual admin/permission model.
+  // Example: only the original author or an admin table entry.
+  // const isOwner = session.user.id === authorId;
+  // if (!isOwner) {
+  //   throw new Error("Not authorized to move this post");
+  // }
+}
+
+// Ensure the destination slug is unique; append -1, -2, etc. if needed
+async function ensureUniqueSlug(
+  table: typeof entertainmentPosts | typeof lifestylePosts,
+  baseSlug: string,
+) {
+  let slug = baseSlug;
+  let counter = 1;
+  while (true) {
+    const existing = await db
+      .select({ id: table.id })
+      .from(table)
+      .where(eq(table.slug, slug))
+      .limit(1);
+    if (existing.length === 0) return slug;
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+}
+
+/**
+ * Move a post from Entertainment to Lifestyle, carrying over
+ * comments and likes, then delete the original.
+ */
+export async function moveEntertainmentToLifestyleAction(postId: string) {
+  try {
+    const [post] = await db
+      .select()
+      .from(entertainmentPosts)
+      .where(eq(entertainmentPosts.id, postId))
+      .limit(1);
+
+    if (!post) {
+      return { success: false, message: "Post not found" };
+    }
+
+    await requireMovePermission(post.authorId);
+
+    const slug = await ensureUniqueSlug(lifestylePosts, post.slug);
+
+    const result = await db.transaction(async (tx) => {
+      // 1. Insert into lifestyle_posts, reusing the same id so
+      //    comments/likes can be re-pointed without regenerating IDs.
+      const [newPost] = await tx
+        .insert(lifestylePosts)
+        .values({
+          id: post.id,
+          title: post.title,
+          slug,
+          description: post.description,
+          content: post.content,
+          featuredImage: post.featuredImage,
+          featuredImageKey: post.featuredImageKey,
+          categories: post.categories,
+          status: post.status,
+          authorId: post.authorId,
+          viewCount: post.viewCount,
+          likeCount: post.likeCount,
+          commentCount: post.commentCount,
+          publishedAt: post.publishedAt,
+          createdAt: post.createdAt,
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      // 2. Carry over comments
+      const comments = await tx
+        .select()
+        .from(entertainmentComments)
+        .where(eq(entertainmentComments.postId, postId));
+
+      if (comments.length > 0) {
+        await tx.insert(lifestyleComments).values(
+          comments.map((c) => ({
+            postId: newPost.id,
+            userId: c.userId,
+            userName: c.userName,
+            userAvatar: c.userAvatar,
+            commentText: c.commentText,
+            createdAt: c.createdAt,
+          })),
+        );
+      }
+
+      // 3. Carry over likes
+      const likes = await tx
+        .select()
+        .from(entertainmentPostLikes)
+        .where(eq(entertainmentPostLikes.postId, postId));
+
+      if (likes.length > 0) {
+        await tx.insert(lifestylePostLikes).values(
+          likes.map((l) => ({
+            postId: newPost.id,
+            userId: l.userId,
+          })),
+        );
+      }
+
+      // 4. Delete original (cascade removes its comments/likes)
+      await tx
+        .delete(entertainmentPosts)
+        .where(eq(entertainmentPosts.id, postId));
+
+      return newPost;
+    });
+
+    revalidatePath("/entertainment");
+    revalidatePath("/lifestyle");
+
+    return {
+      success: true,
+      message: "Post moved to Lifestyle",
+      data: {
+        ...result,
+        categories: result.categories ? JSON.parse(result.categories) : [],
+      },
+    };
+  } catch (error) {
+    console.error("Error moving post to lifestyle:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to move post",
+    };
+  }
+}
+
+/**
+ * Move a post from Lifestyle to Entertainment, carrying over
+ * comments and likes, then delete the original.
+ */
+export async function moveLifestyleToEntertainmentAction(postId: string) {
+  try {
+    const [post] = await db
+      .select()
+      .from(lifestylePosts)
+      .where(eq(lifestylePosts.id, postId))
+      .limit(1);
+
+    if (!post) {
+      return { success: false, message: "Post not found" };
+    }
+
+    // await requireMovePermission(post.authorId);
+
+    const slug = await ensureUniqueSlug(entertainmentPosts, post.slug);
+
+    const result = await db.transaction(async (tx) => {
+      const [newPost] = await tx
+        .insert(entertainmentPosts)
+        .values({
+          id: post.id,
+          title: post.title,
+          slug,
+          description: post.description,
+          content: post.content,
+          featuredImage: post.featuredImage,
+          featuredImageKey: post.featuredImageKey,
+          categories: post.categories,
+          status: post.status,
+          authorId: post.authorId,
+          viewCount: post.viewCount,
+          likeCount: post.likeCount,
+          commentCount: post.commentCount,
+          publishedAt: post.publishedAt,
+          createdAt: post.createdAt,
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      const comments = await tx
+        .select()
+        .from(lifestyleComments)
+        .where(eq(lifestyleComments.postId, postId));
+
+      if (comments.length > 0) {
+        await tx.insert(entertainmentComments).values(
+          comments.map((c) => ({
+            postId: newPost.id,
+            userId: c.userId,
+            userName: c.userName,
+            userAvatar: c.userAvatar,
+            commentText: c.commentText,
+            createdAt: c.createdAt,
+          })),
+        );
+      }
+
+      const likes = await tx
+        .select()
+        .from(lifestylePostLikes)
+        .where(eq(lifestylePostLikes.postId, postId));
+
+      if (likes.length > 0) {
+        await tx.insert(entertainmentPostLikes).values(
+          likes.map((l) => ({
+            postId: newPost.id,
+            userId: l.userId,
+          })),
+        );
+      }
+
+      await tx.delete(lifestylePosts).where(eq(lifestylePosts.id, postId));
+
+      return newPost;
+    });
+
+    revalidatePath("/lifestyle");
+    revalidatePath("/entertainment");
+
+    return {
+      success: true,
+      message: "Post moved to Entertainment",
+      data: {
+        ...result,
+        categories: result.categories ? JSON.parse(result.categories) : [],
+      },
+    };
+  } catch (error) {
+    console.error("Error moving post to entertainment:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to move post",
     };
   }
 }

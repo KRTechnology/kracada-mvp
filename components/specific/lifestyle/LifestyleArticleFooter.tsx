@@ -150,7 +150,7 @@ export const LifestyleArticleFooter = ({
           className="mb-8 space-y-4"
         >
           {/* Orange Warning */}
-          <div className="flex items-start gap-3 p-4 border border-orange-200 dark:border-orange-800 rounded-xl bg-orange-50 dark:bg-orange-900/20">
+          {/* <div className="flex items-start gap-3 p-4 border border-orange-200 dark:border-orange-800 rounded-xl bg-orange-50 dark:bg-orange-900/20">
             <AlertTriangle className="w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm text-orange-700 dark:text-orange-300 leading-relaxed">
@@ -159,7 +159,7 @@ export const LifestyleArticleFooter = ({
                 poster. Please report any content that violates our guidelines.
               </p>
             </div>
-          </div>
+          </div> */}
         </motion.div>
 
         {/* Social Sharing Section */}
@@ -318,7 +318,7 @@ export const LifestyleArticleFooter = ({
                   const now = new Date();
                   const commentDate = new Date(comment.createdAt);
                   const seconds = Math.floor(
-                    (now.getTime() - commentDate.getTime()) / 1000
+                    (now.getTime() - commentDate.getTime()) / 1000,
                   );
 
                   if (seconds < 60) return `${seconds}s ago`;
