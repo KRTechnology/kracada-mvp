@@ -80,7 +80,15 @@ export async function loginAction(data: LoginFormData) {
   try {
     // Validate the data
     const validatedData = loginSchema.parse(data);
-
+    const isVerified = await authService.isEmailVerified({
+      email: validatedData.email,
+    });
+    if (!isVerified) {
+      return {
+        success: false,
+        message: "Please verify your email address before logging in.",
+      };
+    }
     // Attempt to sign in the user
     await signIn("credentials", {
       email: validatedData.email,

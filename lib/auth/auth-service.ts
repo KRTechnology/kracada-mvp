@@ -183,6 +183,19 @@ export const authService = {
     return token;
   },
 
+  //  callback to check email verification
+  async isEmailVerified({ email }: { email: string }) {
+    const user = await this.getUserByEmail(email);
+    if (!user) {
+      console.log("No user found with email:", email);
+      return false;
+    } else if (!user.emailVerified) {
+      return false;
+    } else {
+      console.log("Email verified for user:", email);
+      return true;
+    }
+  },
   // Verify email
   async verifyEmail(token: string) {
     const [verificationToken] = await db
