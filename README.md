@@ -36,7 +36,7 @@ Kracada is a multi-featured platform that combines:
 - **Quizzes**: Admin-created quizzes for entertainment and engagement
 - **Hotels & Restaurants**: Business owners can list their hospitality businesses
 - **Entertainment**: Video content and entertainment features
-- **Travel & Tourism**: Travel-related content and listings
+- **Travel & Tourism**: Travel-related content and listings.
 
 The platform uses role-based access control with separate admin and user authentication systems, comprehensive file uploads via Cloudflare R2, and email notifications via Resend.
 
