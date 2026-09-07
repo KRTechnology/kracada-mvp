@@ -234,7 +234,7 @@ export function CreateJobPostDialog({
 
   const removeRequirement = (requirementToRemove: string) => {
     const updatedRequirements = requirements.filter(
-      (req) => req !== requirementToRemove
+      (req) => req !== requirementToRemove,
     );
     setRequirements(updatedRequirements);
     setValue("requirements", updatedRequirements, { shouldValidate: true });
@@ -384,7 +384,7 @@ export function CreateJobPostDialog({
                 onValueChange={(value) =>
                   setValue(
                     "locationType",
-                    value as "remote" | "onsite" | "hybrid"
+                    value as "remote" | "onsite" | "hybrid",
                   )
                 }
               >

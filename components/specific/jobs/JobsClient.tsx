@@ -30,7 +30,7 @@ export function JobsClient({ initialJobs, locations }: JobsClientProps) {
         job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.skills.some((skill) =>
-          skill.toLowerCase().includes(searchQuery.toLowerCase())
+          skill.toLowerCase().includes(searchQuery.toLowerCase()),
         );
 
       const matchesLocation =
@@ -45,6 +45,7 @@ export function JobsClient({ initialJobs, locations }: JobsClientProps) {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentJobs = filteredJobs.slice(startIndex, endIndex);
+  console.log("Current Jobs:", currentJobs); // Debugging line to check current jobs
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
