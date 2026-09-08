@@ -68,40 +68,184 @@ export function CreateJobPostDialog({
   const [requirements, setRequirements] = useState<string[]>([]);
   const [newRequirement, setNewRequirement] = useState("");
 
+  // Tracks the selected industry as plain component state so the skills
+  // dropdown updates reliably and immediately when it changes.
+  const [selectedIndustry, setSelectedIndustry] = useState<string>("");
+
   // Predefined skills for easy selection
-  const predefinedSkills = [
-    "JavaScript",
-    "TypeScript",
-    "React",
-    "Node.js",
-    "Python",
-    "Java",
-    "C++",
-    "HTML/CSS",
-    "SQL",
-    "MongoDB",
-    "PostgreSQL",
-    "AWS",
-    "Docker",
-    "Kubernetes",
-    "Git",
-    "Figma",
-    "Photoshop",
-    "Project Management",
-    "UI/UX Design",
-    "Data Analysis",
-    "Machine Learning",
-    "DevOps",
-    "Agile",
-    "Scrum",
-    "Customer Service",
-    "Sales",
-    "Marketing",
-    "Content Writing",
-    "Graphic Design",
-    "Video Editing",
-    "Social Media Management",
-  ];
+
+  const industrySkills = {
+    technology: [
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "Next.js",
+      "Node.js",
+      "Python",
+      "Java",
+      "C++",
+      "C#",
+      "HTML/CSS",
+      "SQL",
+      "PostgreSQL",
+      "MySQL",
+      "MongoDB",
+      "Redis",
+      "GraphQL",
+      "REST APIs",
+      "Microservices",
+      "AWS",
+      "Azure",
+      "Google Cloud",
+      "Docker",
+      "Kubernetes",
+      "Git",
+      "CI/CD",
+      "DevOps",
+      "Cybersecurity",
+      "Machine Learning",
+      "Artificial Intelligence",
+      "Data Science",
+      "Data Analysis",
+      "UI/UX Design",
+      "Figma",
+      "Agile",
+      "Scrum",
+      "Project Management",
+    ],
+
+    healthcare: [
+      "Clinical Research",
+      "Patient Care",
+      "Healthcare Administration",
+      "Medical Coding",
+      "Medical Billing",
+      "Electronic Health Records",
+      "Healthcare Analytics",
+      "Health Information Management",
+      "Public Health",
+      "Pharmacology",
+      "Nursing",
+      "Medical Laboratory Science",
+      "Radiology",
+      "Healthcare Compliance",
+      "HIPAA Compliance",
+      "Patient Safety",
+      "Quality Assurance",
+      "Healthcare Project Management",
+      "Data Analysis",
+      "Customer Service",
+    ],
+
+    finance: [
+      "Financial Analysis",
+      "Financial Modeling",
+      "Accounting",
+      "Bookkeeping",
+      "Auditing",
+      "Risk Management",
+      "Credit Analysis",
+      "Investment Analysis",
+      "Portfolio Management",
+      "Corporate Finance",
+      "Financial Reporting",
+      "Taxation",
+      "Budgeting",
+      "Forecasting",
+      "Treasury Management",
+      "Banking Operations",
+      "FinTech",
+      "Blockchain",
+      "Data Analysis",
+      "SQL",
+      "Excel",
+      "Power BI",
+      "Compliance",
+      "Anti-Money Laundering",
+      "KYC",
+      "Project Management",
+      "Customer Service",
+    ],
+
+    education: [
+      "Teaching",
+      "Curriculum Development",
+      "Lesson Planning",
+      "Instructional Design",
+      "Educational Technology",
+      "Classroom Management",
+      "Student Assessment",
+      "Academic Research",
+      "Educational Leadership",
+      "Learning Management Systems",
+      "E-Learning",
+      "Tutoring",
+      "Special Education",
+      "Child Development",
+      "Adult Education",
+      "Training & Development",
+      "Public Speaking",
+      "Communication",
+      "Data Analysis",
+      "Project Management",
+    ],
+
+    retail: [
+      "Customer Service",
+      "Sales",
+      "Retail Operations",
+      "Inventory Management",
+      "Merchandising",
+      "Visual Merchandising",
+      "Point of Sale",
+      "Store Management",
+      "Supply Chain Management",
+      "Procurement",
+      "Product Management",
+      "E-Commerce",
+      "Digital Marketing",
+      "Social Media Management",
+      "Market Research",
+      "Business Development",
+      "Negotiation",
+      "Data Analysis",
+      "Excel",
+      "Project Management",
+    ],
+
+    manufacturing: [
+      "Manufacturing Operations",
+      "Production Management",
+      "Quality Control",
+      "Quality Assurance",
+      "Lean Manufacturing",
+      "Six Sigma",
+      "Process Improvement",
+      "Supply Chain Management",
+      "Inventory Management",
+      "Procurement",
+      "Production Planning",
+      "Maintenance Management",
+      "Mechanical Engineering",
+      "Electrical Engineering",
+      "Industrial Engineering",
+      "CAD",
+      "AutoCAD",
+      "SolidWorks",
+      "Health & Safety",
+      "Occupational Safety",
+      "Data Analysis",
+      "Excel",
+      "Project Management",
+      "Agile",
+    ],
+  };
+  type Industry = keyof typeof industrySkills;
+
+  const predefinedSkills =
+    selectedIndustry && selectedIndustry in industrySkills
+      ? industrySkills[selectedIndustry as Industry]
+      : [];
 
   const {
     register,
@@ -173,6 +317,7 @@ export function CreateJobPostDialog({
         reset();
         setSkills([]);
         setRequirements([]);
+        setSelectedIndustry("");
         onOpenChange(false);
       } else {
         toast.error(result.message || "Failed to create job post");
@@ -200,7 +345,24 @@ export function CreateJobPostDialog({
     reset();
     setSkills([]);
     setRequirements([]);
+    setSelectedIndustry("");
     onOpenChange(false);
+  };
+
+  const handleIndustryChange = (value: string) => {
+    setSelectedIndustry(value);
+    setValue("industry", value, { shouldValidate: true });
+
+    // Drop any previously-picked skills that don't belong to the newly
+    // selected industry's list, so the visible chips stay consistent with
+    // what the dropdown now offers.
+    const nextSkillList =
+      value in industrySkills ? industrySkills[value as Industry] : [];
+    const filteredSkills = skills.filter((skill) =>
+      nextSkillList.includes(skill),
+    );
+    setSkills(filteredSkills);
+    setValue("requiredSkills", filteredSkills, { shouldValidate: true });
   };
 
   const addSkill = () => {
@@ -418,8 +580,8 @@ export function CreateJobPostDialog({
                 Industry
               </Label>
               <Select
-                value={watch("industry")}
-                onValueChange={(value) => setValue("industry", value)}
+                value={selectedIndustry}
+                onValueChange={handleIndustryChange}
               >
                 <SelectTrigger
                   className={`h-11 border-[#E2E8F0] dark:border-[#18212E] bg-white dark:bg-[#0D0D0D] text-neutral-900 dark:text-[#D8DDE7] text-sm sm:text-base transition-colors ${
@@ -556,15 +718,23 @@ export function CreateJobPostDialog({
                       Select from common skills:
                     </Label>
                     <Select
+                      key={selectedIndustry || "no-industry"}
                       value=""
                       onValueChange={(value) => {
                         if (value && !skills.includes(value)) {
                           addSkillFromDropdown(value);
                         }
                       }}
+                      disabled={!selectedIndustry}
                     >
                       <SelectTrigger className="bg-white dark:bg-[#0D0D0D] border-[#E2E8F0] dark:border-[#18212E] text-neutral-900 dark:text-[#D8DDE7] focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition-colors">
-                        <SelectValue placeholder="Choose a skill to add" />
+                        <SelectValue
+                          placeholder={
+                            selectedIndustry
+                              ? "Choose a skill to add"
+                              : "Select an industry first"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent className="bg-white dark:bg-[#0D0D0D] border-neutral-300 dark:border-[#313337]">
                         {predefinedSkills
@@ -576,6 +746,12 @@ export function CreateJobPostDialog({
                           ))}
                       </SelectContent>
                     </Select>
+                    {selectedIndustry && predefinedSkills.length === 0 && (
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                        No predefined skills for this industry yet — add a
+                        custom one below.
+                      </p>
+                    )}
                   </div>
 
                   <div>
