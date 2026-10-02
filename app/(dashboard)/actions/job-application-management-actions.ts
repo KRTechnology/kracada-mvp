@@ -64,6 +64,10 @@ export async function getJobApplicationsAction(jobId: string) {
     }
 
     const userId = session.user.id;
+    const userEmail = session.user.email;
+    const ALLOWED_EMAIL_DOMAIN = "@kimberly-ryan.net";
+    const hasDomainAccess =
+      userEmail?.toLowerCase().endsWith(ALLOWED_EMAIL_DOMAIN) ?? false;
 
     // First, verify that the user owns this job
     const [job] = await db
@@ -95,7 +99,7 @@ export async function getJobApplicationsAction(jobId: string) {
       return { success: false, message: "Job not found" };
     }
 
-    if (job.employerId !== userId) {
+    if (job.employerId !== userId && !hasDomainAccess) {
       return {
         success: false,
         message:
@@ -190,7 +194,7 @@ export async function getJobApplicationsAction(jobId: string) {
         skills: app.skills,
         recentJobTitle: app.recentJobTitle,
         recentCompany: app.recentCompany,
-      })
+      }),
     );
 
     return {
@@ -215,7 +219,7 @@ export async function updateApplicationStatusAction(
     | "Shortlisted"
     | "Rejected"
     | "Interviewed"
-    | "Offer"
+    | "Offer",
 ) {
   try {
     const session = await auth();
