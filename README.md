@@ -1,6 +1,6 @@
 # Kracada MVP
 
-A comprehensive lifestyle blog and platform built with Next.js 15, featuring job listings, news articles, lifestyle posts, CV optimization services, quizzes, hotels & restaurants, and more. Kracada serves as a one-stop destination for everything important to users in Nigeria
+A comprehensive lifestyle blog and platform built with Next.js 15, featuring job listings, news articles, lifestyle posts, CV optimization services, quizzes, hotels & restaurants, and more. Kracada serves as a one-stop destination for everything important to users in Nigeria.
 
 ## Table of Contents
 
