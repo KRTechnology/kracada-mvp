@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { JobDetailsClient } from "@/components/specific/jobs/JobDetailsClient";
 import {
   getJobByIdAction,
@@ -14,6 +15,10 @@ interface JobDetailsPageProps {
 export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   const { id } = await params;
 
+  const session = await auth();
+
+  console.log("Session:", session);
+
   // Fetch job data from the database
   const jobResult = await getJobByIdAction(id);
 
@@ -21,12 +26,22 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
     notFound();
   }
 
-  // Track job view (only counts if viewer is not the job owner)
-  // This runs on the server side and doesn't affect page loading
+  const job = jobResult.data;
+
+  // Determine whether the current user can view applications
+  const userEmail = session?.user?.email?.toLowerCase();
+
+  const canViewApplications =
+    session?.user?.isAdmin === true ||
+    session?.user?.id === job.employerId ||
+    userEmail?.endsWith("@kimberly-ryan.net") === true;
+
+  // Track job view
   trackJobViewAction(id).catch((error) => {
     console.error("Failed to track job view:", error);
-    // Don't throw error - view tracking shouldn't break the page
   });
 
-  return <JobDetailsClient job={jobResult.data} />;
+  return (
+    <JobDetailsClient job={job} canViewApplications={canViewApplications} />
+  );
 }

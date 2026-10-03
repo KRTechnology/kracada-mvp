@@ -22,9 +22,13 @@ import { toast } from "sonner";
 
 interface JobDetailsClientProps {
   job: JobDetailsData;
+  canViewApplications: boolean;
 }
 
-export function JobDetailsClient({ job }: JobDetailsClientProps) {
+export function JobDetailsClient({
+  job,
+  canViewApplications,
+}: JobDetailsClientProps) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isSaved, setIsSaved] = useState(false);
@@ -191,7 +195,7 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
           className="bg-white dark:bg-dark rounded-2xl shadow-sm max-w-4xl mx-auto pb-6"
         >
           {/* Go Back Button - Now inside the card */}
-          <div className="p-6">
+          <div className="p-6 flex items-center justify-between">
             <motion.button
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -202,6 +206,18 @@ export function JobDetailsClient({ job }: JobDetailsClientProps) {
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm font-medium">Go Back</span>
             </motion.button>
+
+            {canViewApplications && (
+              <motion.button
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={() => router.push(`/jobs/${job.id}/applications`)}
+                className="flex items-center space-x-2 px-4 py-2 bg-warm-200 hover:bg-warm-300 text-white rounded-lg transition-colors"
+              >
+                <span className="text-sm font-medium">View Applications</span>
+              </motion.button>
+            )}
           </div>
 
           {/* Job Details Sections - All wrapped in one border, including Job Title */}
